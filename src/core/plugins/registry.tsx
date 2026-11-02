@@ -260,50 +260,61 @@ function renderPluginCompact(plugin: InstalledPlugin): { left: ReactNode; right:
 function GenericPluginWidget({ plugin }: { plugin: InstalledPlugin }) {
 	const { manifest } = plugin;
 	return (
-		<div className="flex h-full items-center justify-between px-2 select-none">
-			{/* Leading: Icon & Name */}
-			<div className="flex min-w-0 items-center gap-3">
-				<div
-					className="flex size-11 flex-none items-center justify-center rounded-2xl bg-white/10"
-					style={{ color: manifest.accentColor }}
-				>
-					{renderPluginIcon(manifest.icon, 20)}
-				</div>
-				<div className="flex min-w-0 flex-col">
-					<div className="flex items-center gap-1.5">
-						<span className="text-[13px] font-semibold text-text truncate">{manifest.name}</span>
-						<span className="rounded-full bg-white/10 px-1.5 py-0.2 text-[10px] text-text-faint">
-							v{manifest.version}
-						</span>
+		<div className="flex h-full flex-col justify-between px-3 py-1 select-none">
+			{/* Top: Icon, Name & Action */}
+			<div className="flex items-center justify-between border-b border-white/8 pb-2.5">
+				<div className="flex items-center gap-3">
+					<div
+						className="flex size-9.5 flex-none items-center justify-center rounded-2xl bg-white/10"
+						style={{ color: manifest.accentColor }}
+					>
+						{renderPluginIcon(manifest.icon, 20)}
 					</div>
-					<span className="mt-0.5 truncate text-[11px] text-text-faint max-w-[200px]">{manifest.description}</span>
+					<div className="flex min-w-0 flex-col">
+						<div className="flex items-center gap-2">
+							<span className="text-sm font-semibold text-text truncate">{manifest.name}</span>
+							<span className="rounded-full bg-white/10 px-2 py-0.2 text-[10.5px] text-text-faint">
+								v{manifest.version}
+							</span>
+						</div>
+						<p className="mt-0.5 truncate text-[11px] text-text-faint max-w-xs">{manifest.description}</p>
+					</div>
 				</div>
-			</div>
 
-			{/* Center: Live Status & Author */}
-			<div className="flex flex-col items-center justify-center px-4">
-				<div className="flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
-					<span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-					<span>实时微应用已就绪</span>
-				</div>
-				<span className="mt-1 text-[10px] text-text-faint">
-					作者：{manifest.author.name} · {plugin.source === "marketplace" ? "官方市场" : "社区扩展"}
-				</span>
-			</div>
-
-			{/* Trailing: Open Settings Action */}
-			<div className="flex flex-none items-center gap-2">
 				<button
 					type="button"
 					onClick={(e) => {
 						e.stopPropagation();
 						command("open_settings");
 					}}
-					className="flex h-8.5 items-center gap-1.5 rounded-full bg-white/10 px-3.5 text-xs font-semibold text-text hover:bg-white/18 active:scale-95"
+					className="flex h-8 items-center gap-1.5 rounded-full bg-white/10 px-3.5 text-xs font-semibold text-text transition-all hover:bg-white/18 active:scale-95"
 				>
 					<SlidersIcon size={12} className="opacity-70" />
 					<span>配置插件</span>
 				</button>
+			</div>
+
+			{/* Bottom: Status Banner & Metadata */}
+			<div className="flex items-center justify-between pt-2">
+				<div className="flex items-center gap-2">
+					<div className="flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
+						<span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+						<span>实时微应用已就绪</span>
+					</div>
+					{manifest.tags && manifest.tags.length > 0 && (
+						<div className="flex items-center gap-1">
+							{manifest.tags.slice(0, 3).map((tag) => (
+								<span key={tag} className="rounded-md bg-white/5 px-1.5 py-0.5 text-[10px] text-text-faint">
+									#{tag}
+								</span>
+							))}
+						</div>
+					)}
+				</div>
+
+				<span className="text-[11px] text-text-faint">
+					作者：{manifest.author.name} · {plugin.source === "marketplace" ? "官方市场" : "社区扩展"}
+				</span>
 			</div>
 		</div>
 	);
@@ -329,7 +340,7 @@ export function createPluginModule(plugin: InstalledPlugin): IslandModule {
 				accent: manifest.accentColor ?? "#818cf8",
 				compact: renderPluginCompact(plugin),
 				expanded: renderPluginWidget(plugin),
-				expandedSize: { width: 560, height: 130 },
+				expandedSize: manifest.expandedSize ?? { width: 580, height: 180 },
 			};
 		},
 	};

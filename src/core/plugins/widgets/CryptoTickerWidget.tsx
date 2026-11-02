@@ -70,81 +70,91 @@ export function CryptoTickerWidget({ settings: _settings }: { settings: Record<s
 	const isPos = activeItem.change >= 0;
 
 	return (
-		<div className="flex h-full items-center justify-between px-2 select-none">
-			{/* Leading: Icon & Asset Switcher Pills */}
-			<div className="flex min-w-0 items-center gap-3">
-				<div className="flex size-11 flex-none items-center justify-center rounded-2xl bg-emerald-500/16 text-emerald-400">
-					<TrendingUpIcon size={20} />
-				</div>
-				<div className="flex flex-col gap-1">
-					<div className="flex items-center gap-1.5">
-						<span className="text-[13px] font-semibold text-text">{activeItem.name}</span>
-						<span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+		<div className="flex h-full flex-col justify-between px-2 py-1 select-none">
+			{/* Top Hero Row: Active Asset Spotlight */}
+			<div className="flex items-center justify-between border-b border-white/8 pb-2.5">
+				<div className="flex items-center gap-3">
+					<div className="flex size-9.5 items-center justify-center rounded-2xl bg-emerald-500/18 text-emerald-400">
+						<TrendingUpIcon size={19} />
 					</div>
-					<div className="flex items-center gap-1">
-						{items.map((item) => {
-							const isSelected = item.symbol === activeSymbol;
-							return (
-								<button
-									key={item.symbol}
-									type="button"
-									onClick={(e) => {
-										e.stopPropagation();
-										setActiveSymbol(item.symbol);
-									}}
-									className={`rounded-full px-2 py-0.5 text-[10.5px] font-mono font-semibold transition-all ${
-										isSelected
-											? "bg-white/18 text-white shadow-xs"
-											: "bg-white/6 text-text-faint hover:bg-white/10 hover:text-text"
-									}`}
-								>
-									{item.symbol}
-								</button>
-							);
-						})}
+					<div>
+						<div className="flex items-center gap-2">
+							<span className="text-[13px] font-semibold text-text">{activeItem.name}</span>
+							<span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+						</div>
+						<div className="flex items-center gap-2 text-[11px] font-mono text-text-faint">
+							<span>
+								高: <span className="text-text">{activeItem.high24h}</span>
+							</span>
+							<span>·</span>
+							<span>
+								低: <span className="text-text">{activeItem.low24h}</span>
+							</span>
+						</div>
 					</div>
 				</div>
-			</div>
 
-			{/* Center: Hero Live Price + Apple Pill Badge */}
-			<div className="flex flex-col items-center justify-center px-4">
-				<div className="font-mono text-[26px]/[1.1] font-bold tracking-tight text-text tabular-nums">
-					{activeItem.price}
-				</div>
-				<div className="mt-1 flex items-center gap-2">
-					<span
-						className={`flex items-center gap-0.5 rounded-full px-2 py-0.2 text-[11px] font-mono font-bold ${
-							isPos ? "bg-emerald-500/20 text-emerald-400" : "bg-rose-500/20 text-rose-400"
-						}`}
+				<div className="flex items-center gap-3">
+					<div className="text-right">
+						<div className="font-mono text-[22px]/[1.1] font-bold tracking-tight text-text tabular-nums">
+							{activeItem.price}
+						</div>
+						<div className="mt-0.5 flex items-center justify-end">
+							<span
+								className={`flex items-center gap-0.5 rounded-full px-2 py-0.2 text-[10.5px] font-mono font-bold ${
+									isPos ? "bg-emerald-500/20 text-emerald-400" : "bg-rose-500/20 text-rose-400"
+								}`}
+							>
+								{isPos ? <ArrowUpRightIcon size={11} /> : <ArrowDownRightIcon size={11} />}
+								<span>
+									{isPos ? "+" : ""}
+									{activeItem.change}%
+								</span>
+							</span>
+						</div>
+					</div>
+
+					<button
+						type="button"
+						onClick={handleRefresh}
+						title="刷新行情"
+						className="flex size-8 items-center justify-center rounded-full bg-white/8 text-text-faint transition-all hover:bg-white/16 hover:text-white active:scale-95"
 					>
-						{isPos ? <ArrowUpRightIcon size={12} /> : <ArrowDownRightIcon size={12} />}
-						<span>
-							{isPos ? "+" : ""}
-							{activeItem.change}%
-						</span>
-					</span>
-					<span className="text-[10px] text-text-faint">24h 波动</span>
+						<RefreshCwIcon size={12} className={refreshing ? "animate-spin text-emerald-400" : ""} />
+					</button>
 				</div>
 			</div>
 
-			{/* Trailing: Range Detail & Refresh Action */}
-			<div className="flex flex-none items-center gap-3">
-				<div className="flex flex-col items-end text-[11px] text-text-faint font-mono">
-					<div>
-						高: <span className="text-text">{activeItem.high24h}</span>
-					</div>
-					<div>
-						低: <span className="text-text">{activeItem.low24h}</span>
-					</div>
-				</div>
-				<button
-					type="button"
-					onClick={handleRefresh}
-					title="刷新行情"
-					className="flex size-8.5 items-center justify-center rounded-full bg-white/8 text-text-faint transition-all hover:bg-white/15 hover:text-white active:scale-95"
-				>
-					<RefreshCwIcon size={13} className={refreshing ? "animate-spin text-emerald-400" : ""} />
-				</button>
+			{/* Bottom Grid: 4 Parallel Asset Comparison Cards */}
+			<div className="grid grid-cols-4 gap-2 pt-2">
+				{items.map((item) => {
+					const isSelected = item.symbol === activeSymbol;
+					const pos = item.change >= 0;
+					return (
+						<button
+							key={item.symbol}
+							type="button"
+							onClick={(e) => {
+								e.stopPropagation();
+								setActiveSymbol(item.symbol);
+							}}
+							className={`flex flex-col justify-between rounded-xl p-2 text-left transition-all ${
+								isSelected
+									? "bg-white/12 ring-1 ring-white/20 shadow-xs"
+									: "bg-white/4 hover:bg-white/8 border border-white/4"
+							}`}
+						>
+							<div className="flex items-center justify-between">
+								<span className="font-mono text-xs font-bold text-text">{item.symbol}</span>
+								<span className={`text-[10px] font-mono font-semibold ${pos ? "text-emerald-400" : "text-rose-400"}`}>
+									{pos ? "+" : ""}
+									{item.change}%
+								</span>
+							</div>
+							<span className="mt-1 font-mono text-[11px] text-text-faint tabular-nums truncate">{item.price}</span>
+						</button>
+					);
+				})}
 			</div>
 		</div>
 	);

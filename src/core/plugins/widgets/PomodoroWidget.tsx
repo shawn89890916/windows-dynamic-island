@@ -54,21 +54,21 @@ export function PomodoroWidget({ settings }: { settings: Record<string, unknown>
 	const isWork = mode === "work";
 
 	return (
-		<div className="flex h-full items-center justify-between px-2 select-none">
-			{/* Leading: Icon + Mode Info */}
-			<div className="flex min-w-0 items-center gap-3">
+		<div className="flex h-full items-center justify-between px-3 select-none">
+			{/* Leading: Icon + Mode Info + Quick Switchers */}
+			<div className="flex min-w-0 items-center gap-3.5">
 				<div
-					className={`flex size-11 flex-none items-center justify-center rounded-2xl transition-colors ${
-						isWork ? "bg-red-500/16 text-red-400" : "bg-emerald-500/16 text-emerald-400"
+					className={`flex size-11.5 flex-none items-center justify-center rounded-2xl transition-colors ${
+						isWork ? "bg-red-500/18 text-red-400" : "bg-emerald-500/18 text-emerald-400"
 					}`}
 				>
-					{isWork ? <TimerIcon size={20} /> : <CoffeeIcon size={20} />}
+					{isWork ? <TimerIcon size={22} /> : <CoffeeIcon size={22} />}
 				</div>
 				<div className="flex min-w-0 flex-col">
-					<div className="flex items-center gap-1.5">
-						<span className="text-[13px] font-semibold text-text">{isWork ? "专注模式" : "休息时间"}</span>
+					<div className="flex items-center gap-2">
+						<span className="text-sm font-semibold text-text">{isWork ? "深度专注" : "放松休息"}</span>
 						<span
-							className={`rounded-full px-1.5 py-0.2 text-[10px] font-medium ${
+							className={`rounded-full px-2 py-0.2 text-[10.5px] font-medium ${
 								isRunning
 									? isWork
 										? "bg-red-500/20 text-red-400"
@@ -79,24 +79,25 @@ export function PomodoroWidget({ settings }: { settings: Record<string, unknown>
 							{isRunning ? "进行中" : "已暂停"}
 						</span>
 					</div>
-					<div className="mt-0.5 flex items-center gap-1">
+					<div className="mt-1 flex items-center gap-1.5">
 						<button
 							type="button"
 							onClick={(e) => switchMode("work", e)}
-							className={`rounded px-1 text-[11px] transition-colors ${
-								isWork ? "font-semibold text-red-400 underline underline-offset-2" : "text-text-faint hover:text-text"
+							className={`rounded-md px-2 py-0.5 text-xs transition-colors ${
+								isWork
+									? "bg-red-500/20 font-semibold text-red-400 ring-1 ring-red-500/30"
+									: "text-text-faint hover:text-text bg-white/5"
 							}`}
 						>
 							工作 ({workMinutes}m)
 						</button>
-						<span className="text-[10px] text-white/20">·</span>
 						<button
 							type="button"
 							onClick={(e) => switchMode("break", e)}
-							className={`rounded px-1 text-[11px] transition-colors ${
+							className={`rounded-md px-2 py-0.5 text-xs transition-colors ${
 								!isWork
-									? "font-semibold text-emerald-400 underline underline-offset-2"
-									: "text-text-faint hover:text-text"
+									? "bg-emerald-500/20 font-semibold text-emerald-400 ring-1 ring-emerald-500/30"
+									: "text-text-faint hover:text-text bg-white/5"
 							}`}
 						>
 							休息 ({breakMinutes}m)
@@ -107,26 +108,26 @@ export function PomodoroWidget({ settings }: { settings: Record<string, unknown>
 
 			{/* Center: Hero Timer + Progress Capsule */}
 			<div className="flex flex-col items-center justify-center px-4">
-				<div className="font-mono text-[30px]/[1.1] font-bold tracking-tight text-text tabular-nums">
+				<div className="font-mono text-[36px]/[1.1] font-bold tracking-tight text-text tabular-nums">
 					{formattedTime}
 				</div>
-				<div className="mt-1.5 flex items-center gap-2">
-					<div className="h-1.5 w-36 overflow-hidden rounded-full bg-white/10">
+				<div className="mt-2 flex items-center gap-2.5">
+					<div className="h-1.5 w-44 overflow-hidden rounded-full bg-white/10">
 						<div
 							className={`h-full transition-all duration-300 ${isWork ? "bg-red-500" : "bg-emerald-400"}`}
 							style={{ width: `${progressPercent}%` }}
 						/>
 					</div>
-					<span className="font-mono text-[10px] text-text-faint tabular-nums">{progressPercent}%</span>
+					<span className="font-mono text-[11px] text-text-faint tabular-nums">{progressPercent}%</span>
 				</div>
 			</div>
 
 			{/* Trailing: Apple Frosted Capsule Actions */}
-			<div className="flex flex-none items-center gap-2">
+			<div className="flex flex-none items-center gap-2.5">
 				<button
 					type="button"
 					onClick={toggleRunning}
-					className={`flex h-8.5 items-center gap-1.5 rounded-full px-3.5 text-xs font-semibold text-white shadow-sm transition-all active:scale-95 ${
+					className={`flex h-9 items-center gap-2 rounded-full px-4 text-xs font-semibold text-white shadow-sm transition-all active:scale-95 ${
 						isRunning
 							? "bg-white/15 hover:bg-white/20"
 							: isWork
@@ -135,15 +136,15 @@ export function PomodoroWidget({ settings }: { settings: Record<string, unknown>
 					}`}
 				>
 					{isRunning ? <PauseIcon size={14} className="fill-white" /> : <PlayIcon size={14} className="fill-white" />}
-					<span>{isRunning ? "暂停" : "开始"}</span>
+					<span>{isRunning ? "暂停" : "开始专注"}</span>
 				</button>
 				<button
 					type="button"
 					onClick={handleReset}
 					title="重置计时"
-					className="flex size-8.5 items-center justify-center rounded-full bg-white/8 text-text-faint transition-all hover:bg-white/15 hover:text-text active:scale-95"
+					className="flex size-9 items-center justify-center rounded-full bg-white/8 text-text-faint transition-all hover:bg-white/16 hover:text-text active:scale-95"
 				>
-					<RotateCcwIcon size={13} />
+					<RotateCcwIcon size={14} />
 				</button>
 			</div>
 		</div>

@@ -27,6 +27,10 @@ export interface PluginManifest {
 	settings?: PluginSettingField[];
 	permissions?: string[];
 	tags?: string[];
+	expandedSize?: {
+		width: number;
+		height: number;
+	};
 }
 
 export interface InstalledPlugin {

@@ -34,6 +34,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 				default: true,
 			},
 		],
+		expandedSize: { width: 580, height: 170 },
 	},
 	{
 		id: "com.island.weather",
@@ -72,6 +73,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 				default: true,
 			},
 		],
+		expandedSize: { width: 580, height: 180 },
 	},
 	{
 		id: "com.island.work-countdown",
@@ -106,6 +108,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 				default: true,
 			},
 		],
+		expandedSize: { width: 580, height: 175 },
 	},
 	{
 		id: "com.island.quick-memo",
@@ -138,6 +141,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 				default: "normal",
 			},
 		],
+		expandedSize: { width: 580, height: 215 },
 	},
 	{
 		id: "com.island.crypto-ticker",
@@ -166,6 +170,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 				default: 30,
 			},
 		],
+		expandedSize: { width: 600, height: 215 },
 	},
 	{
 		id: "com.island.steam-friends",
@@ -194,5 +199,6 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 				default: "",
 			},
 		],
+		expandedSize: { width: 580, height: 210 },
 	},
 ];

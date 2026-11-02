@@ -1,11 +1,4 @@
-import {
-	CheckCircle2Icon,
-	ChevronLeftIcon,
-	ChevronRightIcon,
-	CircleIcon,
-	PlusIcon,
-	StickyNoteIcon,
-} from "lucide-react";
+import { CheckCircle2Icon, CircleIcon, PlusIcon, StickyNoteIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 
 interface MemoItem {
@@ -24,16 +17,14 @@ function loadMemos(): MemoItem[] {
 		// fallback
 	}
 	return [
-		{ id: "1", text: "给 Dynamic Island 插件提 PR", done: false },
-		{ id: "2", text: "整理本周产品优化周报", done: true },
-		{ id: "3", text: "下班买新鲜水果和牛奶", done: false },
+		{ id: "1", text: "给 Dynamic Island 插件提 PR 并对标 Apple HIG 规范", done: false },
+		{ id: "2", text: "整理本周产品优化周报与用户反馈建议", done: true },
+		{ id: "3", text: "下班买新鲜水果、牛奶与咖啡豆", done: false },
 	];
 }
 
 export function QuickMemoWidget({ settings: _settings }: { settings: Record<string, unknown> }) {
 	const [memos, setMemos] = useState<MemoItem[]>(loadMemos);
-	const [currentIndex, setCurrentIndex] = useState(0);
-	const [isAdding, setIsAdding] = useState(false);
 	const [newText, setNewText] = useState("");
 
 	const saveMemos = (next: MemoItem[]) => {
@@ -45,136 +36,100 @@ export function QuickMemoWidget({ settings: _settings }: { settings: Record<stri
 		}
 	};
 
-	const safeIndex = memos.length > 0 ? Math.min(currentIndex, memos.length - 1) : 0;
-	const currentMemo = memos[safeIndex];
-
-	const toggleDone = (e: React.MouseEvent) => {
+	const toggleDone = (id: string, e: React.MouseEvent) => {
 		e.stopPropagation();
-		if (!currentMemo) return;
-		const next = memos.map((m) => (m.id === currentMemo.id ? { ...m, done: !m.done } : m));
+		const next = memos.map((m) => (m.id === id ? { ...m, done: !m.done } : m));
+		saveMemos(next);
+	};
+
+	const handleDelete = (id: string, e: React.MouseEvent) => {
+		e.stopPropagation();
+		const next = memos.filter((m) => m.id !== id);
 		saveMemos(next);
 	};
 
 	const handleAdd = (e: React.FormEvent | React.KeyboardEvent) => {
 		e.preventDefault();
-		if (!newText.trim()) {
-			setIsAdding(false);
-			return;
-		}
+		if (!newText.trim()) return;
 		const newItem = { id: String(Date.now()), text: newText.trim(), done: false };
-		const next = [newItem, ...memos];
+		const next = [newItem, ...memos.slice(0, 2)];
 		saveMemos(next);
 		setNewText("");
-		setCurrentIndex(0);
-		setIsAdding(false);
 	};
 
 	const pendingCount = memos.filter((m) => !m.done).length;
 
 	return (
-		<div className="flex h-full items-center justify-between px-2 select-none">
-			{/* Leading: Icon & Status */}
-			<div className="flex min-w-0 items-center gap-3">
-				<div className="flex size-11 flex-none items-center justify-center rounded-2xl bg-amber-400/16 text-amber-300">
-					<StickyNoteIcon size={20} />
-				</div>
-				<div className="flex min-w-0 flex-col">
-					<div className="flex items-center gap-1.5">
-						<span className="text-[13px] font-semibold text-text">灵动速记</span>
-						<span className="rounded-full bg-amber-400/15 px-1.5 py-0.2 text-[10px] font-medium text-amber-300">
-							{pendingCount} 待办
-						</span>
+		<div className="flex h-full flex-col justify-between px-2 py-1 select-none">
+			{/* Top Bar: Title & Inline Add Input */}
+			<div className="flex items-center justify-between border-b border-white/8 pb-2.5">
+				<div className="flex items-center gap-2.5">
+					<div className="flex size-9.5 items-center justify-center rounded-2xl bg-amber-400/18 text-amber-300">
+						<StickyNoteIcon size={19} />
 					</div>
-					<span className="mt-0.5 text-[11px] text-text-faint">随时记录 · 一键归档</span>
+					<div>
+						<div className="flex items-center gap-2">
+							<span className="text-[13px] font-semibold text-text">灵动速记便签</span>
+							<span className="rounded-full bg-amber-400/18 px-2 py-0.2 text-[10.5px] font-medium text-amber-300">
+								{pendingCount} 待办
+							</span>
+						</div>
+						<p className="text-[11px] text-text-faint">随时随地记录灵感 · 一键勾选归档</p>
+					</div>
 				</div>
+
+				<form onSubmit={handleAdd} className="flex items-center gap-1.5">
+					<input
+						type="text"
+						value={newText}
+						onChange={(e) => setNewText(e.target.value)}
+						placeholder="回车快速添加便签..."
+						className="h-8 w-52 rounded-full border border-white/10 bg-white/6 px-3.5 text-xs text-text placeholder:text-text-faint focus:border-white/25 focus:outline-none"
+					/>
+					<button
+						type="submit"
+						disabled={!newText.trim()}
+						className="flex size-8 items-center justify-center rounded-full bg-amber-400 text-neutral-900 transition-all hover:bg-amber-300 active:scale-95 disabled:opacity-40"
+					>
+						<PlusIcon size={14} />
+					</button>
+				</form>
 			</div>
 
-			{/* Center: Featured Note Item with Checkbox */}
-			<div className="flex min-w-0 flex-1 items-center justify-center px-4">
-				{isAdding ? (
-					<div className="flex w-full max-w-xs items-center gap-2">
-						<input
-							type="text"
-							value={newText}
-							onChange={(e) => setNewText(e.target.value)}
-							onKeyDown={(e) => e.key === "Enter" && handleAdd(e)}
-							placeholder="输入便签内容后回车..."
-							className="h-8 flex-1 rounded-full border border-white/12 bg-white/6 px-3.5 text-xs text-text placeholder:text-text-faint focus:border-white/30 focus:outline-none"
-						/>
-						<button
-							type="button"
-							onClick={handleAdd}
-							className="h-8 rounded-full bg-amber-400 px-3 text-xs font-semibold text-neutral-900 active:scale-95"
-						>
-							保存
-						</button>
-					</div>
-				) : currentMemo ? (
-					<div className="flex items-center gap-3 rounded-2xl bg-white/5 border border-white/6 px-3.5 py-2">
-						<button
-							type="button"
-							onClick={toggleDone}
-							className="text-text-faint hover:text-emerald-400 transition-colors"
-						>
-							{currentMemo.done ? (
-								<CheckCircle2Icon size={18} className="text-emerald-400" />
-							) : (
-								<CircleIcon size={18} />
-							)}
-						</button>
-						<span
-							className={`max-w-[200px] truncate text-xs font-medium transition-all ${
-								currentMemo.done ? "text-text-faint line-through opacity-60" : "text-text"
-							}`}
-						>
-							{currentMemo.text}
-						</span>
-						{memos.length > 1 && (
-							<div className="flex items-center gap-0.5 ml-2 border-l border-white/8 pl-2">
-								<button
-									type="button"
-									onClick={(e) => {
-										e.stopPropagation();
-										setCurrentIndex((prev) => (prev > 0 ? prev - 1 : memos.length - 1));
-									}}
-									className="rounded p-0.5 text-text-faint hover:text-text"
-								>
-									<ChevronLeftIcon size={13} />
-								</button>
-								<span className="font-mono text-[10px] text-text-faint tabular-nums">
-									{safeIndex + 1}/{memos.length}
-								</span>
-								<button
-									type="button"
-									onClick={(e) => {
-										e.stopPropagation();
-										setCurrentIndex((prev) => (prev < memos.length - 1 ? prev + 1 : 0));
-									}}
-									className="rounded p-0.5 text-text-faint hover:text-text"
-								>
-									<ChevronRightIcon size={13} />
-								</button>
-							</div>
-						)}
-					</div>
-				) : (
-					<div className="text-xs text-text-faint">暂无便签</div>
-				)}
-			</div>
+			{/* Parallel 3-Item Memo Checklist (Zero-Scroll Fixed Grid) */}
+			<div className="flex flex-col gap-1.5 pt-2">
+				{memos.slice(0, 3).map((item) => (
+					<div
+						key={item.id}
+						className="group flex items-center justify-between rounded-xl border border-white/5 bg-white/3 px-3 py-1.5 transition-all hover:border-white/12 hover:bg-white/6"
+					>
+						<div className="flex items-center gap-2.5 min-w-0">
+							<button
+								type="button"
+								onClick={(e) => toggleDone(item.id, e)}
+								className="text-text-faint hover:text-emerald-400 transition-colors flex-none"
+							>
+								{item.done ? <CheckCircle2Icon size={16} className="text-emerald-400" /> : <CircleIcon size={16} />}
+							</button>
+							<span
+								className={`truncate text-xs font-medium transition-all ${
+									item.done ? "text-text-faint line-through opacity-60" : "text-text"
+								}`}
+							>
+								{item.text}
+							</span>
+						</div>
 
-			{/* Trailing: New Note Button */}
-			<div className="flex flex-none items-center gap-2">
-				<button
-					type="button"
-					onClick={(e) => {
-						e.stopPropagation();
-						setIsAdding(!isAdding);
-					}}
-					className="flex h-8.5 items-center gap-1.5 rounded-full bg-white/10 px-3 text-xs font-semibold text-text hover:bg-white/18 active:scale-95"
-				>
-					<PlusIcon size={13} />
-					<span>新建</span>
-				</button>
+						<button
+							type="button"
+							title="删除"
+							onClick={(e) => handleDelete(item.id, e)}
+							className="rounded p-1 text-text-faint opacity-0 transition-opacity hover:text-rose-400 group-hover:opacity-100 flex-none"
+						>
+							<Trash2Icon size={12} />
+						</button>
+					</div>
+				))}
 			</div>
 		</div>
 	);
