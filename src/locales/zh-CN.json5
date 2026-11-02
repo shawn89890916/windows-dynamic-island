@@ -162,6 +162,10 @@
         name: "VPN 代理监控",
         desc: "实时代理与网络加速监控，直连 UniClash / Clash 核心，毫秒级测速与上下行速率动态波形看板。",
       },
+      im: {
+        name: "微信 · QQ 消息中枢",
+        desc: "微信与 QQ 桌面消息聚合，支持双端在线状态、未读动态预览、一键唤起客户端与灵动闪速回复。",
+      },
     },
     widgets: {
       generic: {
@@ -291,6 +295,21 @@
         uploadSpeed: "实时上行",
         fastNodes: "快捷节点",
         bypassNotice: "Bypass: 国内直连 · 境外加速",
+      },
+      im: {
+        title: "微信 · QQ",
+        connectedDual: "双端在线已连接",
+        openWeChat: "唤起微信",
+        openQQ: "唤起 QQ",
+        dndActive: "专注免打扰",
+        dndNormal: "正常通知",
+        markRead: "全部已读",
+        filterAll: "全部",
+        clearAll: "清空全部消息",
+        noMessages: "暂无新消息",
+        replyPlaceholder: "输入回复内容，回车唤起并复制...",
+        copiedAndOpened: "已复制并唤起",
+        btnReply: "发送",
       },
     },
   },

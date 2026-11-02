@@ -1,6 +1,6 @@
 import type { MessageKey } from "../i18n";
 
-export type PluginCategory = "productivity" | "media" | "tools" | "developer" | "system";
+export type PluginCategory = "productivity" | "media" | "tools" | "developer" | "system" | "social";
 
 export interface PluginSettingField {
 	key: string;

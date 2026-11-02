@@ -379,4 +379,33 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		],
 		expandedSize: { width: 580, height: 185 },
 	},
+	{
+		id: "com.island.im-notifications",
+		name: "微信 · QQ 消息中枢",
+		titleKey: "marketplace.plugins.im.name",
+		descKey: "marketplace.plugins.im.desc",
+		version: "1.0.0",
+		description: "微信与 QQ 桌面消息聚合，支持双端在线状态、未读动态预览、一键唤起客户端与灵动闪速回复。",
+		author: {
+			name: "Tencent",
+			url: "https://im.qq.com",
+		},
+		category: "social",
+		icon: "MessageSquare",
+		accentColor: "#07C160",
+		tags: ["微信", "QQ", "社交", "通知", "聊天", "快捷回复"],
+		settings: [
+			{
+				key: "defaultApp",
+				label: "默认回复目标",
+				type: "select",
+				options: [
+					{ label: "微信 (WeChat)", value: "wechat" },
+					{ label: "腾讯 QQ", value: "qq" },
+				],
+				default: "wechat",
+			},
+		],
+		expandedSize: { width: 580, height: 185 },
+	},
 ];

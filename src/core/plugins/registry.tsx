@@ -3,6 +3,7 @@ import {
 	CoffeeIcon,
 	CompassIcon,
 	Gamepad2Icon,
+	MessageSquareIcon,
 	PuzzleIcon,
 	SearchIcon,
 	ShieldCheckIcon,
@@ -22,6 +23,7 @@ import type { InstalledPlugin, PluginManifest } from "./types";
 import { AiHubWidget } from "./widgets/AiHubWidget";
 import { CryptoTickerWidget } from "./widgets/CryptoTickerWidget";
 import { EverythingWidget } from "./widgets/EverythingWidget";
+import { ImNotificationWidget, WeChatIcon } from "./widgets/ImNotificationWidget";
 import { NavoPathWidget } from "./widgets/NavoPathWidget";
 import { ObsidianIconSvg, ObsidianWidget } from "./widgets/ObsidianWidget";
 import { PomodoroWidget } from "./widgets/PomodoroWidget";
@@ -49,6 +51,8 @@ export function renderPluginIcon(iconName: string, size = 14, color?: string): R
 			return <TrendingUpIcon {...props} />;
 		case "Gamepad2":
 			return <Gamepad2Icon {...props} />;
+		case "MessageSquare":
+			return <MessageSquareIcon {...props} />;
 		case "Search":
 			return <SearchIcon {...props} />;
 		case "Sparkles":
@@ -208,6 +212,8 @@ function renderPluginWidget(plugin: InstalledPlugin): ReactNode {
 			return <AiHubWidget settings={plugin.customSettings} />;
 		case "com.island.vpn":
 			return <VpnWidget settings={plugin.customSettings} />;
+		case "com.island.im-notifications":
+			return <ImNotificationWidget settings={plugin.customSettings} />;
 		default:
 			return <GenericPluginWidget plugin={plugin} />;
 	}
@@ -361,6 +367,21 @@ function renderPluginCompact(
 				right: (
 					<span className="rounded bg-cyan-500/15 px-1.5 py-0.2 text-[10px] font-medium text-cyan-300">
 						127.0.0.1:8993
+					</span>
+				),
+				width: 250,
+			};
+		case "com.island.im-notifications":
+			return {
+				left: (
+					<div className="flex items-center gap-1.5 text-xs font-medium text-[#07C160]">
+						<WeChatIcon size={13} />
+						<span>{title}</span>
+					</div>
+				),
+				right: (
+					<span className="rounded bg-[#07C160]/15 px-1.5 py-0.2 text-[10px] font-medium text-[#07C160]">
+						微信 · QQ
 					</span>
 				),
 				width: 250,

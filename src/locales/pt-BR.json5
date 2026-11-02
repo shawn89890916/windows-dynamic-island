@@ -151,6 +151,10 @@
         name: "Monitor de VPN e Proxy",
         desc: "Monitoramento em tempo real de aceleração de rede e proxy conectado ao núcleo UniClash / Clash.",
       },
+      im: {
+        name: "Central WeChat e QQ",
+        desc: "Agregador de mensagens para WeChat e QQ com status duplo online e resposta rápida.",
+      },
     },
     widgets: {
       generic: {
@@ -280,6 +284,21 @@
         uploadSpeed: "Upload",
         fastNodes: "Nós Rápidos",
         bypassNotice: "Bypass: Direto LAN · Proxy Exterior",
+      },
+      im: {
+        title: "WeChat · QQ",
+        connectedDual: "Duplo online ativo",
+        openWeChat: "Abrir WeChat",
+        openQQ: "Abrir QQ",
+        dndActive: "Não Perturbe Ativo",
+        dndNormal: "Normal",
+        markRead: "Marcar todas como lidas",
+        filterAll: "Todos",
+        clearAll: "Limpar mensagens",
+        noMessages: "Nenhuma mensagem nova",
+        replyPlaceholder: "Digite a resposta e pressione Enter para copiar e abrir...",
+        copiedAndOpened: "Copiado e Aberto",
+        btnReply: "Enviar",
       },
     },
   },

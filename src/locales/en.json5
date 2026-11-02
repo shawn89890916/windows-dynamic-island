@@ -166,6 +166,10 @@
         name: "VPN & Proxy HUD",
         desc: "Live network acceleration and proxy monitor connected directly to UniClash / Clash core.",
       },
+      im: {
+        name: "WeChat & QQ Hub",
+        desc: "WeChat and QQ desktop message aggregator with dual-online status, unread preview, and flash reply.",
+      },
     },
     widgets: {
       generic: {
@@ -295,6 +299,21 @@
         uploadSpeed: "Upload",
         fastNodes: "Fast Nodes",
         bypassNotice: "Bypass: Direct LAN · Proxy foreign",
+      },
+      im: {
+        title: "WeChat · QQ",
+        connectedDual: "Dual active & online",
+        openWeChat: "Open WeChat",
+        openQQ: "Open QQ",
+        dndActive: "DND Active",
+        dndNormal: "Normal",
+        markRead: "Mark all read",
+        filterAll: "All",
+        clearAll: "Clear all messages",
+        noMessages: "No new messages",
+        replyPlaceholder: "Type reply and press Enter to copy & launch...",
+        copiedAndOpened: "Copied & Launched",
+        btnReply: "Send",
       },
     },
   },
