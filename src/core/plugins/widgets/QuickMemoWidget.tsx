@@ -63,12 +63,12 @@ export function QuickMemoWidget({ settings: _settings }: { settings: Record<stri
 	const pendingCount = memos.filter((m) => !m.done).length;
 
 	return (
-		<div className="flex h-full flex-col justify-between px-3 py-1.5 select-none">
+		<div className="flex h-full flex-col justify-center gap-2 px-1 select-none">
 			{/* Top Bar: Title & Inline Add Input */}
-			<div className="flex items-center justify-between border-b border-white/8 pb-2.5">
+			<div className="flex items-center justify-between border-b border-white/8 pb-1.5">
 				<div className="flex items-center gap-2.5 min-w-0">
-					<div className="flex size-9.5 shrink-0 items-center justify-center rounded-2xl bg-amber-400/18 text-amber-300">
-						<StickyNoteIcon size={19} />
+					<div className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-amber-400/18 text-amber-300">
+						<StickyNoteIcon size={18} />
 					</div>
 					<div className="min-w-0">
 						<div className="flex items-center gap-2">
@@ -89,7 +89,7 @@ export function QuickMemoWidget({ settings: _settings }: { settings: Record<stri
 						value={newText}
 						onChange={(e) => setNewText(e.target.value)}
 						placeholder={t("marketplace.widgets.memo.placeholder")}
-						className="h-8 w-48 rounded-full border border-white/10 bg-white/6 px-3.5 text-xs text-text placeholder:text-text-faint focus:border-white/25 focus:outline-none transition-colors"
+						className="h-8 w-44 rounded-full border border-white/10 bg-white/6 px-3 text-xs text-text placeholder:text-text-faint focus:border-white/25 focus:outline-none transition-colors"
 					/>
 					<motion.button
 						type="submit"
@@ -105,7 +105,7 @@ export function QuickMemoWidget({ settings: _settings }: { settings: Record<stri
 			</div>
 
 			{/* Parallel 3-Item Memo Checklist with Spring Layout Morphing */}
-			<div className="flex flex-col gap-1.5 pt-2">
+			<div className="flex flex-col gap-1.5 pt-0.5">
 				{memos.length === 0 ? (
 					<div className="py-4 text-center text-xs text-text-faint">{t("marketplace.widgets.memo.empty")}</div>
 				) : (

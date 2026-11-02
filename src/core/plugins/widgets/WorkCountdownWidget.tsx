@@ -40,16 +40,16 @@ export function WorkCountdownWidget({ settings }: { settings: Record<string, unk
 	const daysToWeekend = dayOfWeek >= 5 ? 0 : 5 - dayOfWeek;
 
 	return (
-		<div className="flex h-full flex-col justify-between px-3 py-1.5 select-none">
+		<div className="flex h-full flex-col justify-center gap-2 px-1 select-none">
 			{/* Top Bar: Schedule & Status Summary */}
-			<div className="flex items-center justify-between border-b border-white/8 pb-2.5">
+			<div className="flex items-center justify-between border-b border-white/8 pb-1.5">
 				<div className="flex items-center gap-3 min-w-0">
 					<motion.div
 						whileHover={{ rotate: 15 }}
 						transition={{ type: "spring", stiffness: 400, damping: 20 }}
-						className="flex size-9.5 shrink-0 items-center justify-center rounded-2xl bg-amber-500/18 text-amber-400"
+						className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-amber-500/18 text-amber-400"
 					>
-						{isOffWork ? <PartyPopperIcon size={20} /> : <CoffeeIcon size={20} />}
+						{isOffWork ? <PartyPopperIcon size={19} /> : <CoffeeIcon size={19} />}
 					</motion.div>
 					<div className="min-w-0">
 						<div className="flex items-center gap-2">
@@ -85,12 +85,12 @@ export function WorkCountdownWidget({ settings }: { settings: Record<string, unk
 			</div>
 
 			{/* Center & Sub-metrics Row (Desktop Enhanced) */}
-			<div className="flex items-center justify-between pt-2">
+			<div className="flex items-center justify-between pt-0.5">
 				<div className="flex flex-col min-w-0 pr-4">
-					<span className="text-[11px] text-text-faint whitespace-nowrap">
+					<span className="text-[10.5px] text-text-faint whitespace-nowrap">
 						{t("marketplace.widgets.workCountdown.remainingTitle")}
 					</span>
-					<div className="font-mono text-[30px]/[1.1] font-bold tracking-tight text-text tabular-nums whitespace-nowrap">
+					<div className="font-mono text-[28px]/[1.1] font-bold tracking-tight text-text tabular-nums whitespace-nowrap">
 						{isOffWork ? (
 							<span className="text-[20px] text-amber-300">{t("marketplace.widgets.workCountdown.achieved")}</span>
 						) : (

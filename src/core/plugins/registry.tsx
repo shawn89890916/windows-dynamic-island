@@ -62,7 +62,7 @@ function loadInstalledPlugins(): InstalledPlugin[] {
 				if (catalogMatch) {
 					return {
 						...item,
-						manifest: { ...catalogMatch, ...item.manifest, name: catalogMatch.name },
+						manifest: { ...item.manifest, ...catalogMatch },
 					};
 				}
 				return item;

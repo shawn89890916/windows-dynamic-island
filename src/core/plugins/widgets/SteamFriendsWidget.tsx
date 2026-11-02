@@ -23,19 +23,19 @@ export function SteamFriendsWidget({ settings: _settings }: { settings: Record<s
 	const playingFriends = friends.filter((f) => f.status === "in-game");
 
 	return (
-		<div className="flex h-full flex-col justify-between px-3 py-1.5 select-none">
+		<div className="flex h-full flex-col justify-center gap-2 px-1 select-none">
 			{/* Top Bar: Header Summary & Quick Action */}
-			<div className="flex items-center justify-between border-b border-white/8 pb-2.5">
+			<div className="flex items-center justify-between border-b border-white/8 pb-1.5">
 				<div className="flex items-center gap-3 min-w-0">
-					<div className="flex size-9.5 flex-none items-center justify-center rounded-2xl bg-purple-500/18 text-purple-400">
-						<Gamepad2Icon size={19} />
+					<div className="flex size-9 flex-none items-center justify-center rounded-2xl bg-purple-500/18 text-purple-400">
+						<Gamepad2Icon size={18} />
 					</div>
 					<div className="min-w-0">
 						<div className="flex items-center gap-2 flex-wrap">
 							<span className="text-[13px] font-semibold text-text whitespace-nowrap">
 								{t("marketplace.widgets.steam.title")}
 							</span>
-							<span className="rounded-full bg-emerald-500/18 px-2 py-0.5 text-[10.5px] font-medium text-emerald-400 whitespace-nowrap">
+							<span className="rounded-full bg-emerald-500/18 px-2 py-0.2 text-[10px] font-medium text-emerald-400 whitespace-nowrap">
 								{t("marketplace.widgets.steam.inGameCount", { n: playingFriends.length })}
 							</span>
 						</div>
@@ -54,7 +54,7 @@ export function SteamFriendsWidget({ settings: _settings }: { settings: Record<s
 						e.stopPropagation();
 						window.open("steam://open/friends", "_blank");
 					}}
-					className="flex h-8.5 shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3.5 text-xs font-semibold text-text transition-colors hover:bg-white/18 active:scale-95 whitespace-nowrap ml-3"
+					className="flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3.5 text-xs font-semibold text-text transition-colors hover:bg-white/18 active:scale-95 whitespace-nowrap ml-3"
 				>
 					<span>{t("marketplace.widgets.steam.openSteam")}</span>
 					<ExternalLinkIcon size={12} className="opacity-60" />
@@ -62,7 +62,7 @@ export function SteamFriendsWidget({ settings: _settings }: { settings: Record<s
 			</div>
 
 			{/* 2-Column Spacious Friend Cards with Tactile Springs */}
-			<div className="grid grid-cols-2 gap-3 pt-2.5">
+			<div className="grid grid-cols-2 gap-2.5 pt-0.5">
 				{friends.map((f) => (
 					<motion.div
 						key={f.id}

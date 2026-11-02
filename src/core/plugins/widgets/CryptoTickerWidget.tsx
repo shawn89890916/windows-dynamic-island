@@ -88,9 +88,9 @@ export function CryptoTickerWidget({ settings: _settings }: { settings: Record<s
 	const isPos = activeItem.change >= 0;
 
 	return (
-		<div className="flex h-full flex-col justify-between px-3 py-1.5 select-none">
+		<div className="flex h-full flex-col justify-center gap-2 px-1 select-none">
 			{/* Top Hero Row: Crisp Active Asset Spotlight with Spring Morph */}
-			<div className="flex items-center justify-between border-b border-white/8 pb-2.5">
+			<div className="flex items-center justify-between border-b border-white/8 pb-1.5">
 				<div className="flex items-center gap-3 min-w-0">
 					{/* Brand Squircle with Glyph & Pop Transition */}
 					<AnimatePresence mode="popLayout" initial={false}>
@@ -100,7 +100,7 @@ export function CryptoTickerWidget({ settings: _settings }: { settings: Record<s
 							animate={{ scale: 1, rotate: 0, opacity: 1 }}
 							exit={{ scale: 0.7, rotate: 20, opacity: 0 }}
 							transition={{ type: "spring", stiffness: 480, damping: 25 }}
-							className="flex size-10.5 shrink-0 items-center justify-center rounded-2xl text-lg font-bold text-white shadow-md"
+							className="flex size-10 shrink-0 items-center justify-center rounded-2xl text-base font-bold text-white shadow-md"
 							style={{ backgroundColor: `${activeItem.color}28`, color: activeItem.color }}
 						>
 							{activeItem.glyph}
@@ -108,11 +108,11 @@ export function CryptoTickerWidget({ settings: _settings }: { settings: Record<s
 					</AnimatePresence>
 					<div className="min-w-0">
 						<div className="flex items-center gap-2">
-							<span className="text-sm font-bold text-white font-mono tracking-tight">{activeItem.pair}</span>
+							<span className="text-[13px] font-bold text-white font-mono tracking-tight">{activeItem.pair}</span>
 							<span className="size-1.5 shrink-0 rounded-full bg-emerald-400 animate-pulse" />
 							<span className="text-xs text-text-faint truncate">({activeItem.name})</span>
 						</div>
-						<div className="flex items-center gap-2 text-[11px] font-mono text-text-faint mt-0.5">
+						<div className="flex items-center gap-2 text-[10.5px] font-mono text-text-faint mt-0.5">
 							<span>
 								{t("marketplace.widgets.crypto.high")}:{" "}
 								<span className="font-semibold text-text">{activeItem.high24h}</span>
@@ -136,20 +136,20 @@ export function CryptoTickerWidget({ settings: _settings }: { settings: Record<s
 								animate={{ opacity: 1, y: 0 }}
 								exit={{ opacity: 0, y: -6 }}
 								transition={{ type: "spring", stiffness: 450, damping: 26 }}
-								className="font-mono text-[24px]/[1.1] font-bold tracking-tight text-white tabular-nums drop-shadow-sm"
+								className="font-mono text-[22px]/[1.1] font-bold tracking-tight text-white tabular-nums drop-shadow-sm"
 							>
 								{activeItem.price}
 							</motion.div>
 						</AnimatePresence>
 						<div className="mt-0.5 flex items-center justify-end">
 							<span
-								className={`flex items-center gap-0.5 rounded-full px-2.5 py-0.5 text-[11px] font-mono font-bold whitespace-nowrap shadow-sm border ${
+								className={`flex items-center gap-0.5 rounded-full px-2 py-0.2 text-[10.5px] font-mono font-bold whitespace-nowrap shadow-sm border ${
 									isPos
 										? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
 										: "bg-rose-500/20 text-rose-400 border-rose-500/30"
 								}`}
 							>
-								{isPos ? <ArrowUpRightIcon size={12} /> : <ArrowDownRightIcon size={12} />}
+								{isPos ? <ArrowUpRightIcon size={11} /> : <ArrowDownRightIcon size={11} />}
 								<span>
 									{isPos ? "+" : ""}
 									{activeItem.change}%
@@ -165,15 +165,15 @@ export function CryptoTickerWidget({ settings: _settings }: { settings: Record<s
 						transition={{ type: "spring", stiffness: 500, damping: 24 }}
 						onClick={handleRefresh}
 						title={t("marketplace.widgets.crypto.refresh")}
-						className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-text-faint transition-colors hover:bg-white/18 hover:text-white border border-white/8"
+						className="flex size-7.5 shrink-0 items-center justify-center rounded-full bg-white/10 text-text-faint transition-colors hover:bg-white/18 hover:text-white border border-white/8"
 					>
-						<RefreshCwIcon size={13} className={refreshing ? "animate-spin text-emerald-400" : ""} />
+						<RefreshCwIcon size={12} className={refreshing ? "animate-spin text-emerald-400" : ""} />
 					</motion.button>
 				</div>
 			</div>
 
-			{/* Bottom Grid: High-Contrast 4-Asset Cards with Morphing Layout Glow */}
-			<div className="grid grid-cols-4 gap-2.5 pt-2">
+			{/* Bottom Grid: Snug & Cohesive 4-Asset Cards with Morphing Layout Glow */}
+			<div className="grid grid-cols-4 gap-2 pt-0.5">
 				{items.map((item) => {
 					const isSelected = item.symbol === activeSymbol;
 					const pos = item.change >= 0;
@@ -188,7 +188,7 @@ export function CryptoTickerWidget({ settings: _settings }: { settings: Record<s
 								e.stopPropagation();
 								setActiveSymbol(item.symbol);
 							}}
-							className="relative flex flex-col justify-between rounded-xl p-2.5 text-left transition-colors bg-white/4 border border-white/6 hover:border-white/14"
+							className="relative flex flex-col justify-between rounded-xl p-2 text-left transition-colors bg-white/4 border border-white/6 hover:border-white/14"
 						>
 							{isSelected && (
 								<motion.div
@@ -202,13 +202,13 @@ export function CryptoTickerWidget({ settings: _settings }: { settings: Record<s
 									<span className="size-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
 									<span className="font-mono text-xs font-bold text-white">{item.symbol}</span>
 								</div>
-								<span className={`text-[10.5px] font-mono font-bold ${pos ? "text-emerald-400" : "text-rose-400"}`}>
+								<span className={`text-[10px] font-mono font-bold ${pos ? "text-emerald-400" : "text-rose-400"}`}>
 									{pos ? "+" : ""}
 									{item.change}%
 								</span>
 							</div>
 							<div className="relative z-10 mt-1 flex items-baseline justify-between">
-								<span className="font-mono text-[12px] font-semibold text-text tabular-nums">{item.price}</span>
+								<span className="font-mono text-[11.5px] font-semibold text-text tabular-nums">{item.price}</span>
 							</div>
 						</motion.button>
 					);

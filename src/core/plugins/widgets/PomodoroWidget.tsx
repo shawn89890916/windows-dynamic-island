@@ -57,15 +57,15 @@ export function PomodoroWidget({ settings }: { settings: Record<string, unknown>
 	const isWork = mode === "work";
 
 	return (
-		<div className="flex h-full items-center justify-between px-3 select-none">
-			{/* Leading: Icon + Mode Info + Shared Layout Mode Switcher */}
-			<div className="flex min-w-0 items-center gap-3.5">
+		<div className="relative flex h-full items-center justify-between px-3.5 select-none">
+			{/* Leading: Icon + Mode Title + Shared Layout Mode Switcher */}
+			<div className="flex min-w-0 items-center gap-3">
 				<motion.div
 					key={mode}
 					initial={{ scale: 0.8, rotate: -15, opacity: 0 }}
 					animate={{ scale: 1, rotate: 0, opacity: 1 }}
 					transition={{ type: "spring", stiffness: 450, damping: 25 }}
-					className={`flex size-11.5 shrink-0 items-center justify-center rounded-2xl transition-colors ${
+					className={`flex size-11 shrink-0 items-center justify-center rounded-2xl transition-colors ${
 						isWork ? "bg-red-500/18 text-red-400" : "bg-emerald-500/18 text-emerald-400"
 					}`}
 				>
@@ -73,20 +73,15 @@ export function PomodoroWidget({ settings }: { settings: Record<string, unknown>
 				</motion.div>
 				<div className="flex min-w-0 flex-col">
 					<div className="flex items-center gap-2">
-						<span className="text-sm font-semibold text-text whitespace-nowrap">
+						<span className="text-[13px] font-semibold text-text whitespace-nowrap">
 							{isWork ? t("marketplace.widgets.pomodoro.focus") : t("marketplace.widgets.pomodoro.break")}
 						</span>
-						<span
-							className={`rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 whitespace-nowrap ${
-								isRunning
-									? isWork
-										? "bg-red-500/20 text-red-400"
-										: "bg-emerald-500/20 text-emerald-400"
-									: "bg-white/10 text-text-faint"
-							}`}
-						>
-							{isRunning ? t("marketplace.widgets.pomodoro.running") : t("marketplace.widgets.pomodoro.paused")}
-						</span>
+						{isRunning && (
+							<span
+								className="size-1.5 shrink-0 rounded-full animate-pulse"
+								style={{ backgroundColor: isWork ? "#f87171" : "#34d399" }}
+							/>
+						)}
 					</div>
 					<div className="mt-1 flex items-center gap-1.5 flex-wrap">
 						{/* Mode Pills with Sliding Magic Morph Indicator */}
@@ -130,13 +125,11 @@ export function PomodoroWidget({ settings }: { settings: Record<string, unknown>
 				</div>
 			</div>
 
-			{/* Center: Hero Timer + GPU-composited Smooth Spring Progress */}
-			<div className="flex flex-col items-center justify-center px-4 shrink-0">
-				<div className="font-mono text-[36px]/[1.1] font-bold tracking-tight text-text tabular-nums">
-					{formattedTime}
-				</div>
-				<div className="mt-2 flex items-center gap-2.5">
-					<div className="h-1.5 w-40 overflow-hidden rounded-full bg-white/10">
+			{/* Center: Hero Timer Anchor-Locked to Geometric Physical Center (Zero displacement on state toggle) */}
+			<div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center">
+				<div className="font-mono text-[36px]/[1] font-bold tracking-tight text-text tabular-nums">{formattedTime}</div>
+				<div className="mt-2 flex items-center gap-2">
+					<div className="h-1.5 w-36 overflow-hidden rounded-full bg-white/10">
 						<motion.div
 							className={`h-full origin-left rounded-[inherit] ${isWork ? "bg-red-500" : "bg-emerald-400"}`}
 							initial={{ scaleX: 0 }}
@@ -144,19 +137,19 @@ export function PomodoroWidget({ settings }: { settings: Record<string, unknown>
 							transition={{ type: "spring", stiffness: 140, damping: 22 }}
 						/>
 					</div>
-					<span className="font-mono text-[11px] text-text-faint tabular-nums">{progressPercent}%</span>
+					<span className="font-mono text-[11px] text-text-faint tabular-nums w-8 text-left">{progressPercent}%</span>
 				</div>
 			</div>
 
-			{/* Trailing: Apple Tactile Frosted Capsule Actions with Icon Flip */}
-			<div className="flex shrink-0 items-center gap-2.5">
+			{/* Trailing: Tactile Frosted Capsule Actions with Stable Width */}
+			<div className="flex shrink-0 items-center gap-2">
 				<motion.button
 					type="button"
 					whileHover={{ scale: 1.04 }}
 					whileTap={{ scale: 0.92 }}
 					transition={{ type: "spring", stiffness: 500, damping: 26 }}
 					onClick={toggleRunning}
-					className={`flex h-9 shrink-0 items-center gap-2 rounded-full px-4 text-xs font-semibold text-white shadow-sm transition-colors whitespace-nowrap ${
+					className={`flex h-9 w-28 shrink-0 items-center justify-center gap-2 rounded-full text-xs font-semibold text-white shadow-sm transition-colors whitespace-nowrap ${
 						isRunning
 							? "bg-white/15 hover:bg-white/20"
 							: isWork
