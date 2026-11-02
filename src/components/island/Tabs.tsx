@@ -9,22 +9,22 @@ import { LAUNCHER } from "../../core/useIslandController";
 
 const tabs = tv({
 	slots: {
-		base: "mb-2.5 flex gap-1",
-		tab: "relative flex h-7.5 items-center gap-1.75 rounded-[15px] pr-3 pl-2 text-[13px] font-semibold text-text-dim transition-colors duration-200 hover:text-text",
+		base: "mb-2.5 flex items-center gap-1 overflow-x-auto overflow-y-hidden no-scrollbar max-w-full",
+		tab: "relative flex h-7.5 shrink-0 items-center gap-1.75 rounded-[15px] pr-3 pl-2 text-[13px] font-semibold text-text-dim whitespace-nowrap transition-colors duration-200 hover:text-text",
 		pill: "absolute inset-0 rounded-[inherit] bg-white/10",
-		part: "relative grid place-items-center",
-		dot: "relative size-1.25 rounded-full bg-ok",
-		extra: "ml-auto flex items-center gap-1.5",
-		gear: "grid size-7.5 place-items-center rounded-full text-text-faint transition-colors duration-200 hover:bg-white/8 hover:text-text",
+		part: "relative flex shrink-0 items-center justify-center whitespace-nowrap",
+		dot: "relative size-1.25 shrink-0 rounded-full bg-ok",
+		extra: "ml-auto flex shrink-0 items-center gap-1.5",
+		gear: "grid size-7.5 shrink-0 place-items-center rounded-full text-text-faint transition-colors duration-200 hover:bg-white/8 hover:text-text",
 	},
 	variants: {
 		active: { true: { tab: "text-text" } },
 		/** The launcher's grid button, pushed right with the gear. */
-		launcher: { true: { tab: "ml-auto w-7.5 justify-center p-0" } },
+		launcher: { true: { tab: "ml-auto w-7.5 shrink-0 justify-center p-0" } },
 		/** Windows Island: round icon tabs, ringed in the module's color. */
 		iconsOnly: {
 			true: {
-				tab: "w-8 justify-center rounded-full p-0 opacity-55 transition-opacity hover:opacity-100",
+				tab: "w-8 shrink-0 justify-center rounded-full p-0 opacity-55 transition-opacity hover:opacity-100",
 				pill: "shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--tab-accent)_70%,transparent)]",
 				dot: "absolute top-0.75 right-0.75 shadow-[0_0_0_1.5px_#000]",
 			},
