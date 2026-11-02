@@ -48,7 +48,17 @@ function loadInstalledPlugins(): InstalledPlugin[] {
 	try {
 		const raw = localStorage.getItem(STORAGE_KEY);
 		if (raw) {
-			return JSON.parse(raw);
+			const list: InstalledPlugin[] = JSON.parse(raw);
+			return list.map((item) => {
+				const catalogMatch = MARKETPLACE_CATALOG.find((m) => m.id === item.manifest.id);
+				if (catalogMatch) {
+					return {
+						...item,
+						manifest: { ...catalogMatch, ...item.manifest, name: catalogMatch.name },
+					};
+				}
+				return item;
+			});
 		}
 	} catch {
 		// fallback

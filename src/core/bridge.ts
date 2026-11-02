@@ -69,7 +69,12 @@ export function providerAction<T = unknown>(id: string, action: string, payload?
 }
 
 export function command<T = unknown>(cmd: string, args?: Record<string, unknown>) {
-	if (!isTauri) return Promise.resolve(undefined as T);
+	if (!isTauri) {
+		if (cmd === "open_settings") {
+			window.location.hash = "settings";
+		}
+		return Promise.resolve(undefined as T);
+	}
 	return invoke<T>(cmd, args);
 }
 
