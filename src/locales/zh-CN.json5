@@ -150,6 +150,10 @@
         name: "Everything 极速搜索",
         desc: "毫秒级全盘文件极速索引与搜索，支持键盘上下导航、一键打开与在资源管理器中定位。",
       },
+      obsidian: {
+        name: "Obsidian 知识库",
+        desc: "沉浸式个人知识库直连，支持每日日记打卡、灵动闪念速记、最近笔记快速跳转与库内全局检索。",
+      },
     },
     widgets: {
       generic: {
@@ -241,6 +245,21 @@
         openFile: "打开文件",
         hint: "↑↓ 导航 · Enter 打开 · 点击右侧图标打开文件",
         totalCount: "共匹配到 {n} 项结果",
+      },
+      obsidian: {
+        dailyNote: "今日日记",
+        openApp: "打开 Obsidian",
+        statusConnected: "知识库已就绪",
+        tabCapture: "灵动速记",
+        tabRecent: "最近笔记",
+        tabSearch: "库内检索",
+        placeholderCapture: "随手捕获想法，回车即刻存入知识库...",
+        btnSave: "存入",
+        tipCapture: "回车或点击存入 · 自动追加时间戳与标签",
+        successCaptured: "已写入知识库",
+        placeholderSearch: "输入关键词全局检索知识库...",
+        btnSearch: "搜索",
+        tipSearch: "回车直接跳转 Obsidian 原生检索",
       },
     },
   },

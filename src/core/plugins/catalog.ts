@@ -269,4 +269,41 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		],
 		expandedSize: { width: 580, height: 185 },
 	},
+	{
+		id: "com.island.obsidian",
+		name: "Obsidian 知识库",
+		titleKey: "marketplace.plugins.obsidian.name",
+		descKey: "marketplace.plugins.obsidian.desc",
+		version: "1.0.0",
+		description: "沉浸式个人知识库直连，支持每日日记打卡、灵动闪念速记、最近笔记快速跳转与库内全局检索。",
+		author: {
+			name: "Obsidian",
+			url: "https://obsidian.md",
+		},
+		category: "productivity",
+		icon: "Obsidian",
+		accentColor: "#8B5CF6",
+		tags: ["笔记", "知识库", "Obsidian", "Markdown", "日记"],
+		settings: [
+			{
+				key: "vaultName",
+				label: "Obsidian 仓库名称",
+				type: "text",
+				default: "Obsidian Vault",
+			},
+			{
+				key: "dailyFolder",
+				label: "每日日记存储目录",
+				type: "text",
+				default: "cxy更新日志",
+			},
+			{
+				key: "httpPort",
+				label: "Everything 索引服务端口",
+				type: "number",
+				default: 8080,
+			},
+		],
+		expandedSize: { width: 580, height: 185 },
+	},
 ];

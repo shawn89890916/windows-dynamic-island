@@ -139,6 +139,10 @@
         name: "Busca Rápida Everything",
         desc: "Busca instantânea de arquivos e pastas em milissegundos com navegação por teclado.",
       },
+      obsidian: {
+        name: "Cofre Obsidian",
+        desc: "Integração direta com o cofre Obsidian para notas diárias, notas rápidas e busca instantânea.",
+      },
     },
     widgets: {
       generic: {
@@ -230,6 +234,21 @@
         openFile: "Abrir arquivo",
         hint: "↑↓ Navegar · Enter Abrir · Clique no ícone para abrir",
         totalCount: "{n} resultados encontrados",
+      },
+      obsidian: {
+        dailyNote: "Nota Diária",
+        openApp: "Abrir Obsidian",
+        statusConnected: "Cofre Conectado",
+        tabCapture: "Nota Rápida",
+        tabRecent: "Notas Recentes",
+        tabSearch: "Buscar no Cofre",
+        placeholderCapture: "Capture um pensamento e pressione Enter...",
+        btnSave: "Salvar",
+        tipCapture: "Pressione Enter para salvar · Data e tags automáticas",
+        successCaptured: "Salvo no Obsidian",
+        placeholderSearch: "Buscar notas no cofre...",
+        btnSearch: "Buscar",
+        tipSearch: "Pressione Enter para abrir busca no Obsidian",
       },
     },
   },

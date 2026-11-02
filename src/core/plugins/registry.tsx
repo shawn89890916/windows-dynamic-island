@@ -20,6 +20,7 @@ import type { InstalledPlugin, PluginManifest } from "./types";
 import { CryptoTickerWidget } from "./widgets/CryptoTickerWidget";
 import { EverythingWidget } from "./widgets/EverythingWidget";
 import { NavoPathWidget } from "./widgets/NavoPathWidget";
+import { ObsidianIconSvg, ObsidianWidget } from "./widgets/ObsidianWidget";
 import { PomodoroWidget } from "./widgets/PomodoroWidget";
 import { QuickMemoWidget } from "./widgets/QuickMemoWidget";
 import { SteamFriendsWidget } from "./widgets/SteamFriendsWidget";
@@ -48,6 +49,8 @@ export function renderPluginIcon(iconName: string, size = 14, color?: string): R
 			return <SearchIcon {...props} />;
 		case "Compass":
 			return <CompassIcon {...props} />;
+		case "Obsidian":
+			return <ObsidianIconSvg size={size} className={color ? "" : "text-purple-400"} />;
 		case "NavoPath":
 			return (
 				<img
@@ -191,6 +194,8 @@ function renderPluginWidget(plugin: InstalledPlugin): ReactNode {
 			return <NavoPathWidget settings={plugin.customSettings} />;
 		case "com.island.everything":
 			return <EverythingWidget settings={plugin.customSettings} />;
+		case "com.island.obsidian":
+			return <ObsidianWidget settings={plugin.customSettings} />;
 		default:
 			return <GenericPluginWidget plugin={plugin} />;
 	}
@@ -302,6 +307,19 @@ function renderPluginCompact(
 					<span className="rounded bg-amber-500/15 px-1.5 py-0.2 text-[10px] font-medium text-amber-400">
 						Spotlight
 					</span>
+				),
+				width: 250,
+			};
+		case "com.island.obsidian":
+			return {
+				left: (
+					<div className="flex items-center gap-1.5 text-xs font-medium text-purple-400">
+						<ObsidianIconSvg size={13} />
+						<span>{title}</span>
+					</div>
+				),
+				right: (
+					<span className="rounded bg-purple-500/15 px-1.5 py-0.2 text-[10px] font-medium text-purple-300">Vault</span>
 				),
 				width: 250,
 			};

@@ -154,6 +154,10 @@
         name: "Everything Instant Search",
         desc: "Millisecond-level instant disk file and folder search with keyboard navigation.",
       },
+      obsidian: {
+        name: "Obsidian Vault",
+        desc: "Direct Obsidian vault bridge for daily notes, quick capture, recent files, and instant search.",
+      },
     },
     widgets: {
       generic: {
@@ -245,6 +249,21 @@
         openFile: "Open file",
         hint: "↑↓ Navigate · Enter Open · Click icon to open",
         totalCount: "{n} results matched",
+      },
+      obsidian: {
+        dailyNote: "Daily Note",
+        openApp: "Open Obsidian",
+        statusConnected: "Vault Ready",
+        tabCapture: "Quick Capture",
+        tabRecent: "Recent Notes",
+        tabSearch: "Search Vault",
+        placeholderCapture: "Capture a thought and press Enter...",
+        btnSave: "Save",
+        tipCapture: "Press Enter to save · Auto timestamp & tag",
+        successCaptured: "Saved to Obsidian",
+        placeholderSearch: "Search notes across vault...",
+        btnSearch: "Search",
+        tipSearch: "Press Enter to jump to Obsidian search",
       },
     },
   },
