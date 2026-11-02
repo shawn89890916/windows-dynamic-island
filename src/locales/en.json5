@@ -121,6 +121,32 @@
   marketplace: {
     title: "Marketplace",
     desc: "Discover, install and manage community plugins for the island.",
+    plugins: {
+      pomodoro: {
+        name: "Pomodoro Timer",
+        desc: "Stay productive with custom work/break intervals and ambient countdowns.",
+      },
+      weather: {
+        name: "Real-time Weather",
+        desc: "Live temperature, air quality, conditions, and 3-day forecast.",
+      },
+      workCountdown: {
+        name: "Workday Countdown",
+        desc: "Track remaining hours until clock-out, workday progress, and weekend countdown.",
+      },
+      memo: {
+        name: "Quick Notes",
+        desc: "Lightweight note-taking and task checklist right on the island.",
+      },
+      crypto: {
+        name: "Market Ticker",
+        desc: "Live price and 24h change tracker for cryptocurrencies and core tech stocks.",
+      },
+      steam: {
+        name: "Steam Activity",
+        desc: "See what your friends are playing and launch Steam with one click.",
+      },
+    },
     widgets: {
       generic: {
         ready: "Live micro-app active",

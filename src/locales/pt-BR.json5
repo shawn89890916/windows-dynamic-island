@@ -106,6 +106,32 @@
   marketplace: {
     title: "Marketplace",
     desc: "Descubra, instale e gerencie plugins da comunidade para a ilha.",
+    plugins: {
+      pomodoro: {
+        name: "Temporizador Pomodoro",
+        desc: "Mantenha-se produtivo com intervalos de foco e pausas inteligentes.",
+      },
+      weather: {
+        name: "Clima em Tempo Real",
+        desc: "Temperatura ao vivo, qualidade do ar, clima e previsão para 3 dias.",
+      },
+      workCountdown: {
+        name: "Fim do Expediente",
+        desc: "Acompanhe as horas restantes de trabalho, progresso do dia e contagem para o fim de semana.",
+      },
+      memo: {
+        name: "Notas Rápidas",
+        desc: "Anotações ágeis e lista de tarefas práticas direto na ilha.",
+      },
+      crypto: {
+        name: "Monitor de Mercado",
+        desc: "Acompanhe preços e variações em 24h de criptomoedas e ações principais.",
+      },
+      steam: {
+        name: "Atividade da Steam",
+        desc: "Veja quais amigos estão jogando online e abra a Steam com um clique.",
+      },
+    },
     widgets: {
       generic: {
         ready: "Micro-app ativo",

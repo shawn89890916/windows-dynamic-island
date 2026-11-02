@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { type ReactNode, useSyncExternalStore } from "react";
 import { command } from "../bridge";
-import { type MessageKey, useT } from "../i18n";
+import { type MessageKey, type Translate, useT } from "../i18n";
 import type { IslandModule, ModuleView } from "../types";
 import { MARKETPLACE_CATALOG } from "./catalog";
 import type { InstalledPlugin, PluginManifest } from "./types";
@@ -174,18 +174,26 @@ function renderPluginWidget(plugin: InstalledPlugin): ReactNode {
 	}
 }
 
-function renderPluginCompact(plugin: InstalledPlugin): { left: ReactNode; right: ReactNode; width?: number } {
+function renderPluginCompact(
+	plugin: InstalledPlugin,
+	t: Translate,
+): { left: ReactNode; right: ReactNode; width?: number } {
 	const { manifest } = plugin;
+	const title = manifest.titleKey ? t(manifest.titleKey) : manifest.name;
 	switch (manifest.id) {
 		case "com.island.pomodoro":
 			return {
 				left: (
 					<div className="flex items-center gap-1.5 text-xs font-medium text-red-400">
 						<TimerIcon size={13} />
-						<span>番茄钟 25:00</span>
+						<span>{title} 25:00</span>
 					</div>
 				),
-				right: <span className="rounded bg-red-500/15 px-1.5 py-0.2 text-[10px] text-red-400">进行中</span>,
+				right: (
+					<span className="rounded bg-red-500/15 px-1.5 py-0.2 text-[10px] text-red-400">
+						{t("marketplace.widgets.pomodoro.running")}
+					</span>
+				),
 				width: 250,
 			};
 		case "com.island.crypto-ticker":
@@ -204,43 +212,45 @@ function renderPluginCompact(plugin: InstalledPlugin): { left: ReactNode; right:
 				left: (
 					<div className="flex items-center gap-1.5 text-xs font-medium text-amber-300">
 						<CoffeeIcon size={13} />
-						<span>下班倒计时</span>
+						<span>{title}</span>
 					</div>
 				),
-				right: <span className="text-[11px] text-emerald-400">摸鱼进行中</span>,
-				width: 240,
+				right: <span className="text-[11px] text-emerald-400">{t("marketplace.widgets.workCountdown.chilling")}</span>,
+				width: 250,
 			};
 		case "com.island.weather":
 			return {
 				left: (
 					<div className="flex items-center gap-1.5 text-xs font-medium text-sky-400">
 						<CloudSunIcon size={13} />
-						<span>晴 22°C</span>
+						<span>22°C</span>
 					</div>
 				),
-				right: <span className="text-[10px] text-emerald-400">空气优</span>,
-				width: 230,
+				right: <span className="text-[10px] text-emerald-400">AQI 32</span>,
+				width: 220,
 			};
 		case "com.island.quick-memo":
 			return {
 				left: (
 					<div className="flex items-center gap-1.5 text-xs font-medium text-amber-300">
 						<StickyNoteIcon size={13} />
-						<span>灵动便签</span>
+						<span>{title}</span>
 					</div>
 				),
-				right: <span className="text-[10px] text-text-faint">待办</span>,
-				width: 220,
+				right: <span className="text-[10px] text-text-faint">{t("marketplace.widgets.memo.pending", { n: 2 })}</span>,
+				width: 230,
 			};
 		case "com.island.steam-friends":
 			return {
 				left: (
 					<div className="flex items-center gap-1.5 text-xs font-medium text-purple-400">
 						<Gamepad2Icon size={13} />
-						<span>Steam 好友</span>
+						<span>{title}</span>
 					</div>
 				),
-				right: <span className="text-[10px] text-emerald-400">4 人在线</span>,
+				right: (
+					<span className="text-[10px] text-emerald-400">{t("marketplace.widgets.steam.inGameCount", { n: 2 })}</span>
+				),
 				width: 240,
 			};
 		default:
@@ -248,10 +258,10 @@ function renderPluginCompact(plugin: InstalledPlugin): { left: ReactNode; right:
 				left: (
 					<div className="flex items-center gap-1.5 text-xs font-medium">
 						{renderPluginIcon(manifest.icon, 13, manifest.accentColor)}
-						<span className="truncate">{manifest.name}</span>
+						<span className="truncate">{title}</span>
 					</div>
 				),
-				right: <span className="text-[11px] text-white/50">运行中</span>,
+				right: <span className="text-[11px] text-white/50">{t("marketplace.widgets.generic.ready")}</span>,
 				width: 240,
 			};
 	}
@@ -333,16 +343,17 @@ export function createPluginModule(plugin: InstalledPlugin): IslandModule {
 
 	return {
 		id: manifest.id,
-		title: manifest.name as unknown as MessageKey,
+		title: (manifest.titleKey ?? manifest.name) as MessageKey,
 		settingsIcon: renderPluginIcon(manifest.icon, 14),
 		enabledByDefault: true,
 		useView(): ModuleView {
+			const t = useT();
 			return {
 				active: false,
 				priority: 10,
 				icon,
 				accent: manifest.accentColor ?? "#818cf8",
-				compact: renderPluginCompact(plugin),
+				compact: renderPluginCompact(plugin, t),
 				expanded: renderPluginWidget(plugin),
 				expandedSize: manifest.expandedSize ?? { width: 580, height: 180 },
 			};

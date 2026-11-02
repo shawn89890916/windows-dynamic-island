@@ -4,6 +4,8 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 	{
 		id: "com.island.pomodoro",
 		name: "番茄钟",
+		titleKey: "marketplace.plugins.pomodoro.name",
+		descKey: "marketplace.plugins.pomodoro.desc",
 		version: "1.0.2",
 		description: "科学高效的番茄工作法计时器，胶囊栏常驻倒计时进度，并在休息时智能提醒。",
 		author: {
@@ -39,6 +41,8 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 	{
 		id: "com.island.weather",
 		name: "实时天气",
+		titleKey: "marketplace.plugins.weather.name",
+		descKey: "marketplace.plugins.weather.desc",
 		version: "1.1.0",
 		description: "实时获取当前城市天气、温度与体感，雨雪恶劣天气自动在灵动岛展开预警。",
 		author: {
@@ -78,6 +82,8 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 	{
 		id: "com.island.work-countdown",
 		name: "下班倒计时",
+		titleKey: "marketplace.plugins.workCountdown.name",
+		descKey: "marketplace.plugins.workCountdown.desc",
 		version: "1.0.0",
 		description: "打工人专属摸鱼神器：直观显示距离今日下班与周末的倒计时刻，自动计算今日进度百分比。",
 		author: {
@@ -113,6 +119,8 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 	{
 		id: "com.island.quick-memo",
 		name: "灵动速记",
+		titleKey: "marketplace.plugins.memo.name",
+		descKey: "marketplace.plugins.memo.desc",
 		version: "1.0.5",
 		description: "快速收集剪藏与灵感便签，随时随地展开记录，支持 Markdown 语法高亮与一键导出。",
 		author: {
@@ -146,6 +154,8 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 	{
 		id: "com.island.crypto-ticker",
 		name: "行情监控",
+		titleKey: "marketplace.plugins.crypto.name",
+		descKey: "marketplace.plugins.crypto.desc",
 		version: "1.2.1",
 		description: "自选股票与加密货币实时价格看板，红绿涨跌波动一目了然，支持高低价波动阈值提醒。",
 		author: {
@@ -175,6 +185,8 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 	{
 		id: "com.island.steam-friends",
 		name: "Steam 动态",
+		titleKey: "marketplace.plugins.steam.name",
+		descKey: "marketplace.plugins.steam.desc",
 		version: "0.9.8",
 		description: "查看正在线上的游戏好友及他们当前玩的游戏，有好友启动联机游戏时及时通知。",
 		author: {

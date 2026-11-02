@@ -1,3 +1,5 @@
+import type { MessageKey } from "../i18n";
+
 export type PluginCategory = "productivity" | "media" | "tools" | "developer" | "system";
 
 export interface PluginSettingField {
@@ -12,6 +14,8 @@ export interface PluginSettingField {
 export interface PluginManifest {
 	id: string;
 	name: string;
+	titleKey?: MessageKey;
+	descKey?: MessageKey;
 	version: string;
 	description: string;
 	author: {

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Card } from "../../components/ui/card";
+import { useT } from "../../core/i18n";
 import { MARKETPLACE_CATALOG } from "../../core/plugins/catalog";
 import {
 	installPlugin,
@@ -32,6 +33,7 @@ const CATEGORIES: { id: PluginCategory | "all"; label: string }[] = [
 ];
 
 export function MarketplacePage() {
+	const t = useT();
 	const [tab, setTab] = useState<"explore" | "installed" | "sideload">("explore");
 	const [search, setSearch] = useState("");
 	const [activeCategory, setActiveCategory] = useState<PluginCategory | "all">("all");
@@ -151,7 +153,9 @@ export function MarketplacePage() {
 									</div>
 									<div className="min-w-0">
 										<div className="flex items-center gap-2">
-											<h4 className="text-[13px] font-semibold text-text">{item.manifest.name}</h4>
+											<h4 className="text-[13px] font-semibold text-text">
+												{item.manifest.titleKey ? t(item.manifest.titleKey) : item.manifest.name}
+											</h4>
 											<span className="rounded bg-white/8 px-1.5 py-0.2 text-[10px] text-text-faint">
 												v{item.manifest.version}
 											</span>
@@ -159,7 +163,9 @@ export function MarketplacePage() {
 												{item.source === "marketplace" ? "市场下载" : "本地导入"}
 											</span>
 										</div>
-										<p className="truncate text-xs text-text-faint">{item.manifest.description}</p>
+										<p className="truncate text-xs text-text-faint">
+											{item.manifest.descKey ? t(item.manifest.descKey) : item.manifest.description}
+										</p>
 									</div>
 								</div>
 
@@ -307,6 +313,9 @@ function PluginCard({
 	isInstalled: boolean;
 	onInstall: () => void;
 }) {
+	const t = useT();
+	const title = plugin.titleKey ? t(plugin.titleKey) : plugin.name;
+	const desc = plugin.descKey ? t(plugin.descKey) : plugin.description;
 	return (
 		<Card className="flex flex-col justify-between p-3.5 transition-all hover:border-white/12">
 			<div>
@@ -319,14 +328,14 @@ function PluginCard({
 							{renderPluginIcon(plugin.icon, 18)}
 						</div>
 						<div className="min-w-0">
-							<h4 className="truncate text-[13px] font-semibold text-text">{plugin.name}</h4>
+							<h4 className="truncate text-[13px] font-semibold text-text">{title}</h4>
 							<span className="text-[11px] text-text-faint">by {plugin.author.name}</span>
 						</div>
 					</div>
 					<span className="rounded bg-white/6 px-1.5 py-0.2 text-[10px] text-text-faint">v{plugin.version}</span>
 				</div>
 
-				<p className="mt-2.5 text-xs leading-relaxed text-text-muted">{plugin.description}</p>
+				<p className="mt-2.5 text-xs leading-relaxed text-text-muted">{desc}</p>
 
 				{plugin.tags && (
 					<div className="mt-3 flex flex-wrap gap-1">
@@ -370,11 +379,13 @@ function ConfigModal({
 	onClose: () => void;
 	onSave: (settings: Record<string, unknown>) => void;
 }) {
+	const t = useT();
 	const [values, setValues] = useState<Record<string, unknown>>({
 		...plugin.customSettings,
 	});
 
 	const { manifest } = plugin;
+	const title = manifest.titleKey ? t(manifest.titleKey) : manifest.name;
 
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs">
@@ -382,7 +393,7 @@ function ConfigModal({
 				<div className="flex items-center justify-between border-b border-white/8 pb-3">
 					<div className="flex items-center gap-2">
 						{renderPluginIcon(manifest.icon, 18, manifest.accentColor)}
-						<h3 className="text-sm font-semibold text-text">{manifest.name} 设置</h3>
+						<h3 className="text-sm font-semibold text-text">{title}</h3>
 					</div>
 					<button type="button" onClick={onClose} className="text-sm text-text-faint hover:text-text">
 						✕
