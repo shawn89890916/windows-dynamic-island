@@ -4,10 +4,13 @@ import {
 	DownloadIcon,
 	ExternalLinkIcon,
 	FolderArchiveIcon,
+	GlobeIcon,
 	PackageIcon,
 	SearchIcon,
 	SlidersIcon,
+	SparklesIcon,
 	Trash2Icon,
+	UploadCloudIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { Card } from "../../components/ui/card";
@@ -39,7 +42,66 @@ export function MarketplacePage() {
 	const [activeCategory, setActiveCategory] = useState<PluginCategory | "all">("all");
 	const [configuringPlugin, setConfiguringPlugin] = useState<InstalledPlugin | null>(null);
 
+	// Direct sideload & install state
+	const [importUrl, setImportUrl] = useState("");
+	const [importLoading, setImportLoading] = useState(false);
+	const [importError, setImportError] = useState<string | null>(null);
+	const [importSuccess, setImportSuccess] = useState<string | null>(null);
+
 	const installed = useInstalledPlugins();
+
+	const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+		setImportError(null);
+		setImportSuccess(null);
+		const reader = new FileReader();
+		reader.onload = (event) => {
+			try {
+				const content = event.target?.result as string;
+				const manifest = JSON.parse(content) as PluginManifest;
+				if (!manifest.id || !manifest.name) {
+					throw new Error("清单缺少必填字段 (id, name)");
+				}
+				installPlugin(manifest, "local");
+				setImportSuccess(`成功安装本地插件：${manifest.name}`);
+				setTimeout(() => {
+					setTab("installed");
+					setImportSuccess(null);
+				}, 1200);
+			} catch (err) {
+				setImportError(`解析失败: ${err instanceof Error ? err.message : String(err)}`);
+			}
+		};
+		reader.readAsText(file);
+	};
+
+	const handleUrlImport = async (e: React.FormEvent) => {
+		e.preventDefault();
+		if (!importUrl.trim()) return;
+		setImportLoading(true);
+		setImportError(null);
+		setImportSuccess(null);
+		try {
+			const res = await fetch(importUrl.trim());
+			if (!res.ok) throw new Error(`HTTP ${res.status}`);
+			const manifest = (await res.json()) as PluginManifest;
+			if (!manifest.id || !manifest.name) {
+				throw new Error("清单缺少必填字段 (id, name)");
+			}
+			installPlugin(manifest, "marketplace");
+			setImportSuccess(`成功安装远程插件：${manifest.name}`);
+			setImportUrl("");
+			setTimeout(() => {
+				setTab("installed");
+				setImportSuccess(null);
+			}, 1200);
+		} catch (err) {
+			setImportError(`加载失败: ${err instanceof Error ? err.message : String(err)}`);
+		} finally {
+			setImportLoading(false);
+		}
+	};
 
 	// Filter explore catalog
 	const filteredCatalog = MARKETPLACE_CATALOG.filter((plugin) => {
@@ -213,6 +275,53 @@ export function MarketplacePage() {
 			{/* Tab 3: Sideload & Dev */}
 			{tab === "sideload" && (
 				<div className="flex flex-col gap-4">
+					{/* Status feedback */}
+					{importSuccess && (
+						<div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-2.5 text-xs text-emerald-400 flex items-center gap-2">
+							<CheckIcon size={14} />
+							<span>{importSuccess}</span>
+						</div>
+					)}
+					{importError && (
+						<div className="rounded-lg bg-rose-500/10 border border-rose-500/20 px-3.5 py-2.5 text-xs text-rose-400">
+							{importError}
+						</div>
+					)}
+
+					{/* 1. Direct URL Installation */}
+					<Card className="p-4">
+						<div className="flex items-start gap-3">
+							<div className="rounded-lg bg-sky-500/10 p-2 text-sky-400">
+								<GlobeIcon size={20} />
+							</div>
+							<div className="flex-1">
+								<h4 className="text-sm font-semibold text-text">远程 URL 直装（零审核，直接生效）</h4>
+								<p className="mt-1 text-xs text-text-faint">
+									无需等待任何官方审核！输入任何 GitHub Raw、Gist 或自建服务器上的 <code>island.plugin.json</code>{" "}
+									链接，即可瞬间直装到灵动岛。
+								</p>
+								<form onSubmit={handleUrlImport} className="mt-3 flex items-center gap-2">
+									<input
+										type="url"
+										value={importUrl}
+										onChange={(e) => setImportUrl(e.target.value)}
+										placeholder="https://raw.githubusercontent.com/.../island.plugin.json"
+										className="h-8.5 flex-1 rounded-lg border border-white/8 bg-white/4 px-3 text-xs text-text placeholder:text-text-faint focus:border-white/20 focus:outline-none"
+									/>
+									<button
+										type="submit"
+										disabled={importLoading || !importUrl.trim()}
+										className="flex h-8.5 items-center gap-1.5 rounded-lg bg-accent px-3 text-xs font-semibold text-white hover:bg-accent-hover disabled:opacity-50 transition-colors"
+									>
+										<UploadCloudIcon size={13} />
+										<span>{importLoading ? "加载中…" : "一键直装"}</span>
+									</button>
+								</form>
+							</div>
+						</div>
+					</Card>
+
+					{/* 2. Local File Sideload */}
 					<Card className="p-4">
 						<div className="flex items-start gap-3">
 							<div className="rounded-lg bg-amber-500/10 p-2 text-amber-400">
@@ -221,41 +330,59 @@ export function MarketplacePage() {
 							<div className="flex-1">
 								<h4 className="text-sm font-semibold text-text">本地导入插件包</h4>
 								<p className="mt-1 text-xs text-text-faint">
-									支持直接加载开发者分享的 <code>.zip</code> 插件包或 <code>manifest.json</code> 配置文件。
+									支持直接加载本地正在编写或调试的 <code>manifest.json</code> 配置文件。
 								</p>
 								<div className="mt-3 flex items-center gap-2">
 									<label className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-text hover:bg-white/15">
 										<DownloadIcon size={13} />
-										<span>选择本地文件</span>
-										<input
-											type="file"
-											accept=".zip,.json"
-											className="hidden"
-											onChange={() => alert("本地插件解析引擎就绪，可在开发者模式下加载！")}
-										/>
+										<span>选择本地 manifest.json 文件</span>
+										<input type="file" accept=".json" className="hidden" onChange={handleFileImport} />
 									</label>
 								</div>
 							</div>
 						</div>
 					</Card>
 
+					{/* 3. Direct Publishing Guide */}
 					<Card className="p-4">
 						<div className="flex items-start gap-3">
 							<div className="rounded-lg bg-indigo-500/10 p-2 text-indigo-400">
-								<Code2Icon size={20} />
+								<SparklesIcon size={20} />
 							</div>
 							<div className="flex-1">
-								<h4 className="text-sm font-semibold text-text">成为插件开发者</h4>
+								<h4 className="text-sm font-semibold text-text">如何直接上架插件？</h4>
 								<p className="mt-1 text-xs text-text-faint">
-									为 Windows 灵动岛编写你自己的插件极其简单，只需定义一个清晰的 JSON 清单和组件即可。
+									灵动岛采用开放生态设计，<strong>无需通过任何繁琐审核</strong>即可直接上架：
 								</p>
+								<div className="mt-2.5 flex flex-col gap-2 text-xs text-text-muted">
+									<div className="flex items-start gap-2">
+										<span className="flex size-4.5 shrink-0 items-center justify-center rounded-full bg-white/8 text-[10px] font-bold text-text-dim">
+											1
+										</span>
+										<span>
+											<strong>官方市场直接合入</strong>：在仓库 <code>src/core/plugins/catalog.ts</code>{" "}
+											添加一条插件清单，提交后自动直接上架。
+										</span>
+									</div>
+									<div className="flex items-start gap-2">
+										<span className="flex size-4.5 shrink-0 items-center justify-center rounded-full bg-white/8 text-[10px] font-bold text-text-dim">
+											2
+										</span>
+										<span>
+											<strong>社区去中心化直装</strong>：只需将你的插件 JSON 发布在任意公开链接（如
+											GitHub），分享给用户通过“远程 URL 直装”输入即可立即生效。
+										</span>
+									</div>
+								</div>
+
 								<div className="mt-3 rounded-lg border border-white/6 bg-black/30 p-3 font-mono text-[11px] text-white/70">
-									<p className="text-amber-300">{"// 示例 island.plugin.json"}</p>
+									<p className="text-amber-300">{"// 插件清单格式示例 island.plugin.json"}</p>
 									<p>&#123;</p>
 									<p className="pl-4">&quot;id&quot;: &quot;com.example.my-widget&quot;,</p>
 									<p className="pl-4">&quot;name&quot;: &quot;My Custom Island Widget&quot;,</p>
 									<p className="pl-4">&quot;version&quot;: &quot;1.0.0&quot;,</p>
-									<p className="pl-4">&quot;category&quot;: &quot;tools&quot;</p>
+									<p className="pl-4">&quot;category&quot;: &quot;tools&quot;,</p>
+									<p className="pl-4">&quot;description&quot;: &quot;自定义微应用组件&quot;</p>
 									<p>&#125;</p>
 								</div>
 								<div className="mt-3">
