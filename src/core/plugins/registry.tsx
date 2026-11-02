@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { type ReactNode, useSyncExternalStore } from "react";
 import { command } from "../bridge";
-import type { MessageKey } from "../i18n";
+import { type MessageKey, useT } from "../i18n";
 import type { IslandModule, ModuleView } from "../types";
 import { MARKETPLACE_CATALOG } from "./catalog";
 import type { InstalledPlugin, PluginManifest } from "./types";
@@ -258,14 +258,15 @@ function renderPluginCompact(plugin: InstalledPlugin): { left: ReactNode; right:
 }
 
 function GenericPluginWidget({ plugin }: { plugin: InstalledPlugin }) {
+	const t = useT();
 	const { manifest } = plugin;
 	return (
-		<div className="flex h-full flex-col justify-between px-3 py-1 select-none">
+		<div className="flex h-full flex-col justify-between px-3 py-1.5 select-none">
 			{/* Top: Icon, Name & Action */}
 			<div className="flex items-center justify-between border-b border-white/8 pb-2.5">
-				<div className="flex items-center gap-3">
+				<div className="flex items-center gap-3 min-w-0">
 					<div
-						className="flex size-9.5 flex-none items-center justify-center rounded-2xl bg-white/10"
+						className="flex size-9.5 shrink-0 items-center justify-center rounded-2xl bg-white/10"
 						style={{ color: manifest.accentColor }}
 					>
 						{renderPluginIcon(manifest.icon, 20)}
@@ -273,7 +274,7 @@ function GenericPluginWidget({ plugin }: { plugin: InstalledPlugin }) {
 					<div className="flex min-w-0 flex-col">
 						<div className="flex items-center gap-2">
 							<span className="text-sm font-semibold text-text truncate">{manifest.name}</span>
-							<span className="rounded-full bg-white/10 px-2 py-0.2 text-[10.5px] text-text-faint">
+							<span className="rounded-full bg-white/10 px-2 py-0.2 text-[10.5px] text-text-faint shrink-0">
 								v{manifest.version}
 							</span>
 						</div>
@@ -287,10 +288,10 @@ function GenericPluginWidget({ plugin }: { plugin: InstalledPlugin }) {
 						e.stopPropagation();
 						command("open_settings");
 					}}
-					className="flex h-8 items-center gap-1.5 rounded-full bg-white/10 px-3.5 text-xs font-semibold text-text transition-all hover:bg-white/18 active:scale-95"
+					className="flex h-8.5 shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3.5 text-xs font-semibold text-text transition-all hover:bg-white/18 active:scale-95 whitespace-nowrap ml-3"
 				>
 					<SlidersIcon size={12} className="opacity-70" />
-					<span>配置插件</span>
+					<span>{t("marketplace.widgets.generic.configure")}</span>
 				</button>
 			</div>
 
@@ -299,7 +300,7 @@ function GenericPluginWidget({ plugin }: { plugin: InstalledPlugin }) {
 				<div className="flex items-center gap-2">
 					<div className="flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
 						<span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-						<span>实时微应用已就绪</span>
+						<span>{t("marketplace.widgets.generic.ready")}</span>
 					</div>
 					{manifest.tags && manifest.tags.length > 0 && (
 						<div className="flex items-center gap-1">
@@ -312,8 +313,11 @@ function GenericPluginWidget({ plugin }: { plugin: InstalledPlugin }) {
 					)}
 				</div>
 
-				<span className="text-[11px] text-text-faint">
-					作者：{manifest.author.name} · {plugin.source === "marketplace" ? "官方市场" : "社区扩展"}
+				<span className="text-[11px] text-text-faint whitespace-nowrap">
+					{t("marketplace.widgets.generic.author", { author: manifest.author.name })} ·{" "}
+					{plugin.source === "marketplace"
+						? t("marketplace.widgets.generic.official")
+						: t("marketplace.widgets.generic.community")}
 				</span>
 			</div>
 		</div>
