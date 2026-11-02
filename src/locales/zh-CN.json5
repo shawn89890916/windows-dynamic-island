@@ -154,6 +154,10 @@
         name: "Obsidian 知识库",
         desc: "沉浸式个人知识库直连，支持每日日记打卡、灵动闪念速记、最近笔记快速跳转与库内全局检索。",
       },
+      aiHub: {
+        name: "AI 智能中枢",
+        desc: "全场景 AI 智能体控制中枢，聚合 Antigravity、Claude Code、Codex 与 ChatGPT 运行监控与全局指令调度。",
+      },
     },
     widgets: {
       generic: {
@@ -260,6 +264,17 @@
         placeholderSearch: "输入关键词全局检索知识库...",
         btnSearch: "搜索",
         tipSearch: "回车直接跳转 Obsidian 原生检索",
+      },
+      aiHub: {
+        launchApp: "唤起客户端",
+        contextUsed: "上下文/配额",
+        tokensToday: "今日 Token",
+        statusLabel: "当前状态",
+        statusWorking: "⚡ 处理中",
+        statusReady: "✓ 已就绪",
+        placeholderPrompt: "向 {name} 快速发送指令或提问...",
+        dispatched: "已分发至目标智能体",
+        btnSend: "分发",
       },
     },
   },

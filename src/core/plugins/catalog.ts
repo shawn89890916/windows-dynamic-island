@@ -306,4 +306,35 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		],
 		expandedSize: { width: 580, height: 185 },
 	},
+	{
+		id: "com.island.ai-hub",
+		name: "AI 智能中枢",
+		titleKey: "marketplace.plugins.aiHub.name",
+		descKey: "marketplace.plugins.aiHub.desc",
+		version: "1.0.0",
+		description: "全场景 AI 智能体控制中枢，聚合 Antigravity、Claude Code、Codex 与 ChatGPT 运行监控与全局指令调度。",
+		author: {
+			name: "Antigravity",
+			url: "https://deepmind.google/antigravity",
+		},
+		category: "tools",
+		icon: "Sparkles",
+		accentColor: "#6366F1",
+		tags: ["AI", "智能体", "Claude", "Gemini", "ChatGPT", "Codex"],
+		settings: [
+			{
+				key: "defaultAgent",
+				label: "默认聚焦智能体",
+				type: "select",
+				options: [
+					{ label: "Antigravity / Gemini", value: "gemini" },
+					{ label: "Claude Code", value: "claude" },
+					{ label: "OpenAI Codex", value: "codex" },
+					{ label: "ChatGPT Desktop", value: "chatgpt" },
+				],
+				default: "gemini",
+			},
+		],
+		expandedSize: { width: 580, height: 185 },
+	},
 ];

@@ -12,6 +12,7 @@ import { SparklesIcon } from "lucide-react";
  */
 import { useSetting } from "../../core/settings";
 import type { IslandModule, ModuleView } from "../../core/types";
+import { chatgptAgent } from "./chatgpt";
 import { claudeAgent } from "./claude";
 import { codexAgent } from "./codex";
 import { AgentCompactLeft, AgentCompactRight } from "./common/components/AgentCompact";
@@ -19,9 +20,10 @@ import { AgentsPanel } from "./common/components/AgentsPanel";
 import { StatusGlyph } from "./common/components/StatusGlyph";
 import { useNow } from "./common/format";
 import type { AgentDefinition, AgentSessionRef, AgentStatus } from "./common/types";
+import { geminiAgent } from "./gemini";
 import { agentSettings } from "./settings";
 
-const agents: AgentDefinition[] = [claudeAgent, codexAgent];
+const agents: AgentDefinition[] = [claudeAgent, codexAgent, geminiAgent, chatgptAgent];
 
 /** How long a finished turn keeps the island's attention. */
 const DONE_VISIBLE_MS = 8_000;

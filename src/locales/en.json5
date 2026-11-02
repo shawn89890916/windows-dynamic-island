@@ -158,6 +158,10 @@
         name: "Obsidian Vault",
         desc: "Direct Obsidian vault bridge for daily notes, quick capture, recent files, and instant search.",
       },
+      aiHub: {
+        name: "Universal AI Hub",
+        desc: "All-in-one AI agent command deck for Antigravity, Claude Code, Codex, and ChatGPT.",
+      },
     },
     widgets: {
       generic: {
@@ -264,6 +268,17 @@
         placeholderSearch: "Search notes across vault...",
         btnSearch: "Search",
         tipSearch: "Press Enter to jump to Obsidian search",
+      },
+      aiHub: {
+        launchApp: "Launch App",
+        contextUsed: "Context/Quota",
+        tokensToday: "Tokens Today",
+        statusLabel: "Status",
+        statusWorking: "⚡ Working",
+        statusReady: "✓ Ready",
+        placeholderPrompt: "Ask or send instruction to {name}...",
+        dispatched: "Dispatched to Agent",
+        btnSend: "Dispatch",
       },
     },
   },

@@ -6,6 +6,7 @@ import {
 	PuzzleIcon,
 	SearchIcon,
 	SlidersIcon,
+	SparklesIcon,
 	StickyNoteIcon,
 	TimerIcon,
 	TrendingUpIcon,
@@ -17,6 +18,7 @@ import { type MessageKey, type Translate, useT } from "../i18n";
 import type { IslandModule, ModuleView } from "../types";
 import { MARKETPLACE_CATALOG } from "./catalog";
 import type { InstalledPlugin, PluginManifest } from "./types";
+import { AiHubWidget } from "./widgets/AiHubWidget";
 import { CryptoTickerWidget } from "./widgets/CryptoTickerWidget";
 import { EverythingWidget } from "./widgets/EverythingWidget";
 import { NavoPathWidget } from "./widgets/NavoPathWidget";
@@ -47,6 +49,8 @@ export function renderPluginIcon(iconName: string, size = 14, color?: string): R
 			return <Gamepad2Icon {...props} />;
 		case "Search":
 			return <SearchIcon {...props} />;
+		case "Sparkles":
+			return <SparklesIcon {...props} />;
 		case "Compass":
 			return <CompassIcon {...props} />;
 		case "Obsidian":
@@ -196,6 +200,8 @@ function renderPluginWidget(plugin: InstalledPlugin): ReactNode {
 			return <EverythingWidget settings={plugin.customSettings} />;
 		case "com.island.obsidian":
 			return <ObsidianWidget settings={plugin.customSettings} />;
+		case "com.island.ai-hub":
+			return <AiHubWidget settings={plugin.customSettings} />;
 		default:
 			return <GenericPluginWidget plugin={plugin} />;
 	}
@@ -320,6 +326,21 @@ function renderPluginCompact(
 				),
 				right: (
 					<span className="rounded bg-purple-500/15 px-1.5 py-0.2 text-[10px] font-medium text-purple-300">Vault</span>
+				),
+				width: 250,
+			};
+		case "com.island.ai-hub":
+			return {
+				left: (
+					<div className="flex items-center gap-1.5 text-xs font-medium text-indigo-400">
+						<SparklesIcon size={13} />
+						<span>{title}</span>
+					</div>
+				),
+				right: (
+					<span className="rounded bg-indigo-500/15 px-1.5 py-0.2 text-[10px] font-medium text-indigo-300">
+						4 Agents
+					</span>
 				),
 				width: 250,
 			};

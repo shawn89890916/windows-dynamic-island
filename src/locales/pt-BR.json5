@@ -143,6 +143,10 @@
         name: "Cofre Obsidian",
         desc: "Integração direta com o cofre Obsidian para notas diárias, notas rápidas e busca instantânea.",
       },
+      aiHub: {
+        name: "Central de IA Universal",
+        desc: "Painel de controle unificado para Antigravity, Claude Code, Codex e ChatGPT.",
+      },
     },
     widgets: {
       generic: {
@@ -249,6 +253,17 @@
         placeholderSearch: "Buscar notas no cofre...",
         btnSearch: "Buscar",
         tipSearch: "Pressione Enter para abrir busca no Obsidian",
+      },
+      aiHub: {
+        launchApp: "Abrir App",
+        contextUsed: "Contexto/Cota",
+        tokensToday: "Tokens Hoje",
+        statusLabel: "Status",
+        statusWorking: "⚡ Trabalhando",
+        statusReady: "✓ Pronto",
+        placeholderPrompt: "Enviar instrução ou pergunta para {name}...",
+        dispatched: "Despachado para o Agente",
+        btnSend: "Enviar",
       },
     },
   },
