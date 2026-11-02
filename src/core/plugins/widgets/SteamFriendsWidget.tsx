@@ -1,4 +1,5 @@
 import { CircleIcon, ExternalLinkIcon, Gamepad2Icon, MessageSquareIcon } from "lucide-react";
+import { motion } from "motion/react";
 import { useState } from "react";
 import { useT } from "../../../core/i18n";
 
@@ -44,25 +45,31 @@ export function SteamFriendsWidget({ settings: _settings }: { settings: Record<s
 					</div>
 				</div>
 
-				<button
+				<motion.button
 					type="button"
+					whileHover={{ scale: 1.05 }}
+					whileTap={{ scale: 0.92 }}
+					transition={{ type: "spring", stiffness: 500, damping: 25 }}
 					onClick={(e) => {
 						e.stopPropagation();
 						window.open("steam://open/friends", "_blank");
 					}}
-					className="flex h-8.5 shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3.5 text-xs font-semibold text-text transition-all hover:bg-white/18 active:scale-95 whitespace-nowrap ml-3"
+					className="flex h-8.5 shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3.5 text-xs font-semibold text-text transition-colors hover:bg-white/18 active:scale-95 whitespace-nowrap ml-3"
 				>
 					<span>{t("marketplace.widgets.steam.openSteam")}</span>
 					<ExternalLinkIcon size={12} className="opacity-60" />
-				</button>
+				</motion.button>
 			</div>
 
-			{/* 2-Column Spacious Friend Cards (Prevents text cramping in any language) */}
+			{/* 2-Column Spacious Friend Cards with Tactile Springs */}
 			<div className="grid grid-cols-2 gap-3 pt-2.5">
 				{friends.map((f) => (
-					<div
+					<motion.div
 						key={f.id}
-						className="group flex flex-col justify-between rounded-2xl border border-white/6 bg-white/4 p-3 transition-all hover:border-white/15 hover:bg-white/7"
+						whileHover={{ scale: 1.02, backgroundColor: "rgba(255, 255, 255, 0.07)" }}
+						whileTap={{ scale: 0.98 }}
+						transition={{ type: "spring", stiffness: 450, damping: 28 }}
+						className="group flex flex-col justify-between rounded-2xl border border-white/6 bg-white/4 p-3 transition-colors hover:border-white/15"
 					>
 						<div className="flex items-center justify-between gap-2">
 							<div className="flex items-center gap-2.5 min-w-0">
@@ -78,8 +85,10 @@ export function SteamFriendsWidget({ settings: _settings }: { settings: Record<s
 								</div>
 							</div>
 
-							<button
+							<motion.button
 								type="button"
+								whileHover={{ scale: 1.2 }}
+								whileTap={{ scale: 0.85 }}
 								title={t("marketplace.widgets.steam.chat")}
 								onClick={(e) => {
 									e.stopPropagation();
@@ -88,7 +97,7 @@ export function SteamFriendsWidget({ settings: _settings }: { settings: Record<s
 								className="rounded-full p-1.5 text-text-faint opacity-60 transition-opacity hover:opacity-100 hover:text-text shrink-0"
 							>
 								<MessageSquareIcon size={13} />
-							</button>
+							</motion.button>
 						</div>
 
 						<div className="mt-2.5 flex items-center">
@@ -96,7 +105,7 @@ export function SteamFriendsWidget({ settings: _settings }: { settings: Record<s
 								{f.game ? `${t("marketplace.widgets.steam.playing")} ${f.game}` : t("marketplace.widgets.steam.online")}
 							</span>
 						</div>
-					</div>
+					</motion.div>
 				))}
 			</div>
 		</div>

@@ -1,4 +1,5 @@
 import { CheckCircle2Icon, CircleIcon, PlusIcon, StickyNoteIcon, Trash2Icon } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { useT } from "../../../core/i18n";
 
@@ -88,55 +89,71 @@ export function QuickMemoWidget({ settings: _settings }: { settings: Record<stri
 						value={newText}
 						onChange={(e) => setNewText(e.target.value)}
 						placeholder={t("marketplace.widgets.memo.placeholder")}
-						className="h-8 w-48 rounded-full border border-white/10 bg-white/6 px-3.5 text-xs text-text placeholder:text-text-faint focus:border-white/25 focus:outline-none"
+						className="h-8 w-48 rounded-full border border-white/10 bg-white/6 px-3.5 text-xs text-text placeholder:text-text-faint focus:border-white/25 focus:outline-none transition-colors"
 					/>
-					<button
+					<motion.button
 						type="submit"
 						disabled={!newText.trim()}
-						className="flex size-8 shrink-0 items-center justify-center rounded-full bg-amber-400 text-neutral-900 transition-all hover:bg-amber-300 active:scale-95 disabled:opacity-40"
+						whileHover={{ scale: 1.08 }}
+						whileTap={{ scale: 0.88 }}
+						transition={{ type: "spring", stiffness: 500, damping: 25 }}
+						className="flex size-8 shrink-0 items-center justify-center rounded-full bg-amber-400 text-neutral-900 transition-opacity hover:bg-amber-300 active:scale-95 disabled:opacity-40"
 					>
 						<PlusIcon size={14} />
-					</button>
+					</motion.button>
 				</form>
 			</div>
 
-			{/* Parallel 3-Item Memo Checklist (Zero-Scroll Fixed Grid) */}
+			{/* Parallel 3-Item Memo Checklist with Spring Layout Morphing */}
 			<div className="flex flex-col gap-1.5 pt-2">
 				{memos.length === 0 ? (
 					<div className="py-4 text-center text-xs text-text-faint">{t("marketplace.widgets.memo.empty")}</div>
 				) : (
-					memos.slice(0, 3).map((item) => (
-						<div
-							key={item.id}
-							className="group flex items-center justify-between rounded-xl border border-white/5 bg-white/3 px-3 py-1.5 transition-all hover:border-white/12 hover:bg-white/6"
-						>
-							<div className="flex items-center gap-2.5 min-w-0">
-								<button
-									type="button"
-									onClick={(e) => toggleDone(item.id, e)}
-									className="text-text-faint hover:text-emerald-400 transition-colors shrink-0"
-								>
-									{item.done ? <CheckCircle2Icon size={16} className="text-emerald-400" /> : <CircleIcon size={16} />}
-								</button>
-								<span
-									className={`truncate text-xs font-medium transition-all ${
-										item.done ? "text-text-faint line-through opacity-60" : "text-text"
-									}`}
-								>
-									{item.text}
-								</span>
-							</div>
-
-							<button
-								type="button"
-								title="Delete"
-								onClick={(e) => handleDelete(item.id, e)}
-								className="rounded p-1 text-text-faint opacity-0 transition-opacity hover:text-rose-400 group-hover:opacity-100 shrink-0 ml-2"
+					<AnimatePresence initial={false}>
+						{memos.slice(0, 3).map((item) => (
+							<motion.div
+								key={item.id}
+								layout
+								initial={{ opacity: 0, y: -8, scale: 0.95 }}
+								animate={{ opacity: 1, y: 0, scale: 1 }}
+								exit={{ opacity: 0, scale: 0.9, height: 0 }}
+								transition={{ type: "spring", stiffness: 420, damping: 30 }}
+								className="group flex items-center justify-between rounded-xl border border-white/5 bg-white/3 px-3 py-1.5 transition-colors hover:border-white/12 hover:bg-white/6"
 							>
-								<Trash2Icon size={12} />
-							</button>
-						</div>
-					))
+								<div className="flex items-center gap-2.5 min-w-0">
+									<motion.button
+										type="button"
+										whileHover={{ scale: 1.15 }}
+										whileTap={{ scale: 0.85 }}
+										transition={{ type: "spring", stiffness: 500, damping: 25 }}
+										onClick={(e) => toggleDone(item.id, e)}
+										className="text-text-faint hover:text-emerald-400 transition-colors shrink-0"
+									>
+										{item.done ? <CheckCircle2Icon size={16} className="text-emerald-400" /> : <CircleIcon size={16} />}
+									</motion.button>
+									<span
+										className={`truncate text-xs font-medium transition-all ${
+											item.done ? "text-text-faint line-through opacity-60" : "text-text"
+										}`}
+									>
+										{item.text}
+									</span>
+								</div>
+
+								<motion.button
+									type="button"
+									title="Delete"
+									whileHover={{ scale: 1.15 }}
+									whileTap={{ scale: 0.85 }}
+									transition={{ type: "spring", stiffness: 500, damping: 25 }}
+									onClick={(e) => handleDelete(item.id, e)}
+									className="rounded p-1 text-text-faint opacity-0 transition-opacity hover:text-rose-400 group-hover:opacity-100 shrink-0 ml-2"
+								>
+									<Trash2Icon size={12} />
+								</motion.button>
+							</motion.div>
+						))}
+					</AnimatePresence>
 				)}
 			</div>
 		</div>

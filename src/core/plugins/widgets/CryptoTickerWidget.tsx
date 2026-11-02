@@ -1,4 +1,5 @@
 import { ArrowDownRightIcon, ArrowUpRightIcon, RefreshCwIcon } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { useT } from "../../../core/i18n";
 
@@ -88,16 +89,23 @@ export function CryptoTickerWidget({ settings: _settings }: { settings: Record<s
 
 	return (
 		<div className="flex h-full flex-col justify-between px-3 py-1.5 select-none">
-			{/* Top Hero Row: Crisp Active Asset Spotlight */}
+			{/* Top Hero Row: Crisp Active Asset Spotlight with Spring Morph */}
 			<div className="flex items-center justify-between border-b border-white/8 pb-2.5">
 				<div className="flex items-center gap-3 min-w-0">
-					{/* Brand Squircle with Glyph */}
-					<div
-						className="flex size-10.5 shrink-0 items-center justify-center rounded-2xl text-lg font-bold text-white shadow-md"
-						style={{ backgroundColor: `${activeItem.color}28`, color: activeItem.color }}
-					>
-						{activeItem.glyph}
-					</div>
+					{/* Brand Squircle with Glyph & Pop Transition */}
+					<AnimatePresence mode="popLayout" initial={false}>
+						<motion.div
+							key={activeItem.symbol}
+							initial={{ scale: 0.7, rotate: -20, opacity: 0 }}
+							animate={{ scale: 1, rotate: 0, opacity: 1 }}
+							exit={{ scale: 0.7, rotate: 20, opacity: 0 }}
+							transition={{ type: "spring", stiffness: 480, damping: 25 }}
+							className="flex size-10.5 shrink-0 items-center justify-center rounded-2xl text-lg font-bold text-white shadow-md"
+							style={{ backgroundColor: `${activeItem.color}28`, color: activeItem.color }}
+						>
+							{activeItem.glyph}
+						</motion.div>
+					</AnimatePresence>
 					<div className="min-w-0">
 						<div className="flex items-center gap-2">
 							<span className="text-sm font-bold text-white font-mono tracking-tight">{activeItem.pair}</span>
@@ -121,9 +129,18 @@ export function CryptoTickerWidget({ settings: _settings }: { settings: Record<s
 				{/* Big Crisp Live Price & Glowing Change Pill */}
 				<div className="flex shrink-0 items-center gap-3">
 					<div className="text-right">
-						<div className="font-mono text-[24px]/[1.1] font-bold tracking-tight text-white tabular-nums drop-shadow-sm">
-							{activeItem.price}
-						</div>
+						<AnimatePresence mode="popLayout" initial={false}>
+							<motion.div
+								key={activeItem.price}
+								initial={{ opacity: 0, y: 6 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0, y: -6 }}
+								transition={{ type: "spring", stiffness: 450, damping: 26 }}
+								className="font-mono text-[24px]/[1.1] font-bold tracking-tight text-white tabular-nums drop-shadow-sm"
+							>
+								{activeItem.price}
+							</motion.div>
+						</AnimatePresence>
 						<div className="mt-0.5 flex items-center justify-end">
 							<span
 								className={`flex items-center gap-0.5 rounded-full px-2.5 py-0.5 text-[11px] font-mono font-bold whitespace-nowrap shadow-sm border ${
@@ -141,37 +158,46 @@ export function CryptoTickerWidget({ settings: _settings }: { settings: Record<s
 						</div>
 					</div>
 
-					<button
+					<motion.button
 						type="button"
+						whileHover={{ scale: 1.08 }}
+						whileTap={{ scale: 0.88 }}
+						transition={{ type: "spring", stiffness: 500, damping: 24 }}
 						onClick={handleRefresh}
 						title={t("marketplace.widgets.crypto.refresh")}
-						className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-text-faint transition-all hover:bg-white/18 hover:text-white active:scale-95 border border-white/8"
+						className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-text-faint transition-colors hover:bg-white/18 hover:text-white border border-white/8"
 					>
 						<RefreshCwIcon size={13} className={refreshing ? "animate-spin text-emerald-400" : ""} />
-					</button>
+					</motion.button>
 				</div>
 			</div>
 
-			{/* Bottom Grid: High-Contrast 4-Asset Cards */}
+			{/* Bottom Grid: High-Contrast 4-Asset Cards with Morphing Layout Glow */}
 			<div className="grid grid-cols-4 gap-2.5 pt-2">
 				{items.map((item) => {
 					const isSelected = item.symbol === activeSymbol;
 					const pos = item.change >= 0;
 					return (
-						<button
+						<motion.button
 							key={item.symbol}
 							type="button"
+							whileHover={{ scale: 1.03 }}
+							whileTap={{ scale: 0.96 }}
+							transition={{ type: "spring", stiffness: 450, damping: 25 }}
 							onClick={(e) => {
 								e.stopPropagation();
 								setActiveSymbol(item.symbol);
 							}}
-							className={`flex flex-col justify-between rounded-xl p-2.5 text-left transition-all ${
-								isSelected
-									? "bg-white/14 ring-2 ring-emerald-400/80 border-transparent shadow-md scale-[1.02]"
-									: "bg-white/4 hover:bg-white/8 border border-white/6 hover:border-white/14"
-							}`}
+							className="relative flex flex-col justify-between rounded-xl p-2.5 text-left transition-colors bg-white/4 border border-white/6 hover:border-white/14"
 						>
-							<div className="flex items-center justify-between">
+							{isSelected && (
+								<motion.div
+									layoutId="crypto-active-glow"
+									className="absolute inset-0 rounded-xl bg-white/14 ring-2 ring-emerald-400/80 shadow-md"
+									transition={{ type: "spring", stiffness: 420, damping: 28 }}
+								/>
+							)}
+							<div className="relative z-10 flex items-center justify-between">
 								<div className="flex items-center gap-1.5">
 									<span className="size-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
 									<span className="font-mono text-xs font-bold text-white">{item.symbol}</span>
@@ -181,10 +207,10 @@ export function CryptoTickerWidget({ settings: _settings }: { settings: Record<s
 									{item.change}%
 								</span>
 							</div>
-							<div className="mt-1 flex items-baseline justify-between">
+							<div className="relative z-10 mt-1 flex items-baseline justify-between">
 								<span className="font-mono text-[12px] font-semibold text-text tabular-nums">{item.price}</span>
 							</div>
-						</button>
+						</motion.button>
 					);
 				})}
 			</div>
