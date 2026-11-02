@@ -131,6 +131,10 @@
         name: "Atividade da Steam",
         desc: "Veja quais amigos estão jogando online e abra a Steam com um clique.",
       },
+      navopath: {
+        name: "Planejador NavoPath",
+        desc: "Planejador de tarefas e linha do tempo com sincronização MCP ao vivo.",
+      },
     },
     widgets: {
       generic: {
@@ -198,6 +202,20 @@
         playing: "Jogando",
         online: "Online",
         chat: "Mensagem",
+      },
+      navopath: {
+        title: "Planejador NavoPath",
+        open: "pendentes",
+        done: "concluídas",
+        projects: "projetos",
+        connecting: "Conectando ao MCP...",
+        refresh: "Atualizar MCP",
+        openApp: "Abrir NavoPath",
+        heroFocus: "Foco Atual",
+        noTasks: "Nenhuma tarefa ativa no momento",
+        completeTask: "Marcar como Concluída",
+        allDone: "Tudo concluído por hoje!",
+        addPlaceholder: "+ Adicionar tarefa ao NavoPath...",
       },
     },
   },

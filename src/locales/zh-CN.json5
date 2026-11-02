@@ -142,6 +142,10 @@
         name: "Steam 动态",
         desc: "查看正在线上的游戏好友及他们当前玩的游戏，有好友启动联机游戏时及时通知。",
       },
+      navopath: {
+        name: "NavoPath 规划器",
+        desc: "个人 AI 任务与时间线日程规划，直连 NavoPath 生产环境 MCP 接口，实时同步与一键打卡。",
+      },
     },
     widgets: {
       generic: {
@@ -209,6 +213,20 @@
         playing: "正在玩",
         online: "在线",
         chat: "发送消息",
+      },
+      navopath: {
+        title: "NavoPath 规划器",
+        open: "待办",
+        done: "已完成",
+        projects: "项目",
+        connecting: "正在连接 MCP 服务...",
+        refresh: "刷新 MCP 数据",
+        openApp: "打开 NavoPath",
+        heroFocus: "当前聚焦任务",
+        noTasks: "暂无进行中的任务，休息片刻吧",
+        completeTask: "一键标记完成",
+        allDone: "已全部完成，尽享高光时刻！",
+        addPlaceholder: "+ 快速添加任务到 NavoPath...",
       },
     },
   },

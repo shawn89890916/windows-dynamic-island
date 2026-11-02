@@ -213,4 +213,35 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		],
 		expandedSize: { width: 580, height: 175 },
 	},
+	{
+		id: "com.island.navopath",
+		name: "NavoPath 规划器",
+		titleKey: "marketplace.plugins.navopath.name",
+		descKey: "marketplace.plugins.navopath.desc",
+		version: "2.0.0",
+		description: "个人 AI 任务与时间线日程规划，直连 NavoPath 生产环境 MCP 接口，实时同步与一键打卡。",
+		author: {
+			name: "Shawn Chen",
+			url: "https://github.com/shawn89890916/NavoPath-planner",
+		},
+		category: "productivity",
+		icon: "Compass",
+		accentColor: "#F97316",
+		tags: ["日程", "规划", "待办", "MCP", "AI"],
+		settings: [
+			{
+				key: "mcpEndpoint",
+				label: "MCP Streamable HTTP 服务端点",
+				type: "text",
+				default: "https://navopath-mcp.shawn89890916.workers.dev/mcp",
+			},
+			{
+				key: "token",
+				label: "NavoPath MCP 凭证 (nvp_...)",
+				type: "password",
+				default: "nvp_13bded77b94e65938c7487640e6b94a15d29de62326c7085fb40c3409d6f252e",
+			},
+		],
+		expandedSize: { width: 580, height: 185 },
+	},
 ];

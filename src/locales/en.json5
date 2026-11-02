@@ -146,6 +146,10 @@
         name: "Steam Activity",
         desc: "See what your friends are playing and launch Steam with one click.",
       },
+      navopath: {
+        name: "NavoPath Planner",
+        desc: "AI task & timeline planner with live MCP sync and one-click task completion.",
+      },
     },
     widgets: {
       generic: {
@@ -213,6 +217,20 @@
         playing: "Playing",
         online: "Online",
         chat: "Message",
+      },
+      navopath: {
+        title: "NavoPath Planner",
+        open: "open",
+        done: "done",
+        projects: "projects",
+        connecting: "Connecting to MCP...",
+        refresh: "Refresh MCP Data",
+        openApp: "Open NavoPath",
+        heroFocus: "Current Focus",
+        noTasks: "No active tasks in progress",
+        completeTask: "Mark as Done",
+        allDone: "All done for today!",
+        addPlaceholder: "+ Add task to NavoPath...",
       },
     },
   },
