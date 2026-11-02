@@ -19,7 +19,7 @@ import { useNow } from "../ai-agents/common/format";
 import { CalendarSettings } from "./components/CalendarSettings";
 import { ClockPanel } from "./components/ClockPanel";
 import { dueReminder, type LeadsOf, reminderSoon } from "./events";
-import { calendarSettings, eventReminders, leadList, remindMinutes, remindSound } from "./settings";
+import { calendarSettings, eventReminders, leadList, navopathSettings, remindMinutes, remindSound } from "./settings";
 import { CALENDAR_PROVIDER, type CalEvent, type CalendarState, CLOCK_RED } from "./types";
 
 /** Panel height with the day's event list under the date. */
@@ -59,7 +59,7 @@ export const clockModule: IslandModule = {
 	id: "clock",
 	title: "clock.title",
 	settingsIcon: <CalendarIcon size={14} />,
-	settings: Object.values(calendarSettings),
+	settings: [calendarSettings.remind, navopathSettings.enabled],
 	SettingsSection: CalendarSettings,
 	useView(): ModuleView {
 		const calendar = useProvider<CalendarState>(CALENDAR_PROVIDER);
@@ -103,7 +103,7 @@ export const clockModule: IslandModule = {
 				width: 320,
 			},
 			expanded: <ClockPanel calendar={calendar} highlight={due?.id} />,
-			expandedSize: { width: 560, height: calendar?.calendars.length ? HEIGHT_WITH_EVENTS : 214 },
+			expandedSize: { width: 580, height: HEIGHT_WITH_EVENTS },
 			// Peeks at each reminder, and again when the event starts.
 			activityKey,
 		};

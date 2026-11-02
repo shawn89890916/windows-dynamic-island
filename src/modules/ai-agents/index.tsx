@@ -102,7 +102,7 @@ export const aiAgentsModule: IslandModule = {
 				: {
 						width: 620,
 						height:
-							236 +
+							274 +
 							Math.max(1, recent.length) * 30 +
 							(snapshots.some((s) => s.usage?.daily.length) ? USAGE_CHART : 0) +
 							(visible.length > 1 ? AGENT_TABS : 0),

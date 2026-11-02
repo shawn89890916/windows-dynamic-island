@@ -470,6 +470,10 @@
       busy: "Ativando…",
       failed: "Falhou — tentar de novo",
     },
+    promptPlaceholder: "Enviar instrução ou pergunta para {agent}… (Enter para enviar)",
+    dispatchBtn: "Despachar",
+    dispatched: "Despachado para {agent}",
+    launchApp: "Abrir App",
   },
 
   // Módulo GitHub
@@ -907,6 +911,21 @@
       timeout: "O login expirou",
       duplicate: "Já adicionado",
       tooMany: "Links demais",
+    },
+    navopath: {
+      title: "Planejador NavoPath",
+      label: "Integrar Planejador NavoPath",
+      desc: "Conecte-se ao NavoPath via MCP para integrar planejamento de tarefas, foco de hoje e adição rápida direto no Calendário.",
+      endpointLabel: "Endpoint do Servidor MCP",
+      tokenLabel: "Token de Autenticação",
+      openApp: "Abrir NavoPath",
+      focusTitle: "Foco Principal",
+      noTasks: "Nenhuma tarefa ativa",
+      tabEvents: "Eventos",
+      tabTasks: "Tarefas NavoPath",
+      addPlaceholder: "+ Pressione Enter para adicionar tarefa...",
+      completed: "Concluir",
+      projectsCount: "{projects} Projetos · {tasks} Pendentes",
     },
   },
 

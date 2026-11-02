@@ -18,6 +18,8 @@ export interface AgentDefinition {
 	openSession?: (session: AgentSession) => void;
 	/** Answers a session's pending permission request from the island. */
 	decide?: (session: AgentSession, decision: PermissionDecision) => Promise<unknown>;
+	/** Launches the desktop application, terminal or web environment for this agent. */
+	launchApp?: () => void;
 	/** Agent-specific block in the settings window (integration setup…). */
 	SettingsSection?: ComponentType;
 }

@@ -14,4 +14,14 @@ export const geminiAgent: AgentDefinition = {
 			window.open(`vscode://file/${encodeURIComponent(session.cwd.replace(/\\/g, "/"))}`, "_blank");
 		}
 	},
+	launchApp: () => {
+		if (typeof window !== "undefined") {
+			const a = document.createElement("a");
+			a.href = "antigravity://";
+			a.target = "_blank";
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+		}
+	},
 };

@@ -492,6 +492,10 @@
       busy: "正在启用…",
       failed: "失败 — 请重试",
     },
+    promptPlaceholder: "向 {agent} 发送指令或提问… (回车调度并唤起客户端)",
+    dispatchBtn: "调度",
+    dispatched: "已调度至 {agent}",
+    launchApp: "打开客户端",
   },
 
   // GitHub 模块
@@ -973,6 +977,21 @@
       timeout: "登录超时",
       duplicate: "该日历已添加",
       tooMany: "链接数量过多",
+    },
+    navopath: {
+      title: "NavoPath 规划器",
+      label: "集成 NavoPath 智能规划",
+      desc: "通过 MCP 协议直连 NavoPath，在日历中集成任务规划、今日 Focus 追踪与快速添加待办。",
+      endpointLabel: "MCP 服务端点",
+      tokenLabel: "认证令牌 (Token)",
+      openApp: "打开 NavoPath",
+      focusTitle: "核心 Focus",
+      noTasks: "暂无待办任务",
+      tabEvents: "日程",
+      tabTasks: "NavoPath 待办",
+      addPlaceholder: "+ 回车添加任务到 NavoPath...",
+      completed: "标记完成",
+      projectsCount: "{projects} 项目 · {tasks} 待办",
     },
   },
 

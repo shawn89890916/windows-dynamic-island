@@ -42,3 +42,26 @@ export const calendarVisibility: SettingDef<Record<string, boolean>> = {
 	label: "calendar.calendars.title",
 	default: {},
 };
+
+export const navopathSettings = {
+	enabled: {
+		key: "calendar.navopath.enabled",
+		label: "calendar.navopath.label",
+		description: "calendar.navopath.desc",
+		default: true,
+	},
+	endpoint: {
+		key: "calendar.navopath.endpoint",
+		label: "calendar.navopath.endpointLabel",
+		default: "https://navopath-mcp.shawn89890916.workers.dev/mcp",
+	},
+	token: {
+		key: "calendar.navopath.token",
+		label: "calendar.navopath.tokenLabel",
+		default: "nvp_13bded77b94e65938c7487640e6b94a15d29de62326c7085fb40c3409d6f252e",
+	},
+} satisfies {
+	enabled: SettingDef<boolean>;
+	endpoint: SettingDef<string>;
+	token: SettingDef<string>;
+};

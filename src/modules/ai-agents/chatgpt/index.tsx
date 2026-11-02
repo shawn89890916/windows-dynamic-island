@@ -12,4 +12,14 @@ export const chatgptAgent: AgentDefinition = {
 	openSession: () => {
 		window.open("chatgpt://", "_blank");
 	},
+	launchApp: () => {
+		if (typeof window !== "undefined") {
+			const a = document.createElement("a");
+			a.href = "chatgpt://";
+			a.target = "_blank";
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+		}
+	},
 };

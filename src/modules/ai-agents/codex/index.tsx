@@ -17,5 +17,10 @@ export const codexAgent: AgentDefinition = {
 	openSession: (session) => {
 		if (session.cwd) providerAction("codex", "openProject", session.cwd);
 	},
+	launchApp: () => {
+		if (typeof window !== "undefined") {
+			window.open("https://chatgpt.com/codex", "_blank");
+		}
+	},
 	SettingsSection: CodexSettings,
 };

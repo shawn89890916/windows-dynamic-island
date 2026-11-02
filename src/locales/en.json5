@@ -496,6 +496,10 @@
       busy: "Enabling…",
       failed: "Failed — try again",
     },
+    promptPlaceholder: "Send prompt or question to {agent}… (Enter to dispatch)",
+    dispatchBtn: "Dispatch",
+    dispatched: "Dispatched to {agent}",
+    launchApp: "Open App",
   },
 
   // GitHub module
@@ -977,6 +981,21 @@
       timeout: "Sign-in timed out",
       duplicate: "Already added",
       tooMany: "Too many links",
+    },
+    navopath: {
+      title: "NavoPath Planner",
+      label: "Integrate NavoPath Planner",
+      desc: "Connect to NavoPath via MCP to integrate task planning, today's Focus tracking, and quick task capture directly in Calendar.",
+      endpointLabel: "MCP Server Endpoint",
+      tokenLabel: "Auth Token",
+      openApp: "Open NavoPath",
+      focusTitle: "Core Focus",
+      noTasks: "No active tasks",
+      tabEvents: "Events",
+      tabTasks: "NavoPath Tasks",
+      addPlaceholder: "+ Press Enter to add task to NavoPath...",
+      completed: "Mark complete",
+      projectsCount: "{projects} Projects · {tasks} Open",
     },
   },
 

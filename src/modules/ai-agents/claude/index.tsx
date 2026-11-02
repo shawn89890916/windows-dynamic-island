@@ -17,6 +17,16 @@ export const claudeAgent: AgentDefinition = {
 	openSession: (session) => {
 		if (session.cwd) providerAction("claude", "openProject", session.cwd);
 	},
+	launchApp: () => {
+		if (typeof window !== "undefined") {
+			const a = document.createElement("a");
+			a.href = "claude://";
+			a.target = "_blank";
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+		}
+	},
 	decide: (session, decision) => providerAction("claude", "permission", { id: session.permission?.id, decision }),
 	SettingsSection: ClaudeSettings,
 };
