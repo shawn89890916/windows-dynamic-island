@@ -1,14 +1,7 @@
-import {
-	CheckCircle2Icon,
-	CheckIcon,
-	CircleIcon,
-	CompassIcon,
-	ExternalLinkIcon,
-	PlusIcon,
-	RefreshCwIcon,
-} from "lucide-react";
+import { CheckCircle2Icon, CheckIcon, CircleIcon, ExternalLinkIcon, PlusIcon, RefreshCwIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import navopathLogo from "../../../assets/navopath.png";
 import { command } from "../../../core/bridge";
 import { useT } from "../../../core/i18n";
 import { useIsland } from "../../../core/island";
@@ -149,11 +142,11 @@ export function NavoPathWidget({ settings }: { settings: Record<string, unknown>
 			<div className="flex items-center justify-between border-b border-white/8 pb-1.5">
 				<div className="flex items-center gap-3 min-w-0">
 					<motion.div
-						whileHover={{ rotate: 20 }}
+						whileHover={{ rotate: 10, scale: 1.05 }}
 						transition={{ type: "spring", stiffness: 450, damping: 20 }}
-						className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-orange-500/18 text-orange-400"
+						className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-white/10 p-1.5 shadow-sm"
 					>
-						<CompassIcon size={19} />
+						<img src={navopathLogo} alt="NavoPath" className="size-full object-contain" />
 					</motion.div>
 					<div className="min-w-0">
 						<div className="flex items-center gap-2">

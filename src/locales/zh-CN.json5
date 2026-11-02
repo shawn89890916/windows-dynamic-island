@@ -146,6 +146,10 @@
         name: "NavoPath 规划器",
         desc: "个人 AI 任务与时间线日程规划，直连 NavoPath 生产环境 MCP 接口，实时同步与一键打卡。",
       },
+      everything: {
+        name: "Everything 极速搜索",
+        desc: "毫秒级全盘文件极速索引与搜索，支持键盘上下导航、一键打开与在资源管理器中定位。",
+      },
     },
     widgets: {
       generic: {
@@ -227,6 +231,16 @@
         completeTask: "一键标记完成",
         allDone: "已全部完成，尽享高光时刻！",
         addPlaceholder: "+ 快速添加任务到 NavoPath...",
+      },
+      everything: {
+        placeholder: "搜索全盘文件、应用或代码 (Everything)...",
+        connected: "Everything 已连接 (端口 {port})",
+        demoMode: "HTTP {port} 离线 · 本地演示中",
+        helpGuide: "提示：在 Everything 窗口中依次点击 [工具] -> [选项] -> [HTTP 服务器]，勾选 [启用 HTTP 服务器]（端口设为 {port}），即可开启真机毫秒级全盘搜索！",
+        noResults: "未找到匹配的文件或文件夹",
+        openFile: "打开文件",
+        hint: "↑↓ 导航 · Enter 打开 · 点击右侧图标打开文件",
+        totalCount: "共匹配到 {n} 项结果",
       },
     },
   },

@@ -4,18 +4,21 @@ import {
 	CompassIcon,
 	Gamepad2Icon,
 	PuzzleIcon,
+	SearchIcon,
 	SlidersIcon,
 	StickyNoteIcon,
 	TimerIcon,
 	TrendingUpIcon,
 } from "lucide-react";
 import { type ReactNode, useSyncExternalStore } from "react";
+import navopathLogo from "../../assets/navopath.png";
 import { command } from "../bridge";
 import { type MessageKey, type Translate, useT } from "../i18n";
 import type { IslandModule, ModuleView } from "../types";
 import { MARKETPLACE_CATALOG } from "./catalog";
 import type { InstalledPlugin, PluginManifest } from "./types";
 import { CryptoTickerWidget } from "./widgets/CryptoTickerWidget";
+import { EverythingWidget } from "./widgets/EverythingWidget";
 import { NavoPathWidget } from "./widgets/NavoPathWidget";
 import { PomodoroWidget } from "./widgets/PomodoroWidget";
 import { QuickMemoWidget } from "./widgets/QuickMemoWidget";
@@ -41,8 +44,19 @@ export function renderPluginIcon(iconName: string, size = 14, color?: string): R
 			return <TrendingUpIcon {...props} />;
 		case "Gamepad2":
 			return <Gamepad2Icon {...props} />;
+		case "Search":
+			return <SearchIcon {...props} />;
 		case "Compass":
 			return <CompassIcon {...props} />;
+		case "NavoPath":
+			return (
+				<img
+					src={navopathLogo}
+					alt="NavoPath"
+					style={{ width: size, height: size }}
+					className="shrink-0 object-contain"
+				/>
+			);
 		default:
 			return <PuzzleIcon {...props} />;
 	}
@@ -175,6 +189,8 @@ function renderPluginWidget(plugin: InstalledPlugin): ReactNode {
 			return <SteamFriendsWidget settings={plugin.customSettings} />;
 		case "com.island.navopath":
 			return <NavoPathWidget settings={plugin.customSettings} />;
+		case "com.island.everything":
+			return <EverythingWidget settings={plugin.customSettings} />;
 		default:
 			return <GenericPluginWidget plugin={plugin} />;
 	}
@@ -263,13 +279,28 @@ function renderPluginCompact(
 			return {
 				left: (
 					<div className="flex items-center gap-1.5 text-xs font-medium text-orange-400">
-						<CompassIcon size={13} />
+						<img src={navopathLogo} alt="NavoPath" className="size-3.5 shrink-0 object-contain" />
 						<span>{title}</span>
 					</div>
 				),
 				right: (
 					<span className="rounded bg-orange-500/15 px-1.5 py-0.2 text-[10px] font-medium text-orange-400">
 						MCP Live
+					</span>
+				),
+				width: 250,
+			};
+		case "com.island.everything":
+			return {
+				left: (
+					<div className="flex items-center gap-1.5 text-xs font-medium text-amber-400">
+						<SearchIcon size={13} />
+						<span>{title}</span>
+					</div>
+				),
+				right: (
+					<span className="rounded bg-amber-500/15 px-1.5 py-0.2 text-[10px] font-medium text-amber-400">
+						Spotlight
 					</span>
 				),
 				width: 250,

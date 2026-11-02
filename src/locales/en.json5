@@ -150,6 +150,10 @@
         name: "NavoPath Planner",
         desc: "AI task & timeline planner with live MCP sync and one-click task completion.",
       },
+      everything: {
+        name: "Everything Instant Search",
+        desc: "Millisecond-level instant disk file and folder search with keyboard navigation.",
+      },
     },
     widgets: {
       generic: {
@@ -231,6 +235,16 @@
         completeTask: "Mark as Done",
         allDone: "All done for today!",
         addPlaceholder: "+ Add task to NavoPath...",
+      },
+      everything: {
+        placeholder: "Search files, apps or code (Everything)...",
+        connected: "Everything Connected (Port {port})",
+        demoMode: "HTTP {port} Offline · Demo Mode",
+        helpGuide: "Tip: In Everything, go to Tools -> Options -> HTTP Server, check 'Enable HTTP server' (Port {port}) to activate real-time local search!",
+        noResults: "No matching files or folders found",
+        openFile: "Open file",
+        hint: "↑↓ Navigate · Enter Open · Click icon to open",
+        totalCount: "{n} results matched",
       },
     },
   },

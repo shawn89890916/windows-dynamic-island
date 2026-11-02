@@ -135,6 +135,10 @@
         name: "Planejador NavoPath",
         desc: "Planejador de tarefas e linha do tempo com sincronização MCP ao vivo.",
       },
+      everything: {
+        name: "Busca Rápida Everything",
+        desc: "Busca instantânea de arquivos e pastas em milissegundos com navegação por teclado.",
+      },
     },
     widgets: {
       generic: {
@@ -216,6 +220,16 @@
         completeTask: "Marcar como Concluída",
         allDone: "Tudo concluído por hoje!",
         addPlaceholder: "+ Adicionar tarefa ao NavoPath...",
+      },
+      everything: {
+        placeholder: "Buscar arquivos, apps ou código (Everything)...",
+        connected: "Everything Conectado (Porta {port})",
+        demoMode: "HTTP {port} Offline · Modo Demonstração",
+        helpGuide: "Dica: No Everything, acesse Ferramentas -> Opções -> Servidor HTTP, marque 'Ativar servidor HTTP' (Porta {port}) para busca real!",
+        noResults: "Nenhum arquivo ou pasta correspondente",
+        openFile: "Abrir arquivo",
+        hint: "↑↓ Navegar · Enter Abrir · Clique no ícone para abrir",
+        totalCount: "{n} resultados encontrados",
       },
     },
   },
