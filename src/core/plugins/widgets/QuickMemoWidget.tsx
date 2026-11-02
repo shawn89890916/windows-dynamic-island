@@ -1,7 +1,9 @@
 import { CheckCircle2Icon, CircleIcon, PlusIcon, StickyNoteIcon, Trash2Icon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { command } from "../../../core/bridge";
 import { useT } from "../../../core/i18n";
+import { useIsland } from "../../../core/island";
 
 interface MemoItem {
 	id: string;
@@ -27,8 +29,16 @@ function loadMemos(): MemoItem[] {
 
 export function QuickMemoWidget({ settings: _settings }: { settings: Record<string, unknown> }) {
 	const t = useT();
+	const island = useIsland();
+	const inputRef = useRef<HTMLInputElement>(null);
 	const [memos, setMemos] = useState<MemoItem[]>(loadMemos);
 	const [newText, setNewText] = useState("");
+
+	useEffect(() => {
+		return () => {
+			island.keepOpen(false, "memo");
+		};
+	}, [island]);
 
 	const saveMemos = (next: MemoItem[]) => {
 		setMemos(next);
@@ -53,6 +63,7 @@ export function QuickMemoWidget({ settings: _settings }: { settings: Record<stri
 
 	const handleAdd = (e: React.FormEvent | React.KeyboardEvent) => {
 		e.preventDefault();
+		e.stopPropagation();
 		if (!newText.trim()) return;
 		const newItem = { id: String(Date.now()), text: newText.trim(), done: false };
 		const next = [newItem, ...memos.slice(0, 2)];
@@ -83,11 +94,29 @@ export function QuickMemoWidget({ settings: _settings }: { settings: Record<stri
 					</div>
 				</div>
 
-				<form onSubmit={handleAdd} className="flex items-center gap-1.5 shrink-0 ml-3">
+				<form onSubmit={handleAdd} className="flex items-center gap-1.5 shrink-0 ml-3" data-no-drag>
 					<input
+						ref={inputRef}
 						type="text"
 						value={newText}
 						onChange={(e) => setNewText(e.target.value)}
+						onFocus={() => {
+							island.keepOpen(true, "memo");
+						}}
+						onBlur={() => {
+							island.keepOpen(false, "memo");
+						}}
+						onMouseDown={() => {
+							island.keepOpen(true, "memo");
+							command("focus_island");
+						}}
+						onKeyDown={(e) => {
+							e.stopPropagation();
+							if (e.key === "Escape") {
+								inputRef.current?.blur();
+								island.keepOpen(false, "memo");
+							}
+						}}
 						placeholder={t("marketplace.widgets.memo.placeholder")}
 						className="h-8 w-44 rounded-full border border-white/10 bg-white/6 px-3 text-xs text-text placeholder:text-text-faint focus:border-white/25 focus:outline-none transition-colors"
 					/>

@@ -74,8 +74,12 @@ export function startMock() {
 		if (playing) emitLocal("music://level", 0.25 + Math.random() * 0.6);
 	}, 33);
 
-	// Space toggles playback in the mock to preview state changes.
+	// Space toggles playback in the mock to preview state changes (ignore if typing in an input).
 	window.addEventListener("keydown", (e) => {
+		const target = e.target as HTMLElement | null;
+		if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+			return;
+		}
 		if (e.code === "Space") {
 			playing = !playing;
 			publish();
