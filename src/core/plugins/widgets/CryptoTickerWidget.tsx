@@ -52,10 +52,10 @@ export function CryptoTickerWidget({ settings: _settings }: { settings: Record<s
 
 	const activeItem = items.find((i) => i.symbol === activeSymbol) ?? items[0];
 
-	const handleRefresh = () => {
+	const handleRefresh = (e: React.MouseEvent) => {
+		e.stopPropagation();
 		setRefreshing(true);
 		setTimeout(() => {
-			// Fluctuate prices slightly for real feel
 			setItems((prev) =>
 				prev.map((item) => {
 					const delta = (Math.random() - 0.48) * 0.4;
@@ -64,87 +64,87 @@ export function CryptoTickerWidget({ settings: _settings }: { settings: Record<s
 				}),
 			);
 			setRefreshing(false);
-		}, 400);
+		}, 350);
 	};
 
-	return (
-		<div className="flex h-full flex-col justify-between p-4">
-			{/* Header */}
-			<div className="flex items-center justify-between border-b border-white/8 pb-3">
-				<div className="flex items-center gap-2">
-					<div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-400">
-						<TrendingUpIcon size={16} />
-					</div>
-					<div>
-						<h3 className="text-sm font-semibold text-text">实时行情看板</h3>
-						<p className="text-[11px] text-text-faint">监控主流加密资产与核心美股走势</p>
-					</div>
-				</div>
+	const isPos = activeItem.change >= 0;
 
-				<div className="flex items-center gap-2">
-					<button
-						type="button"
-						onClick={handleRefresh}
-						title="刷新行情"
-						className={`flex h-7 w-7 items-center justify-center rounded-lg bg-white/6 text-text-faint hover:bg-white/12 hover:text-text ${
-							refreshing ? "animate-spin text-white" : ""
-						}`}
-					>
-						<RefreshCwIcon size={12} />
-					</button>
+	return (
+		<div className="flex h-full items-center justify-between px-2 select-none">
+			{/* Leading: Icon & Asset Switcher Pills */}
+			<div className="flex min-w-0 items-center gap-3">
+				<div className="flex size-11 flex-none items-center justify-center rounded-2xl bg-emerald-500/16 text-emerald-400">
+					<TrendingUpIcon size={20} />
+				</div>
+				<div className="flex flex-col gap-1">
+					<div className="flex items-center gap-1.5">
+						<span className="text-[13px] font-semibold text-text">{activeItem.name}</span>
+						<span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+					</div>
+					<div className="flex items-center gap-1">
+						{items.map((item) => {
+							const isSelected = item.symbol === activeSymbol;
+							return (
+								<button
+									key={item.symbol}
+									type="button"
+									onClick={(e) => {
+										e.stopPropagation();
+										setActiveSymbol(item.symbol);
+									}}
+									className={`rounded-full px-2 py-0.5 text-[10.5px] font-mono font-semibold transition-all ${
+										isSelected
+											? "bg-white/18 text-white shadow-xs"
+											: "bg-white/6 text-text-faint hover:bg-white/10 hover:text-text"
+									}`}
+								>
+									{item.symbol}
+								</button>
+							);
+						})}
+					</div>
 				</div>
 			</div>
 
-			{/* Active Token Hero */}
-			<div className="my-auto flex items-center justify-between rounded-xl border border-white/6 bg-white/2 px-4 py-3">
-				<div>
-					<div className="flex items-center gap-2">
-						<span className="font-mono text-base font-bold text-text">{activeItem.symbol}</span>
-						<span className="text-xs text-text-faint">{activeItem.name}</span>
-					</div>
-					<div className="mt-1 font-mono text-2xl font-semibold text-text">{activeItem.price}</div>
+			{/* Center: Hero Live Price + Apple Pill Badge */}
+			<div className="flex flex-col items-center justify-center px-4">
+				<div className="font-mono text-[26px]/[1.1] font-bold tracking-tight text-text tabular-nums">
+					{activeItem.price}
 				</div>
-
-				<div className="text-right">
-					<div
-						className={`flex items-center justify-end gap-0.5 text-xs font-semibold ${
-							activeItem.change >= 0 ? "text-emerald-400" : "text-rose-400"
+				<div className="mt-1 flex items-center gap-2">
+					<span
+						className={`flex items-center gap-0.5 rounded-full px-2 py-0.2 text-[11px] font-mono font-bold ${
+							isPos ? "bg-emerald-500/20 text-emerald-400" : "bg-rose-500/20 text-rose-400"
 						}`}
 					>
-						{activeItem.change >= 0 ? <ArrowUpRightIcon size={14} /> : <ArrowDownRightIcon size={14} />}
+						{isPos ? <ArrowUpRightIcon size={12} /> : <ArrowDownRightIcon size={12} />}
 						<span>
-							{activeItem.change >= 0 ? "+" : ""}
+							{isPos ? "+" : ""}
 							{activeItem.change}%
 						</span>
-					</div>
-					<div className="mt-1 text-[10px] text-text-faint">
-						高: {activeItem.high24h} · 低: {activeItem.low24h}
-					</div>
+					</span>
+					<span className="text-[10px] text-text-faint">24h 波动</span>
 				</div>
 			</div>
 
-			{/* Asset Selector Row */}
-			<div className="grid grid-cols-4 gap-2 border-t border-white/6 pt-2.5">
-				{items.map((item) => {
-					const isSelected = item.symbol === activeSymbol;
-					const isPos = item.change >= 0;
-					return (
-						<button
-							key={item.symbol}
-							type="button"
-							onClick={() => setActiveSymbol(item.symbol)}
-							className={`flex flex-col items-center justify-center rounded-lg p-1.5 transition-all ${
-								isSelected ? "bg-white/12 ring-1 ring-white/20" : "bg-white/3 hover:bg-white/6"
-							}`}
-						>
-							<span className="text-[11px] font-semibold text-text">{item.symbol}</span>
-							<span className={`text-[10px] font-medium ${isPos ? "text-emerald-400" : "text-rose-400"}`}>
-								{isPos ? "+" : ""}
-								{item.change}%
-							</span>
-						</button>
-					);
-				})}
+			{/* Trailing: Range Detail & Refresh Action */}
+			<div className="flex flex-none items-center gap-3">
+				<div className="flex flex-col items-end text-[11px] text-text-faint font-mono">
+					<div>
+						高: <span className="text-text">{activeItem.high24h}</span>
+					</div>
+					<div>
+						低: <span className="text-text">{activeItem.low24h}</span>
+					</div>
+				</div>
+				<button
+					type="button"
+					onClick={handleRefresh}
+					title="刷新行情"
+					className="flex size-8.5 items-center justify-center rounded-full bg-white/8 text-text-faint transition-all hover:bg-white/15 hover:text-white active:scale-95"
+				>
+					<RefreshCwIcon size={13} className={refreshing ? "animate-spin text-emerald-400" : ""} />
+				</button>
 			</div>
 		</div>
 	);

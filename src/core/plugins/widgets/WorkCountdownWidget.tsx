@@ -1,4 +1,4 @@
-import { CoffeeIcon, FlameIcon, SparklesIcon, SunIcon } from "lucide-react";
+import { CoffeeIcon, PartyPopperIcon, SparklesIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export function WorkCountdownWidget({ settings }: { settings: Record<string, unknown> }) {
@@ -12,7 +12,6 @@ export function WorkCountdownWidget({ settings }: { settings: Record<string, unk
 		return () => clearInterval(interval);
 	}, []);
 
-	// Calculate remaining seconds to off-work
 	const [offHour, offMin] = offTimeStr.split(":").map(Number);
 	const [startHour, startMin] = startTimeStr.split(":").map(Number);
 
@@ -25,90 +24,70 @@ export function WorkCountdownWidget({ settings }: { settings: Record<string, unk
 	const diffMs = targetToday.getTime() - now.getTime();
 	const isOffWork = diffMs <= 0;
 
-	// Total working span
 	const totalWorkSpan = targetToday.getTime() - startToday.getTime();
 	const elapsedSpan = Math.max(0, now.getTime() - startToday.getTime());
 	const progressPercent = Math.min(100, Math.max(0, Math.round((elapsedSpan / (totalWorkSpan || 1)) * 100)));
 
-	// Remaining breakdown
 	const remainingSeconds = Math.max(0, Math.floor(diffMs / 1000));
 	const remHours = Math.floor(remainingSeconds / 3600);
 	const remMinutes = Math.floor((remainingSeconds % 3600) / 60);
 	const remSecs = remainingSeconds % 60;
 
-	// Weekend countdown
-	const dayOfWeek = now.getDay(); // 0 is Sunday, 5 is Friday
+	const dayOfWeek = now.getDay();
 	const daysToWeekend = dayOfWeek >= 5 ? 0 : 5 - dayOfWeek;
 
 	return (
-		<div className="flex h-full flex-col justify-between p-4">
-			{/* Header */}
-			<div className="flex items-center justify-between border-b border-white/8 pb-3">
-				<div className="flex items-center gap-2">
-					<div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/15 text-amber-400">
-						<CoffeeIcon size={16} />
-					</div>
-					<div>
-						<h3 className="text-sm font-semibold text-text">下班倒计时</h3>
-						<p className="text-[11px] text-text-faint">
-							计划下班时间：<span className="font-mono text-text">{offTimeStr}</span>
-						</p>
-					</div>
+		<div className="flex h-full items-center justify-between px-2 select-none">
+			{/* Leading: Icon & Schedule Info */}
+			<div className="flex min-w-0 items-center gap-3">
+				<div className="flex size-11 flex-none items-center justify-center rounded-2xl bg-amber-500/16 text-amber-400">
+					{isOffWork ? <PartyPopperIcon size={20} /> : <CoffeeIcon size={20} />}
 				</div>
-
-				<span className="flex items-center gap-1 rounded-full bg-white/8 px-2 py-0.5 text-[10px] text-amber-300">
-					<SparklesIcon size={11} />
-					<span>摸鱼打工助手</span>
-				</span>
+				<div className="flex min-w-0 flex-col">
+					<div className="flex items-center gap-1.5">
+						<span className="text-[13px] font-semibold text-text">{isOffWork ? "自由时刻" : "下班倒计时"}</span>
+						<span className="rounded-full bg-amber-400/15 px-1.5 py-0.2 text-[10px] font-medium text-amber-300">
+							{isOffWork ? "已下班" : "摸鱼中"}
+						</span>
+					</div>
+					<span className="mt-0.5 text-[11px] text-text-faint">
+						计划：<span className="font-mono text-text">{offTimeStr}</span> 准时打卡
+					</span>
+				</div>
 			</div>
 
-			{/* Center timer / status */}
-			<div className="my-auto flex flex-col items-center justify-center py-1 text-center">
+			{/* Center: Hero Countdown + Workday Progress */}
+			<div className="flex flex-col items-center justify-center px-4">
 				{isOffWork ? (
-					<div className="flex flex-col items-center gap-1.5 py-2">
-						<div className="text-2xl font-bold text-emerald-400">🎉 已经下班啦！</div>
-						<p className="text-xs text-text-faint">快关闭电脑，开启美好的个人生活吧！</p>
-					</div>
+					<div className="text-[20px] font-bold text-amber-300">🎉 今日工时已圆满达成！</div>
 				) : (
 					<>
-						<div className="font-mono text-3xl font-bold tracking-tight text-text">
-							{String(remHours).padStart(2, "0")}h {String(remMinutes).padStart(2, "0")}m{" "}
-							<span className="text-amber-400">{String(remSecs).padStart(2, "0")}s</span>
+						<div className="font-mono text-[28px]/[1.1] font-bold tracking-tight text-text tabular-nums">
+							{String(remHours).padStart(2, "0")}:{String(remMinutes).padStart(2, "0")}:
+							{String(remSecs).padStart(2, "0")}
 						</div>
-						<p className="mt-1 text-xs text-text-faint">
-							{progressPercent > 80
-								? "🏃 胜利在向你招手，收拾桌面准备下班！"
-								: progressPercent > 50
-									? "☕ 下午茶时间已过，稳扎稳打向前冲！"
-									: "🌱 今天也是元气满满的一天，加油！"}
-						</p>
+						<div className="mt-1.5 flex items-center gap-2">
+							<div className="h-1.5 w-36 overflow-hidden rounded-full bg-white/10">
+								<div
+									className="h-full bg-gradient-to-r from-amber-500 to-amber-300 transition-all duration-300"
+									style={{ width: `${progressPercent}%` }}
+								/>
+							</div>
+							<span className="font-mono text-[10px] text-text-faint tabular-nums">进度 {progressPercent}%</span>
+						</div>
 					</>
 				)}
-
-				{/* Progress bar */}
-				<div className="mt-3.5 h-2 w-72 overflow-hidden rounded-full bg-white/10">
-					<div
-						className="h-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all duration-500"
-						style={{ width: `${progressPercent}%` }}
-					/>
-				</div>
-				<div className="mt-1.5 flex w-72 justify-between text-[10px] text-text-faint">
-					<span>上班 {startTimeStr}</span>
-					<span className="font-medium text-text">今日工时已完成 {progressPercent}%</span>
-					<span>下班 {offTimeStr}</span>
-				</div>
 			</div>
 
-			{/* Footer: Weekend notice */}
-			<div className="flex items-center justify-between border-t border-white/6 pt-2.5 text-[11px] text-text-faint">
-				<span className="flex items-center gap-1">
-					<SunIcon size={12} className="text-amber-400" />
-					<span>{daysToWeekend === 0 ? "今天就是周五/周末！" : `距离美好周末还剩 ${daysToWeekend} 天`}</span>
-				</span>
-				<span className="flex items-center gap-1">
-					<FlameIcon size={12} className="text-red-400" />
-					<span>坚持就是胜利</span>
-				</span>
+			{/* Trailing: Weekend Badge & Action */}
+			<div className="flex flex-none items-center gap-2">
+				<div className="flex flex-col items-end gap-1">
+					<span className="flex items-center gap-1 rounded-full bg-white/8 px-2.5 py-0.5 text-[10.5px] font-medium text-amber-300/90">
+						<SparklesIcon size={11} />
+						<span>{daysToWeekend === 0 ? "周末狂欢中" : `距周末 ${daysToWeekend} 天`}</span>
+					</span>
+					<span className="text-[10px] text-text-faint">高效摸鱼 · 拒绝内卷</span>
+				</div>
 			</div>
 		</div>
 	);

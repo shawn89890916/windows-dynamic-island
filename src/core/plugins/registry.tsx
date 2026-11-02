@@ -3,11 +3,13 @@ import {
 	CoffeeIcon,
 	Gamepad2Icon,
 	PuzzleIcon,
+	SlidersIcon,
 	StickyNoteIcon,
 	TimerIcon,
 	TrendingUpIcon,
 } from "lucide-react";
 import { type ReactNode, useSyncExternalStore } from "react";
+import { command } from "../bridge";
 import type { MessageKey } from "../i18n";
 import type { IslandModule, ModuleView } from "../types";
 import { MARKETPLACE_CATALOG } from "./catalog";
@@ -256,45 +258,52 @@ function renderPluginCompact(plugin: InstalledPlugin): { left: ReactNode; right:
 }
 
 function GenericPluginWidget({ plugin }: { plugin: InstalledPlugin }) {
-	const { manifest, customSettings } = plugin;
+	const { manifest } = plugin;
 	return (
-		<div className="flex h-full flex-col justify-between p-4">
-			<div className="flex items-start justify-between border-b border-white/8 pb-3">
-				<div className="flex items-center gap-2.5">
-					<div
-						className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/6"
-						style={{ color: manifest.accentColor }}
-					>
-						{renderPluginIcon(manifest.icon, 18)}
-					</div>
-					<div>
-						<h4 className="text-[14px] font-semibold text-text">{manifest.name}</h4>
-						<p className="text-[11px] text-text-faint">{manifest.description}</p>
-					</div>
+		<div className="flex h-full items-center justify-between px-2 select-none">
+			{/* Leading: Icon & Name */}
+			<div className="flex min-w-0 items-center gap-3">
+				<div
+					className="flex size-11 flex-none items-center justify-center rounded-2xl bg-white/10"
+					style={{ color: manifest.accentColor }}
+				>
+					{renderPluginIcon(manifest.icon, 20)}
 				</div>
-				<span className="rounded bg-white/8 px-1.5 py-0.5 text-[10px] text-text-faint">v{manifest.version}</span>
-			</div>
-
-			<div className="my-auto flex flex-col items-center justify-center py-4 text-center">
-				<p className="text-xs text-text-muted">插件正常加载运行</p>
-				{manifest.settings && manifest.settings.length > 0 && (
-					<div className="mt-3 flex flex-wrap gap-2">
-						{manifest.settings.map((s) => (
-							<div
-								key={s.key}
-								className="rounded-md border border-white/6 bg-white/3 px-2 py-1 text-[11px] text-text-faint"
-							>
-								<span className="opacity-70">{s.label}: </span>
-								<span className="font-mono text-text">{String(customSettings[s.key] ?? s.default)}</span>
-							</div>
-						))}
+				<div className="flex min-w-0 flex-col">
+					<div className="flex items-center gap-1.5">
+						<span className="text-[13px] font-semibold text-text truncate">{manifest.name}</span>
+						<span className="rounded-full bg-white/10 px-1.5 py-0.2 text-[10px] text-text-faint">
+							v{manifest.version}
+						</span>
 					</div>
-				)}
+					<span className="mt-0.5 truncate text-[11px] text-text-faint max-w-[200px]">{manifest.description}</span>
+				</div>
 			</div>
 
-			<div className="flex items-center justify-between border-t border-white/6 pt-2 text-[11px] text-text-faint">
-				<span>作者：{manifest.author.name}</span>
-				<span>来源：{plugin.source === "marketplace" ? "官方市场" : "本地导入"}</span>
+			{/* Center: Live Status & Author */}
+			<div className="flex flex-col items-center justify-center px-4">
+				<div className="flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
+					<span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+					<span>实时微应用已就绪</span>
+				</div>
+				<span className="mt-1 text-[10px] text-text-faint">
+					作者：{manifest.author.name} · {plugin.source === "marketplace" ? "官方市场" : "社区扩展"}
+				</span>
+			</div>
+
+			{/* Trailing: Open Settings Action */}
+			<div className="flex flex-none items-center gap-2">
+				<button
+					type="button"
+					onClick={(e) => {
+						e.stopPropagation();
+						command("open_settings");
+					}}
+					className="flex h-8.5 items-center gap-1.5 rounded-full bg-white/10 px-3.5 text-xs font-semibold text-text hover:bg-white/18 active:scale-95"
+				>
+					<SlidersIcon size={12} className="opacity-70" />
+					<span>配置插件</span>
+				</button>
 			</div>
 		</div>
 	);
@@ -320,7 +329,7 @@ export function createPluginModule(plugin: InstalledPlugin): IslandModule {
 				accent: manifest.accentColor ?? "#818cf8",
 				compact: renderPluginCompact(plugin),
 				expanded: renderPluginWidget(plugin),
-				expandedSize: { width: 560, height: 190 },
+				expandedSize: { width: 560, height: 130 },
 			};
 		},
 	};

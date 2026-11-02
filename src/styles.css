@@ -81,6 +81,35 @@
 		box-sizing: border-box;
 	}
 
+	/* Sleek, modern micro-scrollbars */
+	* {
+		scrollbar-width: thin;
+		scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+	}
+	*::-webkit-scrollbar {
+		width: 4px;
+		height: 4px;
+	}
+	*::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	*::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.16);
+		border-radius: 9999px;
+	}
+	*::-webkit-scrollbar-thumb:hover {
+		background: rgba(255, 255, 255, 0.32);
+	}
+
+	/* Utility to completely hide scrollbar */
+	.no-scrollbar::-webkit-scrollbar {
+		display: none;
+	}
+	.no-scrollbar {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+
 	/* Preflight sets 1.5; the UI was drawn with the browser's `normal`. */
 	html {
 		line-height: normal;
