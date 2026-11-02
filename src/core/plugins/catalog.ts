@@ -1,0 +1,198 @@
+import type { PluginManifest } from "./types";
+
+export const MARKETPLACE_CATALOG: PluginManifest[] = [
+	{
+		id: "com.island.pomodoro",
+		name: "番茄时钟 (Pomodoro)",
+		version: "1.0.2",
+		description: "科学高效的番茄工作法计时器，胶囊栏常驻倒计时进度，并在休息时智能提醒。",
+		author: {
+			name: "Island Team",
+			url: "https://github.com/shawn89890916",
+		},
+		category: "productivity",
+		icon: "Timer",
+		accentColor: "#FF5252",
+		tags: ["效率", "时间管理", "番茄钟", "倒计时"],
+		settings: [
+			{
+				key: "workDuration",
+				label: "专注时长 (分钟)",
+				type: "number",
+				default: 25,
+			},
+			{
+				key: "breakDuration",
+				label: "休息时长 (分钟)",
+				type: "number",
+				default: 5,
+			},
+			{
+				key: "autoStartBreak",
+				label: "专注结束后自动开始休息",
+				type: "boolean",
+				default: true,
+			},
+		],
+	},
+	{
+		id: "com.island.weather",
+		name: "实时天气 (Weather Live)",
+		version: "1.1.0",
+		description: "实时获取当前城市天气、温度与体感，雨雪恶劣天气自动在灵动岛展开预警。",
+		author: {
+			name: "MeteoLab",
+			url: "https://github.com/shawn89890916",
+		},
+		category: "tools",
+		icon: "CloudSun",
+		accentColor: "#00B0FF",
+		tags: ["生活", "天气", "气温", "预警"],
+		settings: [
+			{
+				key: "city",
+				label: "城市名称 (例如：Beijing / Shanghai / Tokyo)",
+				type: "text",
+				default: "Beijing",
+			},
+			{
+				key: "unit",
+				label: "温标单位",
+				type: "select",
+				options: [
+					{ label: "摄氏度 (°C)", value: "celsius" },
+					{ label: "华氏度 (°F)", value: "fahrenheit" },
+				],
+				default: "celsius",
+			},
+			{
+				key: "alertRain",
+				label: "降雨降雪恶劣天气主动提醒",
+				type: "boolean",
+				default: true,
+			},
+		],
+	},
+	{
+		id: "com.island.work-countdown",
+		name: "下班倒计时 (Work Countdown)",
+		version: "1.0.0",
+		description: "打工人专属摸鱼神器：直观显示距离今日下班与周末的倒计时刻，自动计算今日进度百分比。",
+		author: {
+			name: "FishMaster",
+			url: "https://github.com/shawn89890916",
+		},
+		category: "productivity",
+		icon: "Coffee",
+		accentColor: "#FFA726",
+		tags: ["摸鱼", "打工人", "下班", "周末倒计时"],
+		settings: [
+			{
+				key: "offWorkTime",
+				label: "下班时间 (HH:mm)",
+				type: "text",
+				default: "18:00",
+			},
+			{
+				key: "workStartTime",
+				label: "上班时间 (HH:mm)",
+				type: "text",
+				default: "09:00",
+			},
+			{
+				key: "weekendCountdown",
+				label: "周五下午展示周末倒计时",
+				type: "boolean",
+				default: true,
+			},
+		],
+	},
+	{
+		id: "com.island.quick-memo",
+		name: "灵动速记 (Quick Memo)",
+		version: "1.0.5",
+		description: "快速收集剪藏与灵感便签，随时随地展开记录，支持 Markdown 语法高亮与一键导出。",
+		author: {
+			name: "NoteStudio",
+			url: "https://github.com/shawn89890916",
+		},
+		category: "productivity",
+		icon: "StickyNote",
+		accentColor: "#FFD54F",
+		tags: ["笔记", "便签", "速记", "Markdown"],
+		settings: [
+			{
+				key: "autoClearDone",
+				label: "自动清理已勾选的待办项",
+				type: "boolean",
+				default: false,
+			},
+			{
+				key: "fontSize",
+				label: "便签字体大小",
+				type: "select",
+				options: [
+					{ label: "标准 (13px)", value: "normal" },
+					{ label: "大号 (15px)", value: "large" },
+				],
+				default: "normal",
+			},
+		],
+	},
+	{
+		id: "com.island.crypto-ticker",
+		name: "行情监控 (Market Ticker)",
+		version: "1.2.1",
+		description: "自选股票与加密货币实时价格看板，红绿涨跌波动一目了然，支持高低价波动阈值提醒。",
+		author: {
+			name: "QuantLab",
+			url: "https://github.com/shawn89890916",
+		},
+		category: "tools",
+		icon: "TrendingUp",
+		accentColor: "#66BB6A",
+		tags: ["金融", "股票", "加密货币", "行情"],
+		settings: [
+			{
+				key: "symbols",
+				label: "监控代码（逗号分隔，如 BTC, ETH, AAPL）",
+				type: "text",
+				default: "BTC, ETH",
+			},
+			{
+				key: "refreshInterval",
+				label: "刷新频率 (秒)",
+				type: "number",
+				default: 30,
+			},
+		],
+	},
+	{
+		id: "com.island.steam-friends",
+		name: "Steam 动态 (Steam Friends)",
+		version: "0.9.8",
+		description: "查看正在线上的游戏好友及他们当前玩的游戏，有好友启动联机游戏时及时通知。",
+		author: {
+			name: "ValveFan",
+			url: "https://github.com/shawn89890916",
+		},
+		category: "media",
+		icon: "Gamepad2",
+		accentColor: "#AB47BC",
+		tags: ["游戏", "Steam", "好友动态", "联机"],
+		settings: [
+			{
+				key: "steamApiKey",
+				label: "Steam Web API Key",
+				type: "password",
+				default: "",
+			},
+			{
+				key: "steamId64",
+				label: "SteamID64",
+				type: "text",
+				default: "",
+			},
+		],
+	},
+];

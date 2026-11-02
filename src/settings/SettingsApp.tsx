@@ -1,4 +1,4 @@
-import { InfoIcon, LayoutGridIcon, PaletteIcon, SettingsIcon } from "lucide-react";
+import { InfoIcon, LayoutGridIcon, PaletteIcon, SettingsIcon, StoreIcon } from "lucide-react";
 import { motion } from "motion/react";
 import type { ReactNode } from "react";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router";
@@ -9,6 +9,7 @@ import { TitleBar } from "./components/TitleBar";
 import { AboutPage } from "./pages/AboutPage";
 import { AppearancePage } from "./pages/AppearancePage";
 import { GeneralPage } from "./pages/GeneralPage";
+import { MarketplacePage } from "./pages/MarketplacePage";
 import { ModulePage } from "./pages/ModulePage";
 import { ModulesPage } from "./pages/ModulesPage";
 
@@ -35,6 +36,7 @@ export function SettingsApp() {
 						<NavSection label={t("settings.section.island")} />
 						{/* Stays highlighted on each module's own page too. */}
 						<NavItem to="/modules" end={false} icon={<LayoutGridIcon size={14} />} label={t("modules.title")} />
+						<NavItem to="/marketplace" icon={<StoreIcon size={14} />} label={t("marketplace.title")} />
 						<div className="flex-1" />
 						<NavItem to="/about" icon={<InfoIcon size={15} />} label={t("settings.about.title")} />
 					</nav>
@@ -45,6 +47,7 @@ export function SettingsApp() {
 								<Route path="appearance" element={<AppearancePage values={values} />} />
 								<Route path="modules" element={<ModulesPage values={values} />} />
 								<Route path="modules/:id" element={<ModulePage values={values} />} />
+								<Route path="marketplace" element={<MarketplacePage />} />
 								<Route path="about" element={<AboutPage />} />
 							</Routes>
 						</Page>

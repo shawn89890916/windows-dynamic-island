@@ -117,6 +117,12 @@
     open: "Open settings",
   },
 
+  // Plugin Marketplace
+  marketplace: {
+    title: "Marketplace",
+    desc: "Discover, install and manage community plugins for the island.",
+  },
+
   // Tabs of the open island: tab bar and launcher
   layout: {
     launcher: "All modules",

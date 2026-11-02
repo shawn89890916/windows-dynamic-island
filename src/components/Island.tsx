@@ -8,7 +8,7 @@ import { type IslandApi, IslandContext } from "../core/island";
 import { useHitRects } from "../core/useHitRects";
 import { useIslandController } from "../core/useIslandController";
 import { useIslandDrag } from "../core/useIslandDrag";
-import { modules } from "../modules";
+import { useAllModules } from "../modules";
 import { requestAskFocus } from "../modules/ask/store";
 import { requestFindFocus } from "../modules/find/store";
 import { AmbientBubbles, SecondaryBubble } from "./island/Bubbles";
@@ -20,7 +20,8 @@ import { Surface } from "./island/Surface";
 import { useIslandFileDrop } from "./island/useIslandFileDrop";
 
 export function Island() {
-	const ctl = useIslandController(modules);
+	const allModules = useAllModules();
+	const ctl = useIslandController(allModules);
 	const { mode, primary, secondary, focused } = ctl;
 	const look = useAppearance();
 	const windows = look.style === "windows";

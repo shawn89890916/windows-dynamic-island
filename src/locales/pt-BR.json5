@@ -103,6 +103,11 @@
     open: "Abrir configurações",
   },
 
+  marketplace: {
+    title: "Marketplace",
+    desc: "Descubra, instale e gerencie plugins da comunidade para a ilha.",
+  },
+
   layout: {
     launcher: "Todos os módulos",
     pinned: "Na barra de abas",

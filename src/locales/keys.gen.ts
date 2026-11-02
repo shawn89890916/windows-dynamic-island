@@ -59,6 +59,8 @@ export type MessageKey =
 	| "modules.title"
 	| "modules.desc"
 	| "modules.open"
+	| "marketplace.title"
+	| "marketplace.desc"
 	| "layout.launcher"
 	| "layout.pinned"
 	| "layout.drag"
