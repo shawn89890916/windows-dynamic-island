@@ -337,4 +337,46 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		],
 		expandedSize: { width: 580, height: 185 },
 	},
+	{
+		id: "com.island.vpn",
+		name: "VPN 代理监控",
+		titleKey: "marketplace.plugins.vpn.name",
+		descKey: "marketplace.plugins.vpn.desc",
+		version: "1.0.0",
+		description: "实时代理与网络加速监控，直连 UniClash / Clash 核心，毫秒级测速与上下行速率动态波形看板。",
+		author: {
+			name: "UniClash",
+			url: "https://github.com",
+		},
+		category: "tools",
+		icon: "ShieldCheck",
+		accentColor: "#06B6D4",
+		tags: ["VPN", "代理", "UniClash", "Clash", "网络", "测速"],
+		settings: [
+			{
+				key: "proxyPort",
+				label: "代理混合端口",
+				type: "number",
+				default: 8993,
+			},
+			{
+				key: "mode",
+				label: "默认分流模式",
+				type: "select",
+				options: [
+					{ label: "规则分流 (Rule)", value: "rule" },
+					{ label: "全局代理 (Global)", value: "global" },
+					{ label: "直连模式 (Direct)", value: "direct" },
+				],
+				default: "rule",
+			},
+			{
+				key: "clientPath",
+				label: "客户端启动路径",
+				type: "text",
+				default: "D:\\UniClash\\uniclash.exe",
+			},
+		],
+		expandedSize: { width: 580, height: 185 },
+	},
 ];

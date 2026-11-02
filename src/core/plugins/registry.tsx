@@ -5,6 +5,7 @@ import {
 	Gamepad2Icon,
 	PuzzleIcon,
 	SearchIcon,
+	ShieldCheckIcon,
 	SlidersIcon,
 	SparklesIcon,
 	StickyNoteIcon,
@@ -26,6 +27,7 @@ import { ObsidianIconSvg, ObsidianWidget } from "./widgets/ObsidianWidget";
 import { PomodoroWidget } from "./widgets/PomodoroWidget";
 import { QuickMemoWidget } from "./widgets/QuickMemoWidget";
 import { SteamFriendsWidget } from "./widgets/SteamFriendsWidget";
+import { VpnWidget } from "./widgets/VpnWidget";
 import { WeatherWidget } from "./widgets/WeatherWidget";
 import { WorkCountdownWidget } from "./widgets/WorkCountdownWidget";
 
@@ -51,6 +53,8 @@ export function renderPluginIcon(iconName: string, size = 14, color?: string): R
 			return <SearchIcon {...props} />;
 		case "Sparkles":
 			return <SparklesIcon {...props} />;
+		case "ShieldCheck":
+			return <ShieldCheckIcon {...props} />;
 		case "Compass":
 			return <CompassIcon {...props} />;
 		case "Obsidian":
@@ -202,6 +206,8 @@ function renderPluginWidget(plugin: InstalledPlugin): ReactNode {
 			return <ObsidianWidget settings={plugin.customSettings} />;
 		case "com.island.ai-hub":
 			return <AiHubWidget settings={plugin.customSettings} />;
+		case "com.island.vpn":
+			return <VpnWidget settings={plugin.customSettings} />;
 		default:
 			return <GenericPluginWidget plugin={plugin} />;
 	}
@@ -340,6 +346,21 @@ function renderPluginCompact(
 				right: (
 					<span className="rounded bg-indigo-500/15 px-1.5 py-0.2 text-[10px] font-medium text-indigo-300">
 						4 Agents
+					</span>
+				),
+				width: 250,
+			};
+		case "com.island.vpn":
+			return {
+				left: (
+					<div className="flex items-center gap-1.5 text-xs font-medium text-cyan-400">
+						<ShieldCheckIcon size={13} />
+						<span>UniClash</span>
+					</div>
+				),
+				right: (
+					<span className="rounded bg-cyan-500/15 px-1.5 py-0.2 text-[10px] font-medium text-cyan-300">
+						127.0.0.1:8993
 					</span>
 				),
 				width: 250,

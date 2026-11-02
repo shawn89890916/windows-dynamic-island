@@ -158,6 +158,10 @@
         name: "AI 智能中枢",
         desc: "全场景 AI 智能体控制中枢，聚合 Antigravity、Claude Code、Codex 与 ChatGPT 运行监控与全局指令调度。",
       },
+      vpn: {
+        name: "VPN 代理监控",
+        desc: "实时代理与网络加速监控，直连 UniClash / Clash 核心，毫秒级测速与上下行速率动态波形看板。",
+      },
     },
     widgets: {
       generic: {
@@ -275,6 +279,18 @@
         placeholderPrompt: "向 {name} 快速发送指令或提问...",
         dispatched: "已分发至目标智能体",
         btnSend: "分发",
+      },
+      vpn: {
+        openClient: "打开 UniClash",
+        testLatency: "测速刷新",
+        proxyActive: "系统代理已生效",
+        modeRule: "规则分流",
+        modeGlobal: "全局代理",
+        modeDirect: "直连模式",
+        downloadSpeed: "实时下行",
+        uploadSpeed: "实时上行",
+        fastNodes: "快捷节点",
+        bypassNotice: "Bypass: 国内直连 · 境外加速",
       },
     },
   },

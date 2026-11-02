@@ -147,6 +147,10 @@
         name: "Central de IA Universal",
         desc: "Painel de controle unificado para Antigravity, Claude Code, Codex e ChatGPT.",
       },
+      vpn: {
+        name: "Monitor de VPN e Proxy",
+        desc: "Monitoramento em tempo real de aceleração de rede e proxy conectado ao núcleo UniClash / Clash.",
+      },
     },
     widgets: {
       generic: {
@@ -264,6 +268,18 @@
         placeholderPrompt: "Enviar instrução ou pergunta para {name}...",
         dispatched: "Despachado para o Agente",
         btnSend: "Enviar",
+      },
+      vpn: {
+        openClient: "Abrir UniClash",
+        testLatency: "Testar Ping",
+        proxyActive: "Proxy do Sistema Ativo",
+        modeRule: "Regras",
+        modeGlobal: "Global",
+        modeDirect: "Direto",
+        downloadSpeed: "Download",
+        uploadSpeed: "Upload",
+        fastNodes: "Nós Rápidos",
+        bypassNotice: "Bypass: Direto LAN · Proxy Exterior",
       },
     },
   },

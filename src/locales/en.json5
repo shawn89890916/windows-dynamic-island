@@ -162,6 +162,10 @@
         name: "Universal AI Hub",
         desc: "All-in-one AI agent command deck for Antigravity, Claude Code, Codex, and ChatGPT.",
       },
+      vpn: {
+        name: "VPN & Proxy HUD",
+        desc: "Live network acceleration and proxy monitor connected directly to UniClash / Clash core.",
+      },
     },
     widgets: {
       generic: {
@@ -279,6 +283,18 @@
         placeholderPrompt: "Ask or send instruction to {name}...",
         dispatched: "Dispatched to Agent",
         btnSend: "Dispatch",
+      },
+      vpn: {
+        openClient: "Open UniClash",
+        testLatency: "Ping Test",
+        proxyActive: "System Proxy Active",
+        modeRule: "Rule",
+        modeGlobal: "Global",
+        modeDirect: "Direct",
+        downloadSpeed: "Download",
+        uploadSpeed: "Upload",
+        fastNodes: "Fast Nodes",
+        bypassNotice: "Bypass: Direct LAN · Proxy foreign",
       },
     },
   },
