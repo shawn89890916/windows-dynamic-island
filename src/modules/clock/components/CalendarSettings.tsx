@@ -1,5 +1,6 @@
 import { XIcon } from "lucide-react";
 import { type FormEvent, useState } from "react";
+import { useNavigate } from "react-router";
 import { Button, IconButton, LinkButton } from "../../../components/ui/button";
 import { Block, Desc, Divider, List, ListItem, Row, RowText } from "../../../components/ui/card";
 import { Input, Select } from "../../../components/ui/form";
@@ -7,6 +8,7 @@ import { command, providerAction, useProvider } from "../../../core/bridge";
 import { cn } from "../../../core/cn";
 import { useT } from "../../../core/i18n";
 import { fetchNavoPathSummary } from "../../../core/plugins/navopathMcp";
+import { useNavoPathConnection } from "../../../core/plugins/useNavoPathConnection";
 import { setSetting, useSetting } from "../../../core/settings";
 import { Toggle } from "../../../settings/components/Toggle";
 import {
@@ -346,51 +348,49 @@ function Calendars() {
 
 function NavoPathSection() {
 	const t = useT();
+	const navigate = useNavigate();
 	const enabled = useSetting(navopathSettings.enabled);
-	const endpoint = useSetting(navopathSettings.endpoint);
-	const token = useSetting(navopathSettings.token);
+	const { endpoint, token, source } = useNavoPathConnection();
 	const [testStatus, setTestStatus] = useState<string | null>(null);
-
+	const [testing, setTesting] = useState(false);
 	const handleTest = async () => {
-		setTestStatus("...");
+		setTesting(true);
+		setTestStatus(t("marketplace.widgets.navopath.connecting"));
 		try {
 			const sum = await fetchNavoPathSummary(endpoint, token);
 			setTestStatus(t("calendar.navopath.projectsCount", { projects: sum.projects, tasks: sum.openTasks }));
 		} catch {
-			setTestStatus(t("calendar.error.network"));
+			setTestStatus(t("marketplace.widgets.navopath.syncError"));
+		} finally {
+			setTesting(false);
 		}
 	};
-
 	return (
 		<Block>
 			<Row as="label" label={t("calendar.navopath.label")} desc={t("calendar.navopath.desc")}>
-				<Toggle checked={enabled} onChange={(v) => setSetting(navopathSettings.enabled, v)} />
+				<Toggle checked={enabled} onChange={(value) => setSetting(navopathSettings.enabled, value)} />
 			</Row>
 			{enabled && (
 				<>
-					<Row label={t("calendar.navopath.endpointLabel")}>
-						<Input
-							value={endpoint}
-							onChange={(e) => setSetting(navopathSettings.endpoint, e.target.value)}
-							className="font-mono text-[11px]"
-						/>
+					<Row
+						label={t("calendar.navopath.configureShared")}
+						desc={t(
+							token && source === "legacy"
+								? "calendar.navopath.legacyConnection"
+								: "calendar.navopath.sharedConnection",
+						)}
+					>
+						<Button onClick={() => navigate("/plugins/com.island.navopath")}>
+							{t("marketplace.widgets.navopath.settings")}
+						</Button>
 					</Row>
-					<Row label={t("calendar.navopath.tokenLabel")}>
-						<Input
-							type="password"
-							value={token}
-							onChange={(e) => setSetting(navopathSettings.token, e.target.value)}
-							className="font-mono text-[11px]"
-						/>
-					</Row>
-					<div className="flex items-center justify-between pt-1">
-						<span className="text-[11px] text-text-faint">{testStatus}</span>
-						<div className="flex gap-2">
-							<Button onClick={handleTest}>测试连接</Button>
-							<LinkButton onClick={() => command("open_external", { url: "https://navopath-planner.vercel.app" })}>
-								{t("calendar.navopath.openApp")}
-							</LinkButton>
-						</div>
+					<div className="flex items-center justify-between gap-3 pt-1">
+						<span className="text-[11px] text-text-dim" role="status">
+							{testStatus || t(token ? "calendar.navopath.readyToTest" : "calendar.navopath.notConfigured")}
+						</span>
+						<Button disabled={!token || testing} onClick={handleTest}>
+							{t("calendar.navopath.testConnection")}
+						</Button>
 					</div>
 				</>
 			)}

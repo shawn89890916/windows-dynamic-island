@@ -8,7 +8,7 @@ import {
 	type NavoPathTask,
 } from "./navopathMcp";
 
-export function useNavoPath(endpoint: string, token: string, enabled = true) {
+export function useNavoPath(endpoint: string, token: string, enabled = true, limit = 10) {
 	const [summary, setSummary] = useState<NavoPathSummary | null>(null);
 	const [tasks, setTasks] = useState<NavoPathTask[]>([]);
 	const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ export function useNavoPath(endpoint: string, token: string, enabled = true) {
 		try {
 			const [nextSummary, nextTasks] = await Promise.all([
 				fetchNavoPathSummary(endpoint, token),
-				fetchNavoPathTasks(endpoint, token),
+				fetchNavoPathTasks(endpoint, token, limit),
 			]);
 			if (request !== generation.current) return;
 			setSummary(nextSummary);
@@ -36,7 +36,7 @@ export function useNavoPath(endpoint: string, token: string, enabled = true) {
 		} finally {
 			if (request === generation.current) setLoading(false);
 		}
-	}, [endpoint, token, enabled]);
+	}, [endpoint, token, enabled, limit]);
 	useEffect(() => {
 		// Account changes must never reuse an unscoped local-storage cache.
 		setSummary(null);
@@ -78,7 +78,7 @@ export function useNavoPath(endpoint: string, token: string, enabled = true) {
 						: previous,
 				);
 			} else {
-				setTasks((previous) => [result as NavoPathTask, ...previous].slice(0, 10));
+				setTasks((previous) => [result as NavoPathTask, ...previous].slice(0, limit));
 				setSummary((previous) => (previous ? { ...previous, openTasks: previous.openTasks + 1 } : previous));
 			}
 			setError(null);

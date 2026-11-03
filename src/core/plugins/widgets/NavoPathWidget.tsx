@@ -5,6 +5,7 @@ import { command, openExternal } from "../../bridge";
 import { useT } from "../../i18n";
 import { useIsland } from "../../island";
 import { useNavoPath } from "../useNavoPath";
+import { useNavoPathConnection } from "../useNavoPathConnection";
 import { NeedsConfigCard } from "./NeedsConfigCard";
 import "./NavoPathWidget.css";
 
@@ -14,8 +15,7 @@ export function NavoPathWidget({ settings }: { settings: Record<string, unknown>
 	const t = useT();
 	const { keepOpen } = useIsland();
 	const inputRef = useRef<HTMLInputElement>(null);
-	const endpoint = String(settings.mcpEndpoint || DEFAULT_ENDPOINT).trim();
-	const token = String(settings.token || "").trim();
+	const { endpoint, token } = useNavoPathConnection();
 	const { summary, tasks, loading, error, adding, completingId, loadData, addTask, completeTask } = useNavoPath(
 		endpoint,
 		token,

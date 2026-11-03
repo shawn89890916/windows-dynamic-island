@@ -218,7 +218,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		name: "NavoPath 规划器",
 		titleKey: "marketplace.plugins.navopath.name",
 		descKey: "marketplace.plugins.navopath.desc",
-		version: "2.0.0",
+		version: "2.1.0",
 		description: "个人 AI 任务与时间线日程规划，直连 NavoPath 生产环境 MCP 接口，实时同步与一键打卡。",
 		author: {
 			name: "Shawn Chen",

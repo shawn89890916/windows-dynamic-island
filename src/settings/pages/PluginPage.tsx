@@ -24,7 +24,7 @@ import { command } from "../../core/bridge";
 import { useT } from "../../core/i18n";
 import { MARKETPLACE_CATALOG } from "../../core/plugins/catalog";
 import { queryEverything } from "../../core/plugins/everythingClient";
-import { fetchNavoPathSummary } from "../../core/plugins/navopathMcp";
+import { fetchNavoPathSummary, fetchNavoPathTasks } from "../../core/plugins/navopathMcp";
 import { openDailyNote, openObsidianVault } from "../../core/plugins/obsidianClient";
 import {
 	installPlugin,
@@ -105,21 +105,21 @@ const PLUGIN_GUIDES: Record<string, PluginGuide> = {
 		steps: [
 			{
 				title: "获取 NavoPath MCP 凭证",
-				desc: "登录 NavoPath 规划器平台，前往「个人中心 / 设置」页面，找到「MCP 接口集成」并复制你的个人访问 Token (nvp_...)。",
+				desc: "登录 NavoPath 规划器平台，前往「设置 → 高级 → 日历与集成 → MCP」页面，按设备名称生成个人访问令牌，并立即复制完整的 nvp_... 内容（原文只显示一次）。",
 				link: { url: "https://navopath-planner.vercel.app", label: "访问 NavoPath 官方平台" },
 			},
 			{
-				title: "填入凭证并保存",
+				title: "填写自己的凭据并测试连接",
 				desc: "将复制的 Token 粘贴到上方「NavoPath MCP 凭证」输入框中。默认服务端点预置为官方 Cloudflare Worker Streamable HTTP 接口，无需修改。",
-				tip: "系统内置已预设测试凭证，可开箱即用体验日程同步功能。",
+				tip: "每位用户使用自己的令牌。配置会自动保存，点击「测试连接」确认成功；时钟与日历会自动复用这份配置。",
 			},
 			{
 				title: "即时打卡与日程追踪",
-				desc: "灵动岛展开后将实时显示今日待办、高优先级事项与当前活跃项目。点击事项左侧圆圈即可一键完成打卡，并在输入框中直接快速创建新任务。",
+				desc: "灵动岛显示真实待办与项目统计。时钟与日历根据任务排期、计划日期和截止日期显示圆点，点击日期查看当天任务。点击任务左侧圆圈标记完成，输入框可添加待办。",
 			},
 		],
 		features: [
-			"基于标准 MCP Streamable HTTP 协议双向实时同步",
+			"基于 MCP 的真实数据读取与任务操作，显示时每分钟刷新并支持手动重试",
 			"项目分类、未完成待办数与总完成数统计看板",
 			"灵动岛内一键打卡完成与极速创建新待办",
 		],
@@ -452,11 +452,14 @@ export function PluginPage({
 			} else if (manifest.id === "com.island.navopath") {
 				const endpoint = String(formValues.mcpEndpoint || "https://navopath-mcp.shawn89890916.workers.dev/mcp");
 				const token = String(formValues.token || "").trim();
-				const summary = await fetchNavoPathSummary(endpoint, token);
+				const [summary] = await Promise.all([
+					fetchNavoPathSummary(endpoint, token),
+					fetchNavoPathTasks(endpoint, token, 1),
+				]);
 				if (summary) {
 					setDiagResult({
 						status: "success",
-						message: `MCP 接口连通成功！NavoPath 云端规划器已成功授权：当前活跃项目 ${summary.projects} 个，未完成待办 ${summary.openTasks} 个，累计完成打卡 ${summary.completedTasks} 个。`,
+						message: `连接正常，日历与插件共用这份配置：当前活跃项目 ${summary.projects} 个，未完成待办 ${summary.openTasks} 个，累计完成打卡 ${summary.completedTasks} 个。`,
 					});
 				} else {
 					setDiagResult({

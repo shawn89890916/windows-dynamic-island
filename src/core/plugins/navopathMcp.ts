@@ -12,6 +12,12 @@ export interface NavoPathTask {
 	completed?: boolean;
 	estimatedHours?: number;
 	plannedForDate?: string;
+	timelineRecords?: {
+		scheduledDate: string;
+		scheduledEndDate?: string;
+		scheduledStart: string;
+		executionStatus: string;
+	}[];
 }
 
 export interface NavoPathSummary {

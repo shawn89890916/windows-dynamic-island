@@ -1,5 +1,30 @@
 # NavoPath integration
 
+## 三步连接（v0.4.8 及以上）
+
+1. 从[本仓库最新版](https://github.com/shawn89890916/windows-dynamic-island/releases/latest)
+   下载安装程序。在 NavoPath 登录自己的云端账户，前往 **设置 → 高级 → 日历与集成 → MCP**，
+   按设备名生成个人令牌。完整的 `nvp_...` 原文只显示一次，请立即复制。
+2. 在灵动岛 **设置 → 插件市场 → NavoPath 规划器** 中安装/启用插件，填写个人 Token。
+   默认服务地址为 `https://navopath-mcp.shawn89890916.workers.dev/mcp`，通常无需修改。
+   输入会自动保存，点击教程下方 **立即测试连通性**；显示项目、待办统计才表示验证成功。
+3. 打开灵动岛的 NavoPath 页或 **时钟与日历 → NavoPath**。两处共用这份连接配置，
+   无需再次粘贴 Token；日历设置中可开关集成。日历配置入口也会直接打开这份插件配置。
+
+每位用户使用自己的设备令牌，没有内置公共/测试凭据。网页预览使用浏览器网络限制，
+正式桌面程序通过原生网络层访问 MCP。授权失败时检查令牌是否完整、有效且属于自己的账户。
+网络失败可以刷新重试；撤销令牌后需在共享连接设置中更新。
+
+日历按未完成任务的有效排期、计划日期和截止日期显示标记。点击日期查看该日任务，
+跨日排期可以出现在两天；旧的已取消/退回记录不会单独生成标记。未标日期的任务仅列在今天，
+不会给每个日期添加圆点。日历读取完整待办，不受插件十条预览的限制。
+快速添加捕获普通待办，不会自动给它设定截止日期或时间。
+
+旧版本仅保存在日历里的凭据会在共享插件尚未配置时继续使用。
+保存插件凭据后以插件配置为准；显式清空插件 Token 会断开两处连接。
+
+## Transport
+
 Desktop MCP requests use the native `navopath_mcp_request` command. NavoPath's
 deployed OPTIONS response does not allow the MCP session header, even though
 the initialization POST exposes it. Browser fetch therefore fails after the
@@ -37,7 +62,7 @@ The same asset supplies the launcher, collapsed view, calendar and widget.
 
 - `bun run lint`
 - `bun run build`
-- `bun test src/core/plugins/navopathMcp.test.ts`
+- `bun test src/core/plugins/navopathMcp.test.ts src/core/plugins/navopathConnection.test.ts src/modules/clock/navopathCalendar.test.ts`
 - In `src-tauri`: `cargo clippy -- -D warnings` and `cargo test --lib`
 - Browser: connected/empty/error states, refresh retention, failed/successful
   creation and completion, input focus and list scrolling.

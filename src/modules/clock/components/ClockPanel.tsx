@@ -1,4 +1,4 @@
-import { CheckCircle2Icon, CircleIcon, ExternalLinkIcon, PlusIcon, StarIcon } from "lucide-react";
+import { CircleIcon, LoaderCircleIcon, PlusIcon, RefreshCwIcon, SlidersIcon } from "lucide-react";
 import { useEffect, useMemo, useState, type WheelEvent } from "react";
 import navopathLogo from "../../../assets/navopath.png";
 import { command } from "../../../core/bridge";
@@ -6,6 +6,9 @@ import { cn } from "../../../core/cn";
 import { useLocale, useT } from "../../../core/i18n";
 import { useIsland } from "../../../core/island";
 import { useNavoPath } from "../../../core/plugins/useNavoPath";
+import { useNavoPathConnection } from "../../../core/plugins/useNavoPathConnection";
+import { localDateKey, taskStartOnDate, tasksOnNavoPathDate } from "../navopathCalendar";
+import "../../../core/plugins/widgets/NavoPathWidget.css";
 import { useSetting } from "../../../core/settings";
 import { useNow } from "../../ai-agents/common/format";
 import { DAY_MS, dayDots, eventsOn, sameDay, startOfDay } from "../events";
@@ -55,7 +58,7 @@ const openLink = (url: string | null) => {
 export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; highlight?: string }) {
 	const t = useT();
 	const locale = useLocale();
-	const island = useIsland();
+	const { keepOpen } = useIsland();
 	const now = useNow(1000);
 	const today = new Date(now);
 	const [month, setMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
@@ -63,12 +66,12 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 
 	// NavoPath state
 	const navopathEnabled = useSetting(navopathSettings.enabled);
-	const endpoint = useSetting(navopathSettings.endpoint);
-	const token = useSetting(navopathSettings.token);
+	const { endpoint, token } = useNavoPathConnection();
 	const { summary, tasks, loading, error, adding, completingId, addTask, completeTask, loadData } = useNavoPath(
 		endpoint,
 		token,
 		navopathEnabled,
+		Number.MAX_SAFE_INTEGER,
 	);
 	const [newTaskTitle, setNewTaskTitle] = useState("");
 
@@ -82,9 +85,9 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 
 	useEffect(() => {
 		return () => {
-			island.keepOpen(false, "calendar-navopath");
+			keepOpen(false, "calendar-navopath");
 		};
-	}, [island]);
+	}, [keepOpen]);
 
 	const handleCompleteTask = async (taskId: string, e: React.MouseEvent) => {
 		e.stopPropagation();
@@ -108,6 +111,18 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 
 	// Left side: today, or the picked day and how far away it is.
 	const focus = selected ?? today;
+	const focusDate = localDateKey(focus);
+	const dateTasks = tasksOnNavoPathDate(tasks, focusDate, sameDay(focus, today));
+	const busy = adding || completingId !== null;
+	const status = loading ? "connecting" : error ? "disconnected" : summary ? "connected" : "connecting";
+	useEffect(() => {
+		keepOpen(busy, "calendar-navopath-request");
+		return () => keepOpen(false, "calendar-navopath-request");
+	}, [busy, keepOpen]);
+	const openConnectionSettings = () => {
+		localStorage.setItem("settings_navigate", "/plugins/com.island.navopath");
+		void command("open_settings");
+	};
 	const longDate = new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long" }).format(focus);
 	const distance = Math.round((startOfDay(focus).getTime() - startOfDay(today).getTime()) / DAY_MS);
 	const relative = new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(distance, "day");
@@ -169,15 +184,15 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 		);
 	};
 
-	const focusTask = tasks.find((item) => item.priority === "urgent" || item.priority === "high") || tasks[0];
-	const normalTasks = tasks.filter((item) => item.id !== focusTask?.id).slice(0, 2);
-
 	return (
-		<div className="flex h-full items-stretch justify-between gap-5 px-1" onClick={(e) => e.stopPropagation()}>
+		<div
+			className="navopath-calendar flex h-full items-stretch justify-between gap-5 px-1"
+			onClick={(e) => e.stopPropagation()}
+		>
 			{/* Left Column: Clock Header, Segment Tabs & Task/Event Stream */}
-			<div className="flex flex-1 min-w-0 flex-col justify-between py-1">
+			<div className="flex flex-1 min-w-0 min-h-0 flex-col gap-2 py-1">
 				{/* Top Bar: Time, Date & NavoPath Switcher */}
-				<div className="flex items-start justify-between gap-2">
+				<div className="flex flex-col gap-1">
 					<div>
 						<div className="flex items-baseline gap-1.5">
 							<span className="font-[Segoe_UI_Variable_Display,Segoe_UI,sans-serif] text-[32px]/none font-[700] tracking-[-0.02em] tabular-nums">
@@ -185,7 +200,7 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 							</span>
 							<span className="text-[14px] font-semibold text-text-faint">{seconds}</span>
 						</div>
-						<div className="flex items-center gap-2 mt-0.5">
+						<div className="flex items-center gap-2 mt-0.5 whitespace-nowrap">
 							<span className="text-[12px] font-semibold text-text-dim first-letter:uppercase">{longDate}</span>
 							<span className="text-[11px] text-text-faint">
 								{selected && !sameDay(selected, today) ? relative : t("clock.week", { n: isoWeek(focus) })}
@@ -195,13 +210,13 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 
 					{/* View Switcher or NavoPath Quick Open */}
 					{hasSources && navopathEnabled ? (
-						<div className="flex items-center gap-1 rounded-full bg-white/6 p-0.5" role="tablist">
+						<div className="flex self-start items-center gap-1 rounded-full bg-white/6 p-0.5" role="tablist">
 							<button
 								type="button"
 								role="tab"
 								aria-selected={activeTab === "calendar"}
 								className={cn(
-									"rounded-full px-2 py-0.5 text-[10.5px] font-semibold transition-colors",
+									"whitespace-nowrap rounded-full px-2 py-0.5 text-[10.5px] font-semibold transition-colors",
 									activeTab === "calendar" ? "bg-white/12 text-text" : "text-text-faint hover:text-text-dim",
 								)}
 								onClick={() => setActiveTab("calendar")}
@@ -213,153 +228,134 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 								role="tab"
 								aria-selected={activeTab === "navopath"}
 								className={cn(
-									"flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold transition-colors",
+									"flex whitespace-nowrap items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold transition-colors",
 									activeTab === "navopath" ? "bg-white/12 text-text" : "text-text-faint hover:text-text-dim",
 								)}
 								onClick={() => setActiveTab("navopath")}
 							>
 								<span>NavoPath</span>
 								{tasks.length > 0 && (
-									<span className="rounded-full bg-amber-500/20 px-1 text-[9.5px] text-amber-300 font-bold">
+									<span className="rounded-full bg-(--navo-raised) px-1 text-[9.5px] text-(--navo-ink) font-bold">
 										{tasks.length}
 									</span>
 								)}
 							</button>
 						</div>
 					) : navopathEnabled ? (
-						<div className="flex items-center gap-1.5">
-							<div className="flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10.5px] font-bold text-amber-300 border border-amber-500/20">
-								<img src={navopathLogo} alt="NavoPath" className="size-3.5 object-contain" />
-								<span>{summary ? `${summary.openTasks} 待办` : "NavoPath"}</span>
-							</div>
-							<button
-								type="button"
-								className="rounded-full bg-white/6 p-1 text-text-faint hover:bg-white/12 hover:text-text"
-								onClick={() => command("open_external", { url: "https://navopath-planner.vercel.app" })}
-								title={t("calendar.navopath.openApp")}
-							>
-								<ExternalLinkIcon size={11} />
-							</button>
-						</div>
+						<button
+							type="button"
+							onClick={openConnectionSettings}
+							className="navopath-open"
+							aria-label={t("marketplace.widgets.navopath.settings")}
+						>
+							<img src={navopathLogo} alt="" className="size-3.5 object-contain" />
+							<span>NavoPath</span>
+						</button>
 					) : null}
 				</div>
 
 				{/* Center Content: NavoPath Tasks OR Calendar Events */}
 				{activeTab === "navopath" && navopathEnabled ? (
-					<div className="flex flex-col gap-1.5 my-1">
-						{error && (
-							<p role="alert">
-								<button type="button" onClick={() => void loadData()} className="text-[11px] text-danger">
-									{t("marketplace.widgets.navopath.syncError")}
+					<section className="flex min-h-0 flex-1 flex-col gap-1.5" aria-label="NavoPath">
+						<div className="navopath-meta items-center">
+							<span role="status">
+								{token ? t(`marketplace.widgets.navopath.${status}`) : t("calendar.navopath.notConfigured")}
+								{summary ? ` · ${dateTasks.length} ${t("marketplace.widgets.navopath.open")}` : ""}
+							</span>
+							<div className="flex">
+								<button
+									type="button"
+									className="navopath-icon-button"
+									disabled={loading || busy || !token}
+									onClick={() => void loadData()}
+									aria-label={t("marketplace.widgets.navopath.refresh")}
+								>
+									<RefreshCwIcon size={12} className={loading ? "animate-spin" : ""} />
 								</button>
+								<button
+									type="button"
+									className="navopath-icon-button"
+									onClick={openConnectionSettings}
+									aria-label={t("marketplace.widgets.navopath.settings")}
+								>
+									<SlidersIcon size={12} />
+								</button>
+							</div>
+						</div>
+						{error && (
+							<p className="navopath-error" role="alert">
+								{t("marketplace.widgets.navopath.syncError")}
 							</p>
 						)}
-						{!token ? (
-							<div className="flex items-center justify-between rounded-[8px] bg-white/4 px-2.5 py-1.5 text-[11px] text-text-faint">
-								<span>尚未配置 NavoPath 凭据</span>
-								<button
-									type="button"
-									onClick={() => command("open_external", { url: "https://navopath-planner.vercel.app" })}
-									className="text-amber-400 hover:underline"
-								>
-									获取 Token
+						<div className="navopath-task-list" data-scroll data-no-drag>
+							{!token ? (
+								<button type="button" onClick={openConnectionSettings} className="navopath-open">
+									{t("calendar.navopath.configureShared")}
 								</button>
-							</div>
-						) : focusTask ? (
-							<div className="flex items-center justify-between gap-2 rounded-[9px] bg-amber-500/10 border border-amber-500/25 px-2.5 py-1.5 cursor-pointer hover:bg-amber-500/15 transition-colors">
-								<div className="flex min-w-0 items-center gap-2">
-									<StarIcon size={13} className="text-amber-400 fill-amber-400 flex-none" />
-									<span className="truncate text-[12px] font-semibold text-text">{focusTask.title}</span>
-								</div>
-								<div className="flex items-center gap-1.5 flex-none">
-									<span className="rounded-full bg-amber-400/20 px-1.5 py-0.2 text-[9.5px] font-bold text-amber-300">
-										Focus
-									</span>
-									<button
-										type="button"
-										className="rounded-full text-text-faint hover:text-amber-300 transition-colors"
-										disabled={adding || completingId !== null}
-										onClick={(e) => handleCompleteTask(focusTask.id, e)}
-										title={t("calendar.navopath.completed")}
-									>
-										{completingId === focusTask.id ? (
-											<CheckCircle2Icon size={14} className="text-amber-300 animate-spin" />
-										) : (
-											<CircleIcon size={14} />
-										)}
-									</button>
-								</div>
-							</div>
-						) : (
-							<div className="text-[11.5px] text-text-faint py-1">
-								{loading
-									? t("marketplace.widgets.navopath.connecting")
-									: error
-										? t("marketplace.widgets.navopath.retryHint")
-										: t("calendar.navopath.noTasks")}
-							</div>
-						)}
-
-						{/* Secondary Tasks */}
-						{normalTasks.map((task) => (
-							<div
-								key={task.id}
-								className="flex items-center justify-between gap-2 rounded-[7px] bg-white/4 px-2 py-1 text-[11.5px] hover:bg-white/8 transition-colors cursor-pointer"
-							>
-								<span className="truncate text-text-dim">{task.title}</span>
-								<button
-									type="button"
-									className="text-text-faint hover:text-text transition-colors flex-none"
-									disabled={adding || completingId !== null}
-									onClick={(e) => handleCompleteTask(task.id, e)}
-									title={t("calendar.navopath.completed")}
-								>
-									{completingId === task.id ? (
-										<CheckCircle2Icon size={13} className="text-emerald-400 animate-spin" />
-									) : (
-										<CircleIcon size={13} />
-									)}
-								</button>
-							</div>
-						))}
-
-						{/* Inline Quick-Add Task Input */}
-						<form
-							data-no-drag
-							onSubmit={handleCreateTask}
-							className="mt-0.5 flex items-center gap-1.5 rounded-[8px] bg-white/5 border border-white/8 px-2 py-1 focus-within:border-white/20 transition-colors"
-							onClick={(e) => e.stopPropagation()}
-						>
-							<PlusIcon size={12} className="text-text-faint flex-none" />
+							) : dateTasks.length ? (
+								<ul>
+									{dateTasks.map((task) => (
+										<li key={task.id}>
+											<button
+												type="button"
+												className="navopath-icon-button navopath-checkbox"
+												disabled={busy}
+												onClick={(event) => void handleCompleteTask(task.id, event)}
+												aria-label={`${t("marketplace.widgets.navopath.completeTask")}: ${task.title}`}
+											>
+												{completingId === task.id ? (
+													<LoaderCircleIcon size={15} className="animate-spin" />
+												) : (
+													<CircleIcon size={15} />
+												)}
+											</button>
+											{taskStartOnDate(task, focusDate) && (
+												<time className="navopath-task-date">{taskStartOnDate(task, focusDate)}</time>
+											)}
+											<span className="navopath-task-title" title={task.title}>
+												{task.title}
+											</span>
+										</li>
+									))}
+								</ul>
+							) : (
+								<p className="navopath-empty">
+									{loading
+										? t("marketplace.widgets.navopath.connecting")
+										: error
+											? t("marketplace.widgets.navopath.retryHint")
+											: t("calendar.navopath.noTasksOnDate")}
+								</p>
+							)}
+						</div>
+						<form data-no-drag onSubmit={handleCreateTask} className="navopath-add">
 							<input
-								type="text"
 								value={newTaskTitle}
 								maxLength={300}
-								disabled={adding}
-								onChange={(e) => setNewTaskTitle(e.target.value)}
-								onMouseDown={() => {
-									island.keepOpen(true, "calendar-navopath");
-									command("focus_island");
+								readOnly={adding}
+								disabled={!token}
+								onChange={(event) => setNewTaskTitle(event.target.value)}
+								onMouseDown={() => void command("focus_island")}
+								onFocus={() => keepOpen(true, "calendar-navopath")}
+								onBlur={() => keepOpen(false, "calendar-navopath")}
+								onKeyDown={(event) => {
+									event.stopPropagation();
+									if (event.key === "Escape") event.currentTarget.blur();
+									if (event.key === "Enter" && event.nativeEvent.isComposing) event.preventDefault();
 								}}
-								onFocus={() => {
-									island.keepOpen(true, "calendar-navopath");
-									command("focus_island");
-								}}
-								onBlur={() => {
-									island.keepOpen(false, "calendar-navopath");
-									command("restore_focus");
-								}}
-								onKeyDown={(e) => {
-									if (e.key === "Escape") {
-										e.currentTarget.blur();
-										command("restore_focus");
-									}
-								}}
+								aria-label={t("calendar.navopath.addPlaceholder")}
 								placeholder={t("calendar.navopath.addPlaceholder")}
-								className="w-full bg-transparent text-[11px] text-text placeholder:text-text-faint focus:outline-none"
 							/>
+							<button
+								type="submit"
+								className="navopath-icon-button"
+								disabled={!token || busy || !newTaskTitle.trim()}
+								aria-label={t("marketplace.widgets.navopath.addTask")}
+							>
+								{adding ? <LoaderCircleIcon size={15} className="animate-spin" /> : <PlusIcon size={15} />}
+							</button>
 						</form>
-					</div>
+					</section>
 				) : (
 					/* Standard Calendar Events Stream */
 					<div className="my-1">
@@ -387,7 +383,7 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 					{(!onCurrentMonth || selected) && (
 						<button
 							type="button"
-							className="h-5 rounded-[10px] bg-[rgba(255,69,58,0.14)] px-2 text-[11px] font-[650] text-[#ff453a]"
+							className="h-5 rounded-[10px] bg-(--navo-raised) px-2 text-[11px] font-[650] text-(--navo-ink)"
 							onClick={goToday}
 						>
 							{t("clock.today")}
@@ -422,20 +418,20 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 						const classes = cn(
 							"relative h-5.25 rounded-[7px] text-[11.5px] font-[550] text-text-dim tabular-nums hover:bg-white/8",
 							(d.getDay() === 0 || d.getDay() === 6) && "text-text-faint",
-							d.getMonth() !== month.getMonth() && "opacity-35",
+							d.getMonth() !== month.getMonth() && "text-(--navo-muted)",
 							selected && sameDay(d, selected) && "text-text shadow-[inset_0_0_0_1.5px_rgba(255,255,255,0.5)]",
-							isToday && "bg-[#ff453a] font-[750] text-white hover:bg-[#ff453a]",
+							isToday && "bg-(--navo-accent) font-[750] text-[#1b1b1b] hover:bg-(--navo-accent)",
 						);
 						const rawMarks = dots.get(d.toDateString()) ?? [];
-						const marks =
-							isToday && navopathEnabled && tasks.length > 0 && !rawMarks.includes("#E5A93C")
-								? [...rawMarks, "#E5A93C"]
-								: rawMarks;
+						const dayTaskCount = navopathEnabled ? tasksOnNavoPathDate(tasks, localDateKey(d)).length : 0;
+						const marks = dayTaskCount > 0 ? [...rawMarks, "#A9A49B"] : rawMarks;
 
 						return (
 							<button
 								type="button"
 								key={d.toDateString()}
+								aria-label={`${new Intl.DateTimeFormat(locale, { dateStyle: "full" }).format(d)}${dayTaskCount ? ` · NavoPath ${dayTaskCount}` : ""}`}
+								aria-pressed={sameDay(d, focus)}
 								className={classes}
 								onClick={() => {
 									setSelected(isToday ? null : d);
