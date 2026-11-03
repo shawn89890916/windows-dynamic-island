@@ -16,24 +16,6 @@ export interface EverythingResponse {
 	results: EverythingItem[];
 }
 
-const FALLBACK_ITEMS: EverythingItem[] = [
-	{ type: "file", name: "NavoPath.exe", path: "D:\\NavoPath\\NavoPath.exe", size: 315949056 },
-	{ type: "file", name: "Everything.exe", path: "D:\\Everything\\Everything.exe", size: 2272424 },
-	{ type: "file", name: "Obsidian.exe", path: "D:\\Obsidian\\Obsidian.exe", size: 142551000 },
-	{
-		type: "file",
-		name: "navopath-workspace.json",
-		path: "C:\\Users\\华为\\iCloudDrive\\NavoPath\\navopath-workspace.json",
-		size: 530211,
-	},
-	{
-		type: "file",
-		name: "Island.tsx",
-		path: "C:\\Users\\华为\\.gemini\\antigravity\\scratch\\windows-dynamic-island\\src\\components\\Island.tsx",
-		size: 5159,
-	},
-];
-
 export async function queryEverything(
 	query: string,
 	port = 8080,
@@ -44,37 +26,39 @@ export async function queryEverything(
 		return { ok: true, total: 0, items: [] };
 	}
 
-	const url = `http://127.0.0.1:${port}/?search=${encodeURIComponent(trimmed)}&json=1&count=${count}`;
+	const tryPorts = [port];
+	if (port !== 80 && !tryPorts.includes(80)) tryPorts.push(80);
+	if (port !== 8080 && !tryPorts.includes(8080)) tryPorts.push(8080);
 
-	try {
-		const controller = new AbortController();
-		const timeout = setTimeout(() => controller.abort(), 1200);
-		const res = await fetch(url, { signal: controller.signal });
-		clearTimeout(timeout);
+	let lastError = "";
 
-		if (!res.ok) {
-			throw new Error(`HTTP ${res.status}`);
+	for (const p of tryPorts) {
+		const url = `http://127.0.0.1:${p}/?search=${encodeURIComponent(trimmed)}&json=1&count=${count}`;
+		try {
+			const controller = new AbortController();
+			const timeout = setTimeout(() => controller.abort(), 1000);
+			const res = await fetch(url, { signal: controller.signal });
+			clearTimeout(timeout);
+
+			if (res.ok) {
+				const data: EverythingResponse = await res.json();
+				return {
+					ok: true,
+					total: data.totalResults ?? data.results?.length ?? 0,
+					items: data.results ?? [],
+				};
+			}
+		} catch (err) {
+			lastError = err instanceof Error ? err.message : String(err);
 		}
-
-		const data: EverythingResponse = await res.json();
-		return {
-			ok: true,
-			total: data.totalResults ?? data.results?.length ?? 0,
-			items: data.results ?? [],
-		};
-	} catch (err) {
-		// Filter fallback items matching query for instant responsive feedback
-		const qLower = trimmed.toLowerCase();
-		const matchedFallback = FALLBACK_ITEMS.filter(
-			(i) => i.name.toLowerCase().includes(qLower) || i.path.toLowerCase().includes(qLower),
-		);
-		return {
-			ok: false,
-			total: matchedFallback.length,
-			items: matchedFallback,
-			error: err instanceof Error ? err.message : String(err),
-		};
 	}
+
+	return {
+		ok: false,
+		total: 0,
+		items: [],
+		error: lastError || "无法连接到 Everything HTTP 服务",
+	};
 }
 
 export function formatFileSize(bytes?: number): string {

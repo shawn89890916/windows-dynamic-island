@@ -8,7 +8,7 @@ import { type IslandApi, IslandContext } from "../core/island";
 import { useHitRects } from "../core/useHitRects";
 import { useIslandController } from "../core/useIslandController";
 import { useIslandDrag } from "../core/useIslandDrag";
-import { useAllModules } from "../modules";
+import { builtinModules } from "../modules";
 import { requestAskFocus } from "../modules/ask/store";
 import { requestFindFocus } from "../modules/find/store";
 import { AmbientBubbles, SecondaryBubble } from "./island/Bubbles";
@@ -20,8 +20,7 @@ import { Surface } from "./island/Surface";
 import { useIslandFileDrop } from "./island/useIslandFileDrop";
 
 export function Island() {
-	const allModules = useAllModules();
-	const ctl = useIslandController(allModules);
+	const ctl = useIslandController(builtinModules);
 	const { mode, primary, secondary, focused } = ctl;
 	const look = useAppearance();
 	const windows = look.style === "windows";
@@ -103,15 +102,18 @@ export function Island() {
 							}
 						}}
 					>
-						{/* Apple-style Gaussian Blur diffused shadow beneath the island */}
-						<div
-							className="pointer-events-none absolute -inset-3 -z-10 rounded-[34px] bg-black/80 filter blur-xl transition-opacity duration-300"
-							style={{ opacity: hidden || swallowed ? 0 : 1 }}
-						/>
-						<div
-							className="pointer-events-none absolute -inset-6 -z-20 rounded-[44px] bg-black/45 filter blur-2xl transition-opacity duration-300"
-							style={{ opacity: hidden || swallowed ? 0 : 1 }}
-						/>
+						{/* Apple-style Gaussian Blur diffused ambient depth beneath the island */}
+						{look.blurEffect !== "none" && (
+							<div
+								className={cn(
+									"pointer-events-none absolute -z-10 transition-all duration-300",
+									look.blurEffect === "subtle" && "-inset-0.5 rounded-[24px] bg-black/40 filter blur-[6px]",
+									look.blurEffect === "moderate" && "-inset-1.5 rounded-[28px] bg-black/50 filter blur-[12px]",
+									look.blurEffect === "ambient" && "-inset-2.5 rounded-[32px] bg-black/60 filter blur-[18px]",
+								)}
+								style={{ opacity: hidden || swallowed ? 0 : 1 }}
+							/>
+						)}
 						{/* Concave "ears" that blend the notch into the top edge of the screen. */}
 						{!windows && (
 							<>

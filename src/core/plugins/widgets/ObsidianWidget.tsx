@@ -47,9 +47,9 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 	const t = useT();
 	const island = useIsland();
 
-	const isConfigured = Boolean(settings.configured && settings.vaultName);
-	const vaultName = String(settings.vaultName || "").trim();
-	const dailyFolder = String(settings.dailyFolder || "Daily notes");
+	const vaultName = String(settings.vaultName || "Obsidian Vault").trim();
+	const isConfigured = Boolean(vaultName);
+	const dailyFolder = String(settings.dailyFolder || "cxy更新日志");
 	const httpPort = Number(settings.httpPort || 8080);
 
 	const [activeTab, setActiveTab] = useState<TabType>("capture");
@@ -327,26 +327,35 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 								exit={{ opacity: 0, y: -3 }}
 								className="flex flex-col gap-1 min-h-0"
 							>
-								{recentNotes.slice(0, 3).map((note) => (
-									<motion.div
-										key={note.path}
-										whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.08)" }}
-										onClick={() => openObsidianNote(vaultName, note.path)}
-										className="group flex items-center justify-between rounded-xl bg-white/4 border border-white/6 px-2.5 py-1 text-xs cursor-pointer hover:border-purple-500/30 transition-colors"
-									>
-										<div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
-											<FileTextIcon size={14} className="text-purple-400 shrink-0" />
-											<span className="truncate font-medium text-text text-[11.5px]">{note.name}</span>
-											<span className="truncate text-[9.5px] text-text-faint font-mono bg-white/5 rounded px-1.5 py-0.2">
-												{note.folder}
-											</span>
-										</div>
-										<div className="flex items-center gap-2 shrink-0">
-											<span className="text-[10px] text-text-faint font-mono">{note.modifiedTime}</span>
-											<ExternalLinkIcon size={11} className="text-text-faint group-hover:text-purple-300" />
-										</div>
-									</motion.div>
-								))}
+								{recentNotes.length > 0 ? (
+									recentNotes.slice(0, 3).map((note) => (
+										<motion.div
+											key={note.path}
+											whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.08)" }}
+											onClick={() => openObsidianNote(vaultName, note.path)}
+											className="group flex items-center justify-between rounded-xl bg-white/4 border border-white/6 px-2.5 py-1 text-xs cursor-pointer hover:border-purple-500/30 transition-colors"
+										>
+											<div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
+												<FileTextIcon size={14} className="text-purple-400 shrink-0" />
+												<span className="truncate font-medium text-text text-[11.5px]">{note.name}</span>
+												<span className="truncate text-[9.5px] text-text-faint font-mono bg-white/5 rounded px-1.5 py-0.2">
+													{note.folder}
+												</span>
+											</div>
+											<div className="flex items-center gap-2 shrink-0">
+												<span className="text-[10px] text-text-faint font-mono">{note.modifiedTime}</span>
+												<ExternalLinkIcon size={11} className="text-text-faint group-hover:text-purple-300" />
+											</div>
+										</motion.div>
+									))
+								) : (
+									<div className="flex flex-col items-center justify-center py-2 text-center text-text-faint">
+										<p className="text-[11px] text-text-dim">暂无笔记列表（Everything 索引服务未开启）</p>
+										<p className="text-[10px] text-text-faint mt-0.5">
+											可点击左侧【今日日记】、【打开知识库】或上方【闪念速记】直接联动
+										</p>
+									</div>
+								)}
 							</motion.div>
 						)}
 

@@ -137,6 +137,22 @@ export function AppearancePage({ values }: { values: Record<string, unknown> }) 
 			</motion.section>
 
 			<Card>
+				<Block>
+					<Row label="物理高斯模糊深度" desc="控制灵动岛后方桌面的物理高斯漫反射光晕大小，紧凑贴合胶囊边缘" />
+					<Segmented
+						options={[
+							{ value: "none", label: "关闭 (纯黑硬边)" },
+							{ value: "subtle", label: "微光晕 (Apple 6px)" },
+							{ value: "moderate", label: "柔和漫反射 (12px)" },
+							{ value: "ambient", label: "深邃氛围 (18px)" },
+						]}
+						value={readSetting(values, appearanceSettings.blurEffect)}
+						onChange={(val) => setSetting(appearanceSettings.blurEffect, val)}
+					/>
+				</Block>
+			</Card>
+
+			<Card>
 				<Row as="label" label={t("appearance.hide.label")} desc={t("appearance.hide.desc")}>
 					<Toggle checked={hidden} onChange={(v) => setSetting(ISLAND_HIDDEN_KEY, v)} />
 				</Row>

@@ -14,6 +14,33 @@ startSettings();
 // No browser context menu (reload, inspect…) in release builds.
 if (import.meta.env.PROD) document.addEventListener("contextmenu", (e) => e.preventDefault());
 
+class IslandErrorBoundary extends React.Component<
+	{ children: React.ReactNode },
+	{ hasError: boolean; error: Error | null }
+> {
+	constructor(props: { children: React.ReactNode }) {
+		super(props);
+		this.state = { hasError: false, error: null };
+	}
+
+	static getDerivedStateFromError(error: Error) {
+		return { hasError: true, error };
+	}
+
+	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+		console.error("Island crash recovered by ErrorBoundary:", error, errorInfo);
+	}
+
+	render() {
+		if (this.state.hasError) {
+			// Auto-recover after a short delay so the island is never permanently lost
+			setTimeout(() => this.setState({ hasError: false, error: null }), 600);
+			return null;
+		}
+		return this.props.children;
+	}
+}
+
 function RootApp() {
 	const [label, setLabel] = useState(isTauri ? getCurrentWindow().label : location.hash.slice(1) || "island");
 
@@ -49,7 +76,15 @@ function RootApp() {
 					</button>
 				</div>
 			)}
-			{label === "settings" ? <SettingsApp /> : label === "pip" ? <PipApp /> : <Island />}
+			{label === "settings" ? (
+				<SettingsApp />
+			) : label === "pip" ? (
+				<PipApp />
+			) : (
+				<IslandErrorBoundary>
+					<Island />
+				</IslandErrorBoundary>
+			)}
 		</>
 	);
 }

@@ -18,7 +18,7 @@ import { type ReactNode, useSyncExternalStore } from "react";
 import navopathLogo from "../../assets/navopath.png";
 import { command, isTauri } from "../bridge";
 import { type MessageKey, type Translate, useT } from "../i18n";
-import type { IslandModule, ModuleView } from "../types";
+import type { IslandModule, ModuleEntry, ModuleView } from "../types";
 import { MARKETPLACE_CATALOG } from "./catalog";
 import { usePomodoroLive } from "./pluginActivityStore";
 import type { InstalledPlugin, PluginManifest } from "./types";
@@ -517,9 +517,91 @@ function GenericPluginWidget({ plugin }: { plugin: InstalledPlugin }) {
 /**
  * Creates an `IslandModule` wrapper from an installed community plugin.
  */
-export function createPluginModule(plugin: InstalledPlugin): IslandModule {
+export function createPluginModuleEntry(
+	plugin: InstalledPlugin,
+	pomodoro: ReturnType<typeof usePomodoroLive>,
+	t: Translate,
+): ModuleEntry {
 	const { manifest } = plugin;
 	const icon = renderPluginIcon(manifest.icon, 14, manifest.accentColor);
+
+	let view: ModuleView;
+
+	if (manifest.id === "com.island.pomodoro") {
+		const isRunning = pomodoro.isRunning;
+		const isWork = pomodoro.mode === "work";
+		const accent = isWork ? "#f87171" : "#34d399";
+
+		view = {
+			active: isRunning,
+			priority: 85,
+			icon,
+			accent,
+			compact: {
+				left: (
+					<div className="flex items-center gap-1.5 text-xs font-semibold">
+						<span className={isRunning ? "animate-pulse" : ""}>{renderPluginIcon(manifest.icon, 14, accent)}</span>
+						<span className="text-text font-medium">
+							{isWork ? t("marketplace.widgets.pomodoro.focus") : t("marketplace.widgets.pomodoro.break")}
+						</span>
+					</div>
+				),
+				right: (
+					<div className="flex items-center gap-2">
+						<span className="font-mono text-xs font-bold text-text tabular-nums">{pomodoro.formattedTime}</span>
+						<div className="h-1.5 w-10 overflow-hidden rounded-full bg-white/10">
+							<div
+								className="h-full rounded-full transition-all duration-300"
+								style={{
+									width: `${pomodoro.progressPercent}%`,
+									backgroundColor: accent,
+								}}
+							/>
+						</div>
+					</div>
+				),
+				width: 250,
+			},
+			expanded: renderPluginWidget(plugin),
+			expandedSize: manifest.expandedSize ?? { width: 580, height: 180 },
+		};
+	} else {
+		view = {
+			active: false,
+			priority: 10,
+			icon,
+			accent: manifest.accentColor ?? "#818cf8",
+			compact: renderPluginCompact(plugin, t),
+			expanded: renderPluginWidget(plugin),
+			expandedSize: manifest.expandedSize ?? { width: 580, height: 180 },
+		};
+	}
+
+	const module: IslandModule = {
+		id: manifest.id,
+		title: (manifest.titleKey ?? manifest.name) as MessageKey,
+		settingsIcon: renderPluginIcon(manifest.icon, 14),
+		enabledByDefault: true,
+		useView: () => view,
+	};
+
+	return { module, view };
+}
+
+/**
+ * Returns dynamic module entries for all enabled plugins with ZERO dynamic hooks.
+ * Stable hook count regardless of how many plugins are installed or deleted.
+ */
+export function usePluginModuleEntries(): ModuleEntry[] {
+	const plugins = useInstalledPlugins();
+	const pomodoro = usePomodoroLive();
+	const t = useT();
+
+	return plugins.filter((p) => p.enabled).map((plugin) => createPluginModuleEntry(plugin, pomodoro, t));
+}
+
+export function createPluginModule(plugin: InstalledPlugin): IslandModule {
+	const { manifest } = plugin;
 
 	return {
 		id: manifest.id,
@@ -528,58 +610,8 @@ export function createPluginModule(plugin: InstalledPlugin): IslandModule {
 		enabledByDefault: true,
 		useView(): ModuleView {
 			const t = useT();
-
-			if (manifest.id === "com.island.pomodoro") {
-				// biome-ignore lint/correctness/useHookAtTopLevel: module instance is static
-				const pomodoro = usePomodoroLive();
-				const isRunning = pomodoro.isRunning;
-				const isWork = pomodoro.mode === "work";
-				const accent = isWork ? "#f87171" : "#34d399";
-
-				return {
-					active: isRunning,
-					priority: 85,
-					icon,
-					accent,
-					compact: {
-						left: (
-							<div className="flex items-center gap-1.5 text-xs font-semibold">
-								<span className={isRunning ? "animate-pulse" : ""}>{renderPluginIcon(manifest.icon, 14, accent)}</span>
-								<span className="text-text font-medium">
-									{isWork ? t("marketplace.widgets.pomodoro.focus") : t("marketplace.widgets.pomodoro.break")}
-								</span>
-							</div>
-						),
-						right: (
-							<div className="flex items-center gap-2">
-								<span className="font-mono text-xs font-bold text-text tabular-nums">{pomodoro.formattedTime}</span>
-								<div className="h-1.5 w-10 overflow-hidden rounded-full bg-white/10">
-									<div
-										className="h-full rounded-full transition-all duration-300"
-										style={{
-											width: `${pomodoro.progressPercent}%`,
-											backgroundColor: accent,
-										}}
-									/>
-								</div>
-							</div>
-						),
-						width: 250,
-					},
-					expanded: renderPluginWidget(plugin),
-					expandedSize: manifest.expandedSize ?? { width: 580, height: 180 },
-				};
-			}
-
-			return {
-				active: false,
-				priority: 10,
-				icon,
-				accent: manifest.accentColor ?? "#818cf8",
-				compact: renderPluginCompact(plugin, t),
-				expanded: renderPluginWidget(plugin),
-				expandedSize: manifest.expandedSize ?? { width: 580, height: 180 },
-			};
+			const pomodoro = usePomodoroLive();
+			return createPluginModuleEntry(plugin, pomodoro, t).view;
 		},
 	};
 }

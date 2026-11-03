@@ -40,6 +40,8 @@ export const PALETTE = [
 
 export const THICKNESSES = [1, 2, 3] as const;
 
+export type BlurEffect = "none" | "subtle" | "moderate" | "ambient";
+
 export interface Appearance {
 	style: IslandStyle;
 	/** Gradient stops; empty = classic hairline. */
@@ -48,6 +50,7 @@ export interface Appearance {
 	animate: boolean;
 	glow: boolean;
 	idleClock: boolean;
+	blurEffect: BlurEffect;
 }
 
 export function borderColors(border: string, custom: string[]): string[] {
@@ -58,6 +61,9 @@ export function borderColors(border: string, custom: string[]): string[] {
 export function useAppearance(): Appearance {
 	const s = useSettings();
 	const style = readSetting(s, appearanceSettings.style) === "windows" ? "windows" : "dynamic";
+	const rawBlur = readSetting(s, appearanceSettings.blurEffect);
+	const blurEffect: BlurEffect =
+		rawBlur === "none" || rawBlur === "moderate" || rawBlur === "ambient" ? rawBlur : "subtle";
 	return {
 		style,
 		rim: borderColors(readSetting(s, appearanceSettings.border), readSetting(s, appearanceSettings.customColors)),
@@ -65,6 +71,7 @@ export function useAppearance(): Appearance {
 		animate: readSetting(s, appearanceSettings.animate),
 		glow: readSetting(s, appearanceSettings.glow),
 		idleClock: readSetting(s, appearanceSettings.idleClock),
+		blurEffect,
 	};
 }
 

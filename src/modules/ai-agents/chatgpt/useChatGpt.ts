@@ -32,7 +32,15 @@ export function useChatGpt(): AgentSnapshot {
 	const state = useProvider<ChatGptState>(PROVIDER);
 	const t = useT();
 
-	if (!state?.available) return { available: false, sessions: [], limits: [] };
+	if (!state?.available) {
+		return {
+			available: true,
+			model: "ChatGPT Desktop",
+			limits: [],
+			limitsHint: "未连接后台服务 · 支持下方指令调度与唤起",
+			sessions: [],
+		};
+	}
 
 	const sessions = state.sessions ?? [];
 

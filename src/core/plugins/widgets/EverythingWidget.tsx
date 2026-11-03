@@ -208,8 +208,18 @@ export function EverythingWidget({ settings }: { settings: Record<string, unknow
 			{/* Results List: Top 3 Fast Results with Arrow Key Navigation */}
 			<div className="flex flex-col gap-1 min-h-0 pt-0.5">
 				{items.length === 0 ? (
-					<div className="py-4 text-center text-xs text-text-faint">
-						{t("marketplace.widgets.everything.noResults")}
+					<div className="flex flex-col items-center justify-center py-2 text-center text-xs text-text-faint">
+						{!isConnected ? (
+							<div className="flex flex-col items-center gap-1">
+								<span className="text-amber-300 font-medium">Everything 本地 HTTP 服务未开启</span>
+								<span className="text-[11px] text-text-dim max-w-md">
+									已检测到 Everything 正在运行。请在 Everything 中打开：【工具】→【选项】→【HTTP 服务器】→ 勾选【启用
+									HTTP 服务器】（端口 8080），灵动岛即可瞬间秒级全局检索文件！
+								</span>
+							</div>
+						) : (
+							t("marketplace.widgets.everything.noResults")
+						)}
 					</div>
 				) : (
 					items.map((item, index) => {
