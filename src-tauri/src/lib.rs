@@ -91,6 +91,7 @@ pub fn run() {
             settings::set_autostart,
             settings::open_repo,
             settings::open_external,
+            settings::open_in_folder,
             settings::everything_query,
             updater::check_update,
             updater::install_update,

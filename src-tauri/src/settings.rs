@@ -135,18 +135,21 @@ pub fn open_external(url: String) -> Result<(), String> {
 
 /// Query local Everything HTTP Search engine directly from backend (bypasses browser CORS & mixed content).
 #[tauri::command]
-pub fn everything_query(query: String, port: Option<u16>, count: Option<usize>) -> Result<Value, String> {
+pub fn everything_query(
+    query: String,
+    port: Option<u16>,
+    count: Option<usize>,
+    sort: Option<String>,
+    ascending: Option<bool>,
+) -> Result<Value, String> {
     let p = port.unwrap_or(8080);
-    let c = count.unwrap_or(10);
+    let c = count.unwrap_or(15);
     let q = query.trim();
-    if q.is_empty() {
-        return Ok(serde_json::json!({
-            "totalResults": 0,
-            "results": []
-        }));
-    }
 
     let encoded: String = url::form_urlencoded::byte_serialize(q.as_bytes()).collect();
+    let sort_param = sort.as_deref().unwrap_or("date_modified");
+    let asc_param = if ascending.unwrap_or(false) { "1" } else { "0" };
+
     let agent: ureq::Agent = ureq::Agent::config_builder()
         .http_status_as_error(false)
         .timeout_global(Some(Duration::from_millis(2000)))
@@ -157,7 +160,9 @@ pub fn everything_query(query: String, port: Option<u16>, count: Option<usize>) 
     let mut last_err = String::new();
 
     for port_num in ports {
-        let url = format!("http://127.0.0.1:{port_num}/?search={encoded}&json=1&count={c}");
+        let url = format!(
+            "http://127.0.0.1:{port_num}/?search={encoded}&json=1&count={c}&path_column=1&size_column=1&date_modified_column=1&sort={sort_param}&ascending={asc_param}"
+        );
         match agent.get(&url).call() {
             Ok(mut resp) => {
                 if let Ok(body) = resp.body_mut().read_to_string() {
@@ -173,6 +178,28 @@ pub fn everything_query(query: String, port: Option<u16>, count: Option<usize>) 
     }
 
     Err(if last_err.is_empty() { "Everything HTTP connection failed".into() } else { last_err })
+}
+
+/// Open Windows File Explorer with the specified file selected (Everything "Open Containing Folder").
+#[tauri::command]
+pub fn open_in_folder(path: String) -> Result<(), String> {
+    #[cfg(windows)]
+    unsafe {
+        use windows::Win32::UI::Shell::ShellExecuteW;
+        use windows::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
+        use windows::core::{HSTRING, PCWSTR, w};
+        let clean = path.replace('/', "\\");
+        let arg = format!("/select,\"{clean}\"");
+        ShellExecuteW(
+            None,
+            w!("open"),
+            w!("explorer.exe"),
+            &HSTRING::from(arg),
+            PCWSTR::null(),
+            SW_SHOWNORMAL,
+        );
+    }
+    Ok(())
 }
 
 /// Open a URL in the default browser.

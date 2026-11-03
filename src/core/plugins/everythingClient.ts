@@ -20,12 +20,11 @@ export interface EverythingResponse {
 export async function queryEverything(
 	query: string,
 	port = 8080,
-	count = 5,
+	count = 15,
+	sort = "date_modified",
+	ascending = false,
 ): Promise<{ ok: boolean; total: number; items: EverythingItem[]; error?: string }> {
 	const trimmed = query.trim();
-	if (!trimmed) {
-		return { ok: true, total: 0, items: [] };
-	}
 
 	if (isTauri) {
 		try {
@@ -33,6 +32,8 @@ export async function queryEverything(
 				query: trimmed,
 				port,
 				count,
+				sort,
+				ascending,
 			});
 			if (res) {
 				return {
@@ -53,7 +54,8 @@ export async function queryEverything(
 	let lastError = "";
 
 	for (const p of tryPorts) {
-		const url = `http://127.0.0.1:${p}/?search=${encodeURIComponent(trimmed)}&json=1&count=${count}`;
+		const ascParam = ascending ? "1" : "0";
+		const url = `http://127.0.0.1:${p}/?search=${encodeURIComponent(trimmed)}&json=1&count=${count}&path_column=1&size_column=1&date_modified_column=1&sort=${sort}&ascending=${ascParam}`;
 		try {
 			const controller = new AbortController();
 			const timeout = setTimeout(() => controller.abort(), 1200);
@@ -81,8 +83,35 @@ export async function queryEverything(
 	};
 }
 
+export function formatEverythingDate(raw?: string): string {
+	if (!raw) return "--";
+	try {
+		if (/^\d{16,19}$/.test(raw.trim())) {
+			// Windows FILETIME conversion (100ns units since 1601-01-01 UTC)
+			const ft = BigInt(raw.trim());
+			const ms = Number(ft / 10000n) - 11644473600000;
+			const d = new Date(ms);
+			if (!Number.isNaN(d.getTime())) {
+				const yyyy = d.getFullYear();
+				const mm = String(d.getMonth() + 1).padStart(2, "0");
+				const dd = String(d.getDate()).padStart(2, "0");
+				const hh = String(d.getHours()).padStart(2, "0");
+				const min = String(d.getMinutes()).padStart(2, "0");
+				return `${yyyy}/${mm}/${dd} ${hh}:${min}`;
+			}
+		}
+		if (raw.includes("-")) {
+			return raw.slice(0, 16).replace("T", " ");
+		}
+	} catch {
+		// ignore
+	}
+	return raw;
+}
+
 export function formatFileSize(bytes?: number): string {
-	if (!bytes || bytes <= 0) return "--";
+	if (bytes === undefined || bytes === null || bytes < 0) return "--";
+	if (bytes === 0) return "0 B";
 	if (bytes < 1024) return `${bytes} B`;
 	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
 	if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;

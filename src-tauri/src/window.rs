@@ -20,8 +20,8 @@ pub const FULLSCREEN_EVENT: &str = "island://fullscreen";
 /// Tray "Recenter": the frontend snaps the island back to the middle.
 pub const RECENTER_EVENT: &str = "island://recenter";
 
-/// Strip height in logical pixels (fits the tallest expanded panel + shadow).
-pub const STRIP_HEIGHT: f64 = 480.0;
+/// Strip height in logical pixels (fits the tallest expanded panel + shadow + top margin).
+pub const STRIP_HEIGHT: f64 = 760.0;
 
 /// The last window in front that wasn't one of ours: what "ask about the
 /// screen" captures, and where focus goes back to after typing in the island.

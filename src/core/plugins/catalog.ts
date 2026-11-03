@@ -267,7 +267,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 				default: 8080,
 			},
 		],
-		expandedSize: { width: 580, height: 185 },
+		expandedSize: { width: 640, height: 330 },
 	},
 	{
 		id: "com.island.obsidian",
@@ -285,6 +285,12 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		accentColor: "#8B5CF6",
 		tags: ["笔记", "知识库", "Obsidian", "Markdown", "日记"],
 		settings: [
+			{
+				key: "vaultPath",
+				label: "Obsidian 仓库绝对路径 (推荐)",
+				type: "text",
+				default: "",
+			},
 			{
 				key: "vaultName",
 				label: "Obsidian 仓库名称",
@@ -304,7 +310,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 				default: 8080,
 			},
 		],
-		expandedSize: { width: 580, height: 185 },
+		expandedSize: { width: 580, height: 210 },
 	},
 	{
 		id: "com.island.ai-hub",

@@ -47,7 +47,7 @@ export function islandContent(ctl: IslandController, look: Appearance, v: Varian
 			node: (
 				<div className={cn("flex h-full flex-col px-5 pt-3.5 pb-4.5 overflow-hidden", v.tabsAtBottom && "pb-2")}>
 					{!v.tabsAtBottom && tabs}
-					<div className="min-h-0 flex-1 overflow-hidden select-none">
+					<div className="min-h-0 flex-1 overflow-y-auto no-scrollbar select-none" data-scroll>
 						{ctl.launcher ? <Launcher entries={ctl.entries} onSelect={ctl.setTab} /> : focused?.view.expanded}
 					</div>
 					{v.tabsAtBottom && tabs}

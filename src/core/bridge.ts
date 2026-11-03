@@ -93,6 +93,18 @@ export function openExternal(url: string): Promise<void> {
 	return Promise.resolve();
 }
 
+/** Open containing folder and select file in Windows Explorer */
+export function openInFolder(path: string): Promise<void> {
+	if (isTauri) {
+		return command("open_in_folder", { path })
+			.then(() => undefined)
+			.catch((err) => {
+				console.error("Failed to open folder for path:", path, err);
+			});
+	}
+	return Promise.resolve();
+}
+
 /** Subscribe to a backend event for the component's lifetime. */
 export function useTauriEvent<T>(event: string, handler: (payload: T) => void) {
 	const ref = useRef(handler);
