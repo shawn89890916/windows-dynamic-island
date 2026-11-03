@@ -43,8 +43,12 @@ Configure a personal token in the plugin settings. There are no embedded token
 defaults. Existing saved settings are retained. Missing credentials show the
 configuration form. Failed refreshes retain the current account's last loaded
 tasks; failed writes leave tasks/counts unchanged and preserve the draft input.
-Changing accounts/endpoints clears displayed data. The visible panel refreshes
-every minute, on network recovery, or through its refresh button.
+Changing accounts/endpoints clears displayed data. The active account's workspace is retained in memory across page switches, and
+concurrent reads share one request. Reopening a view within a minute reuses the
+workspace immediately. Stale data refreshes in the background without replacing
+the connected label with an initial-connection screen. The visible panel refreshes
+every minute, on network recovery, or through its refresh button. Closing the app
+clears the cache; explicit credential changes replace it.
 
 ## Design and brand assets
 
@@ -54,8 +58,9 @@ type, and stone interaction accent. Color is reserved for alert text. Task rows
 use checkboxes with explicit labels; clicking a title does not complete a task.
 The task list owns its wheel scrolling. Keyboard focus uses a 2px stone outline.
 
-`src/assets/navopath.png` is the official transparent PNG from NavoPath's
-`public/navopath-icon.png`, with a white front-facing N and black extrusion.
+`src/assets/navopath.svg` is the official vector source from NavoPath's
+`assets/navopath-icon.svg`, with a white front-facing N and black extrusion. Its 1.3 KiB source replaces the
+206 KiB raster asset, so high-DPI rendering does not require a large bitmap.
 The same asset supplies the launcher, collapsed view, calendar and widget.
 
 ## Verification
@@ -68,3 +73,8 @@ The same asset supplies the launcher, collapsed view, calendar and widget.
   creation and completion, input focus and list scrolling.
 - Desktop: real native handshake and read-only task/summary requests using
   the user's saved settings. Browser fixtures never mutate the live workspace.
+
+Reopen regression check: navigate Calendar → NavoPath → Calendar three times
+within a minute. The connected state and rows should appear immediately; the
+initial load should account for just one initialize call and two read-tool calls
+in total. Clearing/changing credentials must replace the workspace immediately.

@@ -1,6 +1,6 @@
 import { CircleIcon, ExternalLinkIcon, LoaderCircleIcon, PlusIcon, RefreshCwIcon, SlidersIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import navopathLogo from "../../../assets/navopath.png";
+import navopathLogo from "../../../assets/navopath.svg";
 import { command, openExternal } from "../../bridge";
 import { useT } from "../../i18n";
 import { useIsland } from "../../island";
@@ -22,7 +22,7 @@ export function NavoPathWidget({ settings }: { settings: Record<string, unknown>
 	);
 	const [title, setTitle] = useState("");
 	const busy = adding || completingId !== null;
-	const status = loading ? "connecting" : error ? "disconnected" : summary ? "connected" : "connecting";
+	const status = error ? "disconnected" : summary ? "connected" : "connecting";
 	useEffect(() => () => keepOpen(false, "navopath"), [keepOpen]);
 	useEffect(() => {
 		keepOpen(busy, "navopath-request");

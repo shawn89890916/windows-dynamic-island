@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
+import { createStore } from "../island";
 import {
 	completeNavoPathTask,
 	createNavoPathTask,
@@ -8,100 +9,124 @@ import {
 	type NavoPathTask,
 } from "./navopathMcp";
 
+interface Workspace {
+	summary: NavoPathSummary | null;
+	tasks: NavoPathTask[];
+	loading: boolean;
+	error: string | null;
+	adding: boolean;
+	completingId: string | null;
+	updatedAt: number;
+}
+
+function newConnection(endpoint: string, token: string) {
+	return {
+		endpoint,
+		token,
+		version: 0,
+		pending: null as Promise<void> | null,
+		store: createStore<Workspace>({
+			summary: null,
+			tasks: [],
+			loading: false,
+			error: null,
+			adding: false,
+			completingId: null,
+			updatedAt: 0,
+		}),
+	};
+}
+
+// Retain only the active account in memory; changing credentials drops its cache.
+let active: ReturnType<typeof newConnection> | null = null;
+function connectionFor(endpoint: string, token: string) {
+	if (!active || active.endpoint !== endpoint || active.token !== token) active = newConnection(endpoint, token);
+	return active;
+}
+
 export function useNavoPath(endpoint: string, token: string, enabled = true, limit = 10) {
-	const [summary, setSummary] = useState<NavoPathSummary | null>(null);
-	const [tasks, setTasks] = useState<NavoPathTask[]>([]);
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-	const [adding, setAdding] = useState(false);
-	const [completingId, setCompletingId] = useState<string | null>(null);
-	const generation = useRef(0);
-	const busy = useRef(false);
-	const configured = enabled && Boolean(token.trim());
+	const connection = useMemo(() => connectionFor(endpoint, token), [endpoint, token]);
+	const state = connection.store.use();
 	const loadData = useCallback(async () => {
-		if (!enabled || !token.trim() || busy.current) return;
-		const request = ++generation.current;
-		setLoading(true);
-		try {
-			const [nextSummary, nextTasks] = await Promise.all([
-				fetchNavoPathSummary(endpoint, token),
-				fetchNavoPathTasks(endpoint, token, limit),
-			]);
-			if (request !== generation.current) return;
-			setSummary(nextSummary);
-			setTasks(nextTasks);
-			setError(null);
-		} catch (cause) {
-			if (request === generation.current) setError(String(cause));
-		} finally {
-			if (request === generation.current) setLoading(false);
-		}
-	}, [endpoint, token, enabled, limit]);
+		const current = connection.store.get();
+		if (!enabled || !token || current.adding || current.completingId) return;
+		if (connection.pending) return connection.pending;
+		const request = ++connection.version;
+		connection.store.set({ ...current, loading: true });
+		connection.pending = (async () => {
+			try {
+				// Both views share the full workspace; the widget limits its display only.
+				const [summary, tasks] = await Promise.all([
+					fetchNavoPathSummary(endpoint, token),
+					fetchNavoPathTasks(endpoint, token, Number.MAX_SAFE_INTEGER),
+				]);
+				if (request === connection.version)
+					connection.store.set((previous) => ({
+						...previous,
+						summary,
+						tasks,
+						loading: false,
+						error: null,
+						updatedAt: Date.now(),
+					}));
+			} catch (cause) {
+				if (request === connection.version)
+					connection.store.set((previous) => ({ ...previous, loading: false, error: String(cause) }));
+			} finally {
+				connection.pending = null;
+			}
+		})();
+		return connection.pending;
+	}, [connection, enabled, endpoint, token]);
+
 	useEffect(() => {
-		// Account changes must never reuse an unscoped local-storage cache.
-		setSummary(null);
-		setTasks([]);
-		setError(null);
-		setLoading(false);
-		setAdding(false);
-		setCompletingId(null);
-		busy.current = false;
-		void loadData();
+		if (!enabled || !token) return;
+		const current = connection.store.get();
+		if (current.error || Date.now() - current.updatedAt >= 60000) void loadData();
 		const interval = setInterval(() => void loadData(), 60000);
 		window.addEventListener("online", loadData);
 		return () => {
-			generation.current++;
 			clearInterval(interval);
 			window.removeEventListener("online", loadData);
 		};
-	}, [loadData]);
+	}, [connection, enabled, token, loadData]);
+
 	const mutate = async (action: () => Promise<unknown>, taskId?: string) => {
-		if (!configured || busy.current) return false;
-		busy.current = true;
-		const request = ++generation.current;
-		setLoading(false);
-		if (taskId) setCompletingId(taskId);
-		else setAdding(true);
-		let succeeded = false;
+		const current = connection.store.get();
+		if (!enabled || !token || current.adding || current.completingId) return false;
+		++connection.version;
+		connection.store.set({ ...current, loading: false, adding: !taskId, completingId: taskId || null });
 		try {
 			const result = await action();
-			if (request !== generation.current) return false;
-			if (taskId) {
-				setTasks((previous) => previous.filter((task) => task.id !== taskId));
-				setSummary((previous) =>
-					previous
-						? {
-								...previous,
-								openTasks: Math.max(0, previous.openTasks - 1),
-								completedTasks: previous.completedTasks + 1,
-							}
-						: previous,
-				);
-			} else {
-				setTasks((previous) => [result as NavoPathTask, ...previous].slice(0, limit));
-				setSummary((previous) => (previous ? { ...previous, openTasks: previous.openTasks + 1 } : previous));
-			}
-			setError(null);
-			succeeded = true;
+			connection.store.set((previous) => ({
+				...previous,
+				tasks: taskId
+					? previous.tasks.filter((task) => task.id !== taskId)
+					: [result as NavoPathTask, ...previous.tasks],
+				summary: previous.summary
+					? {
+							...previous.summary,
+							openTasks: Math.max(0, previous.summary.openTasks + (taskId ? -1 : 1)),
+							completedTasks: previous.summary.completedTasks + (taskId ? 1 : 0),
+						}
+					: null,
+				adding: false,
+				completingId: null,
+				error: null,
+				updatedAt: Date.now(),
+			}));
+			// A read that began before the mutation cannot overwrite its result.
+			void (connection.pending ?? Promise.resolve()).then(loadData);
+			return true;
 		} catch (cause) {
-			if (request === generation.current) setError(String(cause));
-		} finally {
-			if (request === generation.current) {
-				busy.current = false;
-				setAdding(false);
-				setCompletingId(null);
-			}
+			connection.store.set((previous) => ({ ...previous, adding: false, completingId: null, error: String(cause) }));
+			return false;
 		}
-		if (succeeded) void loadData();
-		return succeeded;
 	};
+
 	return {
-		summary,
-		tasks,
-		loading,
-		error,
-		adding,
-		completingId,
+		...state,
+		tasks: state.tasks.slice(0, limit),
 		loadData,
 		addTask: (title: string) => mutate(() => createNavoPathTask(endpoint, token, title)),
 		completeTask: (id: string) => mutate(() => completeNavoPathTask(endpoint, token, id), id),

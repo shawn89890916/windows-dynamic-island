@@ -1,6 +1,6 @@
 import { CircleIcon, LoaderCircleIcon, PlusIcon, RefreshCwIcon, SlidersIcon } from "lucide-react";
 import { useEffect, useMemo, useState, type WheelEvent } from "react";
-import navopathLogo from "../../../assets/navopath.png";
+import navopathLogo from "../../../assets/navopath.svg";
 import { command } from "../../../core/bridge";
 import { cn } from "../../../core/cn";
 import { useLocale, useT } from "../../../core/i18n";
@@ -99,7 +99,13 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 		if (title && !adding && (await addTask(title))) setNewTaskTitle("");
 	};
 
-	const time = new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }).format(now);
+	const timeParts = new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }).formatToParts(now);
+	const dayPeriod = timeParts.find((part) => part.type === "dayPeriod")?.value;
+	const time = timeParts
+		.filter((part) => part.type !== "dayPeriod")
+		.map((part) => part.value)
+		.join("")
+		.trim();
 	const seconds = String(today.getSeconds()).padStart(2, "0");
 	const firstDay = firstDayOfWeek(locale);
 	const days = monthGrid(month, firstDay);
@@ -114,7 +120,7 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 	const focusDate = localDateKey(focus);
 	const dateTasks = tasksOnNavoPathDate(tasks, focusDate, sameDay(focus, today));
 	const busy = adding || completingId !== null;
-	const status = loading ? "connecting" : error ? "disconnected" : summary ? "connected" : "connecting";
+	const status = error ? "disconnected" : summary ? "connected" : "connecting";
 	useEffect(() => {
 		keepOpen(busy, "calendar-navopath-request");
 		return () => keepOpen(false, "calendar-navopath-request");
@@ -192,25 +198,20 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 			{/* Left Column: Clock Header, Segment Tabs & Task/Event Stream */}
 			<div className="flex flex-1 min-w-0 min-h-0 flex-col gap-2 py-1">
 				{/* Top Bar: Time, Date & NavoPath Switcher */}
-				<div className="flex flex-col gap-1">
-					<div>
-						<div className="flex items-baseline gap-1.5">
-							<span className="font-[Segoe_UI_Variable_Display,Segoe_UI,sans-serif] text-[32px]/none font-[700] tracking-[-0.02em] tabular-nums">
-								{time}
-							</span>
-							<span className="text-[14px] font-semibold text-text-faint">{seconds}</span>
-						</div>
-						<div className="flex items-center gap-2 mt-0.5 whitespace-nowrap">
-							<span className="text-[12px] font-semibold text-text-dim first-letter:uppercase">{longDate}</span>
-							<span className="text-[11px] text-text-faint">
-								{selected && !sameDay(selected, today) ? relative : t("clock.week", { n: isoWeek(focus) })}
-							</span>
-						</div>
+				<div className="navopath-calendar-heading">
+					<div className="flex items-end gap-1.5">
+						<span className="font-[Segoe_UI_Variable_Display,Segoe_UI,sans-serif] text-[32px]/none font-[700] tracking-[-0.02em] tabular-nums">
+							{time}
+						</span>
+						<span className="flex flex-col gap-1 leading-none font-semibold text-(--navo-muted)">
+							{dayPeriod && <span className="text-[10px]">{dayPeriod}</span>}
+							<span className="text-[14px]">{seconds}</span>
+						</span>
 					</div>
 
 					{/* View Switcher or NavoPath Quick Open */}
 					{hasSources && navopathEnabled ? (
-						<div className="flex self-start items-center gap-1 rounded-full bg-white/6 p-0.5" role="tablist">
+						<div className="flex items-center gap-1 rounded-full bg-white/6 p-0.5" role="tablist">
 							<button
 								type="button"
 								role="tab"
@@ -234,24 +235,25 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 								onClick={() => setActiveTab("navopath")}
 							>
 								<span>NavoPath</span>
-								{tasks.length > 0 && (
-									<span className="rounded-full bg-(--navo-raised) px-1 text-[9.5px] text-(--navo-ink) font-bold">
-										{tasks.length}
-									</span>
-								)}
 							</button>
 						</div>
 					) : navopathEnabled ? (
 						<button
 							type="button"
 							onClick={openConnectionSettings}
-							className="navopath-open"
+							className="navopath-calendar-brand"
 							aria-label={t("marketplace.widgets.navopath.settings")}
 						>
 							<img src={navopathLogo} alt="" className="size-3.5 object-contain" />
 							<span>NavoPath</span>
 						</button>
 					) : null}
+					<div className="navopath-calendar-date">
+						<span className="text-[12px] font-semibold text-(--navo-secondary) first-letter:uppercase">{longDate}</span>
+						<span className="text-[11px] text-(--navo-muted)">
+							{selected && !sameDay(selected, today) ? relative : t("clock.week", { n: isoWeek(focus) })}
+						</span>
+					</div>
 				</div>
 
 				{/* Center Content: NavoPath Tasks OR Calendar Events */}

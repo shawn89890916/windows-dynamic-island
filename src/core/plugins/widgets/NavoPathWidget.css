@@ -78,8 +78,8 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 30px;
-	height: 30px;
+	width: var(--navo-control-size, 30px);
+	height: var(--navo-control-size, 30px);
 	flex-shrink: 0;
 	color: var(--navo-secondary);
 	border-radius: 6px;
@@ -118,7 +118,7 @@
 .navopath-task-list li {
 	display: flex;
 	align-items: center;
-	min-height: 34px;
+	min-height: var(--navo-row-size, 34px);
 	gap: 6px;
 	border-bottom: 1px solid var(--navo-rule);
 }
@@ -175,4 +175,32 @@
 	.navopath-task-date {
 		display: none;
 	}
+}
+
+.navopath-calendar {
+	--navo-control-size: 26px;
+	--navo-row-size: 30px;
+}
+.navopath-calendar-heading {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 4px 8px;
+}
+.navopath-calendar-date {
+	grid-column: 1 / -1;
+	display: flex;
+	gap: 8px;
+	white-space: nowrap;
+}
+.navopath-calendar-brand {
+	display: inline-flex;
+	align-items: center;
+	justify-self: end;
+	gap: 6px;
+	min-height: 26px;
+	border-radius: 4px;
+	font-size: 11px;
+	font-weight: 600;
+	color: var(--navo-secondary);
 }

@@ -15,7 +15,7 @@ import {
 	TrendingUpIcon,
 } from "lucide-react";
 import { type ReactNode, useSyncExternalStore } from "react";
-import navopathLogo from "../../assets/navopath.png";
+import navopathLogo from "../../assets/navopath.svg";
 import { command, isTauri } from "../bridge";
 import { type MessageKey, type Translate, useT } from "../i18n";
 import type { IslandModule, ModuleEntry, ModuleView } from "../types";
