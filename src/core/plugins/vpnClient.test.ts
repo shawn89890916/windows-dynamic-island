@@ -48,8 +48,10 @@ test("overlapping refreshes share a round; stop prevents stale results and autom
 		if (init?.method === "PUT") writes++;
 		if (path === "/proxies") reads++;
 		await new Promise((r) => setTimeout(r, 2));
+		const name = decodeURIComponent(path.split("/")[2] || "");
+		const delay = name === "A" ? 35 : name === "B" ? 5 : 20;
 		return Response.json(
-			path === "/configs" ? { mode: "rule" } : path.endsWith("/delay") ? { delay: 10 } : { proxies: snapshot.proxies },
+			path === "/configs" ? { mode: "rule" } : path.endsWith("/delay") ? { delay } : { proxies: snapshot.proxies },
 		);
 	}) as typeof fetch;
 	const monitor = createVpnMonitor(vpnConfig({}));
@@ -58,6 +60,11 @@ test("overlapping refreshes share a round; stop prevents stale results and autom
 	expect(monitor.refresh()).toBe(first);
 	await first;
 	expect(reads).toBe(1);
+	expect(monitor.store.get().nodes).toHaveLength(3);
+	expect(monitor.store.get().nodes.map((node) => node.name)).toEqual(["B", "C", "A"]);
+	const probesBeforeConfigChange = reads;
+	monitor.configure({ ...vpnConfig({}), fallbackNodes: ["B"] });
+	expect(reads).toBe(probesBeforeConfigChange);
 	expect(monitor.store.get().nodes).toHaveLength(3);
 	expect(monitor.store.get().nextAt - Date.now()).toBeGreaterThan(59000);
 	const later = monitor.refresh();

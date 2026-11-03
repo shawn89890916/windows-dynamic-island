@@ -110,6 +110,16 @@ export const generalSettings = {
 	},
 } satisfies Record<string, SettingDef>;
 
+/** Whether installed builds automatically check for and install updates. */
+export const updateSettings = {
+	automatic: {
+		key: "app.automaticUpdates",
+		label: "settings.about.updates.automatic.label",
+		description: "settings.about.updates.automatic.desc",
+		default: true,
+	} satisfies SettingDef,
+};
+
 /**
  * Tabs of the open island: their order, and which ones sit in the tab bar.
  * Every enabled module is also in the launcher (the grid button), so the bar
@@ -259,6 +269,12 @@ export const appearanceSettings = {
 		description: "appearance.idleClock.desc",
 		default: true,
 	} satisfies SettingDef,
+	tabsPosition: {
+		key: "appearance.tabsPosition",
+		label: "appearance.tabsPosition.label",
+		description: "appearance.tabsPosition.desc",
+		default: "bottom" as "top" | "bottom",
+	} satisfies SettingDef<"top" | "bottom">,
 	blurEffect: {
 		key: "appearance.blurEffect",
 		label: "appearance.glow.label",

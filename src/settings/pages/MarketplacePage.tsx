@@ -29,11 +29,18 @@ import type { PluginCategory, PluginManifest } from "../../core/plugins/types";
 import { Lead, Title } from "../components/Heading";
 import { Toggle } from "../components/Toggle";
 
-const CATEGORIES: { id: PluginCategory | "all"; label: string }[] = [
-	{ id: "all", label: "全部分类" },
-	{ id: "productivity", label: "效率工作" },
-	{ id: "tools", label: "实用工具" },
-	{ id: "media", label: "媒体娱乐" },
+const CATEGORIES: {
+	id: PluginCategory | "all";
+	label:
+		| "marketplace.ui.categoryAll"
+		| "marketplace.ui.categoryProductivity"
+		| "marketplace.ui.categoryTools"
+		| "marketplace.ui.categoryMedia";
+}[] = [
+	{ id: "all", label: "marketplace.ui.categoryAll" },
+	{ id: "productivity", label: "marketplace.ui.categoryProductivity" },
+	{ id: "tools", label: "marketplace.ui.categoryTools" },
+	{ id: "media", label: "marketplace.ui.categoryMedia" },
 ];
 
 export function MarketplacePage() {
@@ -59,7 +66,7 @@ export function MarketplacePage() {
 		setImportLoading(true);
 		try {
 			await installPlugin(manifest);
-			setImportSuccess(`已下载并安装：${manifest.name}`);
+			setImportSuccess(t("marketplace.ui.successInstalled", { name: manifest.name }));
 		} catch (err) {
 			if (err instanceof Error && err.message !== "已取消安装") setImportError(err.message);
 		} finally {
@@ -79,15 +86,16 @@ export function MarketplacePage() {
 				setImportLoading(true);
 				void installLocalPlugin(content)
 					.then((plugin) => {
-						setImportSuccess(`已导入插件：${plugin.manifest.name}`);
+						setImportSuccess(t("marketplace.ui.successImported", { name: plugin.manifest.name }));
 						setTab("installed");
 					})
 					.catch((err: unknown) => {
-						if (err instanceof Error && err.message !== "已取消安装") setImportError(`导入失败：${err.message}`);
+						if (err instanceof Error && err.message !== "已取消安装")
+							setImportError(t("marketplace.ui.importFailed", { error: err.message }));
 					})
 					.finally(() => setImportLoading(false));
 			} catch (err) {
-				setImportError(`解析失败: ${err instanceof Error ? err.message : String(err)}`);
+				setImportError(t("marketplace.ui.parseFailed", { error: err instanceof Error ? err.message : String(err) }));
 			}
 		};
 		reader.readAsText(file);
@@ -109,10 +117,10 @@ export function MarketplacePage() {
 	return (
 		<div className="flex flex-col gap-5">
 			<div>
-				<Title>插件市场</Title>
-				<Lead>插件独立下载、校验和更新，卸载后会移除插件文件。</Lead>
+				<Title>{t("marketplace.title")}</Title>
+				<Lead>{t("marketplace.desc")}</Lead>
 				<div className="mt-2 flex items-start justify-between gap-3 rounded-lg border border-amber-400/15 bg-amber-400/5 px-3 py-2 text-[11px] leading-relaxed text-text-faint">
-					<p>插件代码在灵动岛窗口中运行，可使用宿主提供的系统接口。安装或更新前会要求确认；只安装你信任的发布者。</p>
+					<p>{t("marketplace.ui.safety")}</p>
 					<button
 						type="button"
 						onClick={() => void refresh()}
@@ -120,28 +128,30 @@ export function MarketplacePage() {
 						className="flex shrink-0 items-center gap-1 text-accent disabled:opacity-50"
 					>
 						<RefreshCwIcon size={12} className={catalogLoading ? "animate-spin" : ""} />
-						刷新目录
+						{t("marketplace.ui.refresh")}
 					</button>
 				</div>
-				{catalogError && <p className="mt-2 text-xs text-amber-200">目录更新失败，继续显示缓存：{catalogError}</p>}
+				{catalogError && (
+					<p className="mt-2 text-xs text-amber-200">{t("marketplace.ui.catalogError", { error: catalogError })}</p>
+				)}
 			</div>
 
 			{/* Sub Tabs */}
 			<div className="flex items-center gap-1 rounded-xl border border-white/6 bg-white/3 p-1">
 				<TabButton active={tab === "explore"} onClick={() => setTab("explore")}>
 					<PackageIcon size={14} />
-					<span>探索发现</span>
+					<span>{t("marketplace.ui.explore")}</span>
 				</TabButton>
 				<TabButton active={tab === "installed"} onClick={() => setTab("installed")}>
 					<CheckIcon size={14} />
-					<span>已安装</span>
+					<span>{t("marketplace.ui.installed")}</span>
 					<span className="ml-1 rounded-full bg-white/10 px-1.5 py-0.2 text-[10px] text-text-faint">
 						{installed.length}
 					</span>
 				</TabButton>
 				<TabButton active={tab === "sideload"} onClick={() => setTab("sideload")}>
 					<Code2Icon size={14} />
-					<span>导入与开发</span>
+					<span>{t("marketplace.ui.importTab")}</span>
 				</TabButton>
 			</div>
 
@@ -156,7 +166,7 @@ export function MarketplacePage() {
 								type="text"
 								value={search}
 								onChange={(e) => setSearch(e.target.value)}
-								placeholder="搜索插件名称、描述或标签..."
+								placeholder={t("marketplace.ui.search")}
 								className="h-9 w-full rounded-lg border border-white/8 bg-white/4 pr-3 pl-8 text-xs text-text placeholder:text-text-faint focus:border-white/20 focus:outline-none"
 							/>
 						</div>
@@ -172,7 +182,7 @@ export function MarketplacePage() {
 											: "bg-white/4 text-text-faint hover:bg-white/8 hover:text-text"
 									}`}
 								>
-									{cat.label}
+									{t(cat.label)}
 								</button>
 							))}
 						</div>
@@ -197,8 +207,8 @@ export function MarketplacePage() {
 					{filteredCatalog.length === 0 && (
 						<div className="flex flex-col items-center justify-center py-12 text-center text-text-faint">
 							<PackageIcon size={32} className="mb-2 opacity-30" />
-							<p className="text-sm">未搜索到符合条件的插件</p>
-							<p className="text-xs opacity-60">尝试更换搜索关键字或分类筛选</p>
+							<p className="text-sm">{t("marketplace.ui.noResults")}</p>
+							<p className="text-xs opacity-60">{t("marketplace.ui.searchHint")}</p>
 						</div>
 					)}
 				</div>
@@ -229,7 +239,11 @@ export function MarketplacePage() {
 												v{item.manifest.version}
 											</span>
 											<span className="flex-none rounded bg-white/5 px-1.5 py-0.2 text-[10px] text-text-faint">
-												{item.source === "marketplace" ? "市场下载" : "本地导入"}
+												{t(
+													item.source === "marketplace"
+														? "marketplace.ui.sourceMarketplace"
+														: "marketplace.ui.sourceLocal",
+												)}
 											</span>
 										</div>
 										<p className="truncate text-xs text-text-faint">
@@ -253,7 +267,7 @@ export function MarketplacePage() {
 												className="flex h-7 items-center gap-1 rounded-lg bg-accent/15 px-2.5 text-[11px] font-medium text-accent hover:bg-accent/25 disabled:opacity-50"
 											>
 												<RefreshCwIcon size={12} />
-												{needsDownload ? "下载插件" : "更新"}
+												{t(needsDownload ? "marketplace.ui.downloadInstalled" : "marketplace.ui.update")}
 											</button>
 										) : null;
 									})()}
@@ -263,13 +277,13 @@ export function MarketplacePage() {
 										className="flex h-7 items-center gap-1.5 rounded-lg border border-white/8 bg-white/4 px-2.5 text-xs text-text-faint hover:bg-white/10 hover:text-text transition-colors cursor-pointer"
 									>
 										<SlidersIcon size={13} />
-										<span>配置</span>
+										<span>{t("marketplace.ui.configure")}</span>
 									</button>
 									<Toggle checked={item.enabled} onChange={() => togglePlugin(item.manifest.id)} />
 									<button
 										type="button"
 										onClick={() => uninstallPlugin(item.manifest.id)}
-										title="卸载插件"
+										title={t("marketplace.ui.uninstall")}
 										className="flex h-7 w-7 items-center justify-center rounded-lg text-text-faint hover:bg-red-500/10 hover:text-red-400 cursor-pointer"
 									>
 										<Trash2Icon size={14} />
@@ -282,13 +296,13 @@ export function MarketplacePage() {
 					{installed.length === 0 && (
 						<div className="flex flex-col items-center justify-center py-12 text-center text-text-faint">
 							<CheckIcon size={32} className="mb-2 opacity-30" />
-							<p className="text-sm">尚未安装任何第三方插件</p>
+							<p className="text-sm">{t("marketplace.ui.noInstalled")}</p>
 							<button
 								type="button"
 								onClick={() => setTab("explore")}
 								className="mt-3 rounded-lg bg-white/10 px-3 py-1.5 text-xs text-text hover:bg-white/15"
 							>
-								前往“探索发现”浏览插件
+								{t("marketplace.ui.browse")}
 							</button>
 						</div>
 					)}
@@ -318,16 +332,14 @@ export function MarketplacePage() {
 								<FolderArchiveIcon size={20} />
 							</div>
 							<div className="flex-1">
-								<h4 className="text-sm font-semibold text-text">导入独立插件包</h4>
-								<p className="mt-1 text-xs text-text-faint">
-									选择发布者提供的 <code>.island-plugin.json</code> 文件。包内含实际运行代码；仅有插件清单不会安装。
-								</p>
+								<h4 className="text-sm font-semibold text-text">{t("marketplace.ui.importTitle")}</h4>
+								<p className="mt-1 text-xs text-text-faint">{t("marketplace.ui.importDesc")}</p>
 								<div className="mt-3 flex items-center gap-2">
 									<label
 										className={`flex cursor-pointer items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-text hover:bg-white/15 ${importLoading ? "pointer-events-none opacity-50" : ""}`}
 									>
 										<DownloadIcon size={13} />
-										<span>{importLoading ? "正在导入…" : "选择插件包文件"}</span>
+										<span>{t(importLoading ? "marketplace.ui.importing" : "marketplace.ui.chooseFile")}</span>
 										<input
 											type="file"
 											accept=".island-plugin.json,application/json"
@@ -347,18 +359,15 @@ export function MarketplacePage() {
 								<SparklesIcon size={20} />
 							</div>
 							<div className="flex-1">
-								<h4 className="text-sm font-semibold text-text">如何发布独立插件包？</h4>
-								<p className="mt-1 text-xs text-text-faint">
-									按仓库中的插件开发说明构建并发布包，市场目录会记录版本、下载地址与 SHA-256：
-								</p>
+								<h4 className="text-sm font-semibold text-text">{t("marketplace.ui.guideTitle")}</h4>
+								<p className="mt-1 text-xs text-text-faint">{t("marketplace.ui.guideDesc")}</p>
 								<div className="mt-2.5 flex flex-col gap-2 text-xs text-text-muted">
 									<div className="flex items-start gap-2">
 										<span className="flex size-4.5 shrink-0 items-center justify-center rounded-full bg-white/8 text-[10px] font-bold text-text-dim">
 											1
 										</span>
 										<span>
-											<strong>独立发布插件包</strong>：构建器把每个微应用打成独立文件；发布时上传包和带 SHA-256
-											的市场目录。
+											<strong>{t("marketplace.ui.guideStepTitleOne")}</strong> {t("marketplace.ui.guideStepOne")}
 										</span>
 									</div>
 									<div className="flex items-start gap-2">
@@ -366,14 +375,13 @@ export function MarketplacePage() {
 											2
 										</span>
 										<span>
-											<strong>市场独立更新</strong>
-											：插件更新只替换对应包，不需要重新安装或下载主程序；用户可在已安装列表手动更新。
+											<strong>{t("marketplace.ui.guideStepTitleTwo")}</strong> {t("marketplace.ui.guideStepTwo")}
 										</span>
 									</div>
 								</div>
 
 								<div className="mt-3 rounded-lg border border-white/6 bg-black/30 p-3 font-mono text-[11px] text-white/70">
-									<p className="text-amber-300">{"// .island-plugin.json 包含实际代码、样式和清单"}</p>
+									<p className="text-amber-300">{t("marketplace.ui.packageComment")}</p>
 									<p>&#123;</p>
 									<p className="pl-4">&quot;formatVersion&quot;: 1,</p>
 									<p className="pl-4">&quot;manifest&quot;: &#123;</p>
@@ -400,7 +408,7 @@ export function MarketplacePage() {
 										}}
 										className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
 									>
-										<span>查阅灵动岛插件开发官方文档</span>
+										<span>{t("marketplace.ui.docs")}</span>
 										<ExternalLinkIcon size={11} />
 									</a>
 								</div>
@@ -483,12 +491,12 @@ function PluginCard({
 			</div>
 
 			<div className="mt-4 flex items-center justify-between border-t border-white/6 pt-3">
-				<span className="text-[10px] text-text-faint">免费开源</span>
+				<span className="text-[10px] text-text-faint">{t("marketplace.ui.freeOpenSource")}</span>
 				{isInstalled ? (
 					<div className="flex items-center gap-2">
 						<span className="flex items-center gap-1 text-xs font-medium text-emerald-400">
 							<CheckIcon size={13} />
-							已安装
+							{t("marketplace.ui.installedBadge")}
 						</span>
 						{onConfigure && (
 							<button
@@ -497,7 +505,7 @@ function PluginCard({
 								className="flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1 text-xs font-medium text-text transition-colors hover:bg-white/20 active:scale-95 cursor-pointer"
 							>
 								<SlidersIcon size={12} />
-								<span>配置</span>
+								<span>{t("marketplace.ui.configure")}</span>
 							</button>
 						)}
 					</div>
@@ -508,7 +516,7 @@ function PluginCard({
 						className="flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1 text-xs font-medium text-text transition-colors hover:bg-white/20 active:scale-95 cursor-pointer"
 					>
 						<DownloadIcon size={12} />
-						安装
+						{t("marketplace.ui.install")}
 					</button>
 				)}
 			</div>

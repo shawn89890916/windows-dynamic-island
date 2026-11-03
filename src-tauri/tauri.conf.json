@@ -51,13 +51,13 @@
         "installerHooks": "./windows/hooks.nsh"
       }
     },
-    "createUpdaterArtifacts": false
+    "createUpdaterArtifacts": true
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNEMzc4QjlBMDQ4RjcyNTgKUldSWWNvOEVtb3MzUGQwZzFmS0tLQXlOSDdrYVpWVlJvcHBLdS8xQ29zQ0RaTTJETUxiSVFHS2QK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEYyMEFEQjMzNkMzRkZDNDUKUldSRi9EOXNNOXNLOG82bWdsbVBVNXQzWVlGbmVqZ2I3ZlRVMnJqNjBmcllSVDBpTkpmRWU0ODEK",
       "endpoints": [
-        "https://github.com/HeyyCzer/windows-island/releases/latest/download/latest.json"
+        "https://github.com/shawn89890916/windows-dynamic-island/releases/latest/download/latest.json"
       ],
       "windows": {
         "installMode": "quiet"

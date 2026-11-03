@@ -33,18 +33,29 @@ pub fn spawn(app: AppHandle) {
     app.manage(Pending::default());
     std::thread::spawn(move || {
         std::thread::sleep(FIRST_CHECK);
-        match tauri::async_runtime::block_on(check(&app)) {
-            Ok(Some(_)) => install(&app),
-            Ok(None) => {}
-            Err(e) => log::warn!("update check failed: {e}"),
+        if automatic_updates_enabled(&app) {
+            match tauri::async_runtime::block_on(check(&app)) {
+                Ok(Some(_)) => install(&app),
+                Ok(None) => {}
+                Err(e) => log::warn!("update check failed: {e}"),
+            }
         }
         loop {
             std::thread::sleep(INTERVAL);
-            if let Err(e) = tauri::async_runtime::block_on(check(&app)) {
+            if automatic_updates_enabled(&app)
+                && let Err(e) = tauri::async_runtime::block_on(check(&app))
+            {
                 log::warn!("update check failed: {e}");
             }
         }
     });
+}
+
+fn automatic_updates_enabled(app: &AppHandle) -> bool {
+	app.state::<crate::settings::Settings>()
+		.get("app.automaticUpdates")
+		.and_then(|value| value.as_bool())
+		.unwrap_or(true)
 }
 
 /// Look for a newer release and download it. Returns the version waiting to

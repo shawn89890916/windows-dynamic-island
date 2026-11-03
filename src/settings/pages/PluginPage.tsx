@@ -122,12 +122,12 @@ export function PluginPage({
 		setDiagResult(null);
 
 		try {
-			if (!plugin?.packageSha256) throw Error("请先下载并安装此插件，再运行它自己的诊断程序。");
+			if (!plugin?.packageSha256) throw Error(t("marketplace.ui.notInstalledTitle"));
 			setDiagResult(await diagnosePlugin(plugin, formValues));
 		} catch (err) {
 			setDiagResult({
 				status: "error",
-				message: `测试异常: ${err instanceof Error ? err.message : String(err)}`,
+				message: `${t("marketplace.ui.testingConnection")} ${err instanceof Error ? err.message : String(err)}`,
 			});
 		} finally {
 			setDiagLoading(false);
@@ -135,7 +135,7 @@ export function PluginPage({
 	};
 
 	const backTo = from === "modules" ? "/modules" : "/marketplace";
-	const backLabel = from === "modules" ? t("modules.title") : "插件市场";
+	const backLabel = from === "modules" ? t("modules.title") : t("marketplace.title");
 
 	return (
 		<div className="flex flex-col gap-4 select-text">
@@ -150,7 +150,7 @@ export function PluginPage({
 						className="flex items-center gap-1.5 text-xs font-medium text-emerald-400"
 					>
 						<CheckIcon size={13} />
-						<span>已自动保存并即时生效</span>
+						<span>{t("marketplace.ui.autoSaved")}</span>
 					</motion.span>
 				)}
 			</div>
@@ -174,7 +174,7 @@ export function PluginPage({
 							v{manifest.version}
 						</span>
 						<span className="rounded-full bg-white/5 px-2 py-0.5 text-[11px] font-medium text-text-faint">
-							{plugin?.source === "local" ? "本地导入" : "官方开源市场"}
+							{t(plugin?.source === "local" ? "marketplace.ui.sourceLocalPlugin" : "marketplace.ui.sourceOfficial")}
 						</span>
 					</div>
 
@@ -182,7 +182,7 @@ export function PluginPage({
 
 					<div className="mt-2.5 flex flex-wrap items-center gap-3 text-[11.5px] text-text-faint">
 						<span>
-							开发者:{" "}
+							{t("marketplace.ui.developer")}{" "}
 							{manifest.author.url ? (
 								<a
 									href={manifest.author.url}
@@ -217,10 +217,8 @@ export function PluginPage({
 						<div className="rounded-full bg-white/6 p-3 text-text-faint">
 							<BookOpenIcon size={28} />
 						</div>
-						<h3 className="text-sm font-semibold text-text">此插件尚未安装</h3>
-						<p className="max-w-md text-xs text-text-dim">
-							安装后即可在灵动岛与快捷启动栏中使用此微应用，并在此处自由配置参数与查阅专属使用教程。
-						</p>
+						<h3 className="text-sm font-semibold text-text">{t("marketplace.ui.notInstalledTitle")}</h3>
+						<p className="max-w-md text-xs text-text-dim">{t("marketplace.ui.notInstalledDesc")}</p>
 						<button
 							type="button"
 							disabled={installing}
@@ -238,11 +236,9 @@ export function PluginPage({
 							className="mt-2 flex items-center gap-1.5 rounded-xl bg-accent px-4 py-2 text-xs font-semibold text-white shadow-md hover:bg-accent-hover transition-colors"
 						>
 							<SparklesIcon size={14} />
-							<span>{installing ? "下载并安装中…" : "下载并安装插件"}</span>
+							<span>{t(installing ? "marketplace.ui.installingPlugin" : "marketplace.ui.installNow")}</span>
 						</button>
-						<p className="max-w-lg text-[11px] leading-relaxed text-text-faint">
-							插件代码会在灵动岛窗口中运行，并可使用该窗口已有的系统接口与数据。仅安装你信任的发布者；更新也会单独下载并校验。
-						</p>
+						<p className="max-w-lg text-[11px] leading-relaxed text-text-faint">{t("marketplace.ui.pluginTrust")}</p>
 						{installError && <p className="text-xs text-red-300">{installError}</p>}
 					</div>
 				</Card>
@@ -252,18 +248,18 @@ export function PluginPage({
 					<Card>
 						<Row
 							as="label"
-							label="启用此插件"
+							label={t("marketplace.ui.enablePlugin")}
 							desc={
 								<span className="flex items-center gap-1.5">
 									{plugin.enabled ? (
 										<>
 											<span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
-											<span className="text-emerald-400 font-medium">已激活 · 灵动岛与抽屉正常加载</span>
+											<span className="text-emerald-400 font-medium">{t("marketplace.ui.activePlugin")}</span>
 										</>
 									) : (
 										<>
 											<span className="size-2 rounded-full bg-white/20" />
-											<span>已停用 · 暂时从灵动岛隐藏</span>
+											<span>{t("marketplace.ui.inactivePlugin")}</span>
 										</>
 									)}
 								</span>
@@ -281,14 +277,16 @@ export function PluginPage({
 					{manifest.settings && manifest.settings.length > 0 && (
 						<div className="flex flex-col gap-1.5">
 							<div className="flex items-center justify-between px-1">
-								<h2 className="text-xs font-bold tracking-wider text-text-faint uppercase">参数配置 (Parameters)</h2>
+								<h2 className="text-xs font-bold tracking-wider text-text-faint uppercase">
+									{t("marketplace.ui.parameters")}
+								</h2>
 								<button
 									type="button"
 									onClick={handleResetDefaults}
 									className="flex items-center gap-1 text-[11px] text-text-faint hover:text-text transition-colors"
 								>
 									<RotateCcwIcon size={11} />
-									<span>重置为默认值</span>
+									<span>{t("marketplace.ui.resetDefaults")}</span>
 								</button>
 							</div>
 
@@ -312,13 +310,15 @@ export function PluginPage({
 						<div className="flex flex-col gap-1.5">
 							<div className="flex items-center gap-1.5 px-1">
 								<BookOpenIcon size={13} className="text-accent" />
-								<h2 className="text-xs font-bold tracking-wider text-text uppercase">配置与使用教程 (Setup Guide)</h2>
+								<h2 className="text-xs font-bold tracking-wider text-text uppercase">
+									{t("marketplace.ui.setupGuide")}
+								</h2>
 							</div>
 
 							<Card className="p-4.5">
 								{/* Summary */}
 								<div className="rounded-xl border border-white/6 bg-white/2 p-3 text-xs text-text-dim leading-relaxed">
-									<strong className="text-text font-semibold mr-1.5">组件工作机制:</strong>
+									<strong className="text-text font-semibold mr-1.5">{t("marketplace.ui.pluginMechanism")}</strong>
 									{guide.summary}
 								</div>
 
@@ -327,7 +327,7 @@ export function PluginPage({
 									<div className="mt-3.5 flex flex-col gap-1.5">
 										<span className="text-[11.5px] font-semibold text-text-faint flex items-center gap-1">
 											<InfoIcon size={12} className="text-amber-400" />
-											<span>前置准备 (Prerequisites)</span>
+											<span>{t("marketplace.ui.prerequisites")}</span>
 										</span>
 										<div className="flex flex-col gap-1 pl-1">
 											{guide.prerequisites.map((req) => (
@@ -342,9 +342,7 @@ export function PluginPage({
 
 								{/* Step by Step Guide */}
 								<div className="mt-4 flex flex-col gap-3">
-									<span className="text-[11.5px] font-semibold text-text-faint">
-										详细操作步骤 (Step-by-Step Instructions)
-									</span>
+									<span className="text-[11.5px] font-semibold text-text-faint">{t("marketplace.ui.steps")}</span>
 
 									<div className="flex flex-col gap-2.5">
 										{guide.steps.map((step, idx) => (
@@ -373,7 +371,9 @@ export function PluginPage({
 													<p className="mt-1 text-xs text-text-dim leading-relaxed">{step.desc}</p>
 													{step.tip && (
 														<div className="mt-2 rounded-lg bg-white/4 px-2.5 py-1.5 text-[11.5px] text-amber-300/90 flex items-start gap-1.5">
-															<span className="font-semibold text-amber-400 shrink-0">💡 提示:</span>
+															<span className="font-semibold text-amber-400 shrink-0">
+																💡 {t("marketplace.ui.tip")}
+															</span>
 															<span>{step.tip}</span>
 														</div>
 													)}
@@ -388,7 +388,7 @@ export function PluginPage({
 									<div className="flex items-center justify-between gap-3">
 										<div className="flex items-center gap-2">
 											<SlidersIcon size={14} className="text-accent" />
-											<h4 className="text-xs font-semibold text-text">连通性与服务即时诊断</h4>
+											<h4 className="text-xs font-semibold text-text">{t("marketplace.ui.diagnostics")}</h4>
 										</div>
 										<button
 											type="button"
@@ -397,7 +397,9 @@ export function PluginPage({
 											className="flex h-7 items-center gap-1.5 rounded-lg bg-white/10 px-3 text-xs font-medium text-text hover:bg-white/18 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
 										>
 											<RefreshCwIcon size={11} className={diagLoading ? "animate-spin" : ""} />
-											<span>{diagLoading ? "正在诊断…" : "立即测试连通性"}</span>
+											<span>
+												{t(diagLoading ? "marketplace.ui.testingConnection" : "marketplace.ui.testConnection")}
+											</span>
 										</button>
 									</div>
 
@@ -435,7 +437,7 @@ export function PluginPage({
 									<div className="mt-4 flex flex-col gap-2">
 										<span className="text-[11.5px] font-semibold text-text-faint flex items-center gap-1">
 											<HelpCircleIcon size={12} />
-											<span>常见排查与问答 (Troubleshooting)</span>
+											<span>{t("marketplace.ui.troubleshooting")}</span>
 										</span>
 										<div className="flex flex-col gap-2">
 											{guide.faq.map((item) => (
@@ -454,16 +456,16 @@ export function PluginPage({
 					{/* Card 4: Danger Zone & Uninstallation */}
 					<div className="flex flex-col gap-1.5 mt-2">
 						<h2 className="text-xs font-bold tracking-wider text-text-faint uppercase px-1">
-							元数据与管理 (Management)
+							{t("marketplace.ui.management")}
 						</h2>
 						<Card>
-							<Row label="唯一标识 (Package ID)" desc="该插件在系统注册表与设置树中的唯一命名空间">
+							<Row label={t("marketplace.ui.packageId")} desc={t("marketplace.ui.packageIdDesc")}>
 								<span className="font-mono text-xs text-text-dim select-all bg-white/4 px-2 py-1 rounded">
 									{manifest.id}
 								</span>
 							</Row>
 
-							<Row label="卸载此插件" desc="从灵动岛完全卸载此扩展组件，并清理其在运行时的注册状态">
+							<Row label={t("marketplace.ui.uninstallTitle")} desc={t("marketplace.ui.uninstallDesc")}>
 								{confirmUninstall ? (
 									<div className="flex items-center gap-2">
 										<button
@@ -471,7 +473,7 @@ export function PluginPage({
 											onClick={() => setConfirmUninstall(false)}
 											className="h-8 rounded-lg bg-white/6 px-3 text-xs text-text-faint hover:bg-white/10"
 										>
-											取消
+											{t("marketplace.ui.cancel")}
 										</button>
 										<button
 											type="button"
@@ -483,7 +485,7 @@ export function PluginPage({
 											className="flex h-8 items-center gap-1.5 rounded-lg bg-red-500/20 px-3 text-xs font-semibold text-red-400 hover:bg-red-500/30 transition-colors"
 										>
 											<Trash2Icon size={13} />
-											<span>确认卸载</span>
+											<span>{t("marketplace.ui.confirmUninstall")}</span>
 										</button>
 									</div>
 								) : (
@@ -493,7 +495,7 @@ export function PluginPage({
 										className="flex h-8 items-center gap-1.5 rounded-lg border border-red-500/20 bg-red-500/8 px-3 text-xs font-medium text-red-400 hover:bg-red-500/16 transition-colors cursor-pointer"
 									>
 										<Trash2Icon size={13} />
-										<span>卸载插件</span>
+										<span>{t("marketplace.ui.uninstall")}</span>
 									</button>
 								)}
 							</Row>
@@ -518,6 +520,7 @@ function SettingRow({
 	onTogglePassword: () => void;
 	onChange: (val: unknown) => void;
 }) {
+	const t = useT();
 	return (
 		<Row label={field.label} desc={field.description}>
 			{field.type === "text" && (
@@ -551,7 +554,7 @@ function SettingRow({
 						type="button"
 						onClick={onTogglePassword}
 						className="absolute right-2 text-text-faint hover:text-text cursor-pointer"
-						title={showPassword ? "隐藏密钥" : "显示明文"}
+						title={t(showPassword ? "marketplace.ui.hideSecret" : "marketplace.ui.showSecret")}
 					>
 						{showPassword ? <EyeOffIcon size={14} /> : <EyeIcon size={14} />}
 					</button>

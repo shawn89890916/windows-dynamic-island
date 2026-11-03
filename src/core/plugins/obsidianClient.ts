@@ -77,7 +77,7 @@ export function quickCaptureToObsidian(
 ): boolean {
 	if (!title && !content) return false;
 	const tagStr = tags.length > 0 ? `\n\n${tags.map((t) => (t.startsWith("#") ? t : `#${t}`)).join(" ")}` : "";
-	const finalContent = `${content.trim()}${tagStr}\n\n> 记录于 Windows 灵动岛 · ${new Date().toLocaleString()}`;
+	const finalContent = `${content.trim()}${tagStr}`;
 	const noteName = title.trim() || `速记-${new Date().toISOString().slice(0, 10)}-${Date.now().toString().slice(-4)}`;
 
 	const p = vaultPath.trim().replace(/\\/g, "/").replace(/\/+$/, "");

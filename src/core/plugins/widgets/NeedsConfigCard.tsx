@@ -1,6 +1,7 @@
 import { CheckIcon, ExternalLinkIcon, SlidersIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { command } from "../../../core/bridge";
+import { useT } from "../../../core/i18n";
 import { updatePluginSettings } from "../registry";
 import type { PluginSettingField } from "../types";
 
@@ -27,6 +28,7 @@ export function NeedsConfigCard({
 	externalLabel?: string;
 	onConfigured?: (settings: Record<string, unknown>) => void;
 }) {
+	const t = useT();
 	const [formValues, setFormValues] = useState<Record<string, unknown>>(() => ({
 		...currentSettings,
 	}));
@@ -55,7 +57,7 @@ export function NeedsConfigCard({
 						<div className="flex items-center gap-2">
 							<span className="text-[13px] font-semibold text-text">{title}</span>
 							<span className="rounded-full bg-amber-500/18 px-2 py-0.2 text-[10px] font-medium text-amber-300">
-								尚未配置
+								{t("marketplace.ui.notConfigured")}
 							</span>
 						</div>
 						<p className="text-[11.5px] text-text-faint">{description}</p>
@@ -74,7 +76,7 @@ export function NeedsConfigCard({
 						className="flex items-center gap-1 text-[11px] font-medium text-text-dim hover:text-text bg-white/6 hover:bg-white/10 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
 					>
 						<SlidersIcon size={11} />
-						<span>配置与教程</span>
+						<span>{t("marketplace.ui.configureGuide")}</span>
 					</button>
 					{externalUrl && (
 						<button
@@ -82,7 +84,7 @@ export function NeedsConfigCard({
 							onClick={() => command("open_external", { url: externalUrl })}
 							className="flex items-center gap-1 text-[11px] font-medium text-text-dim hover:text-text bg-white/6 hover:bg-white/10 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
 						>
-							<span>{externalLabel || "官方说明"}</span>
+							<span>{externalLabel || t("marketplace.ui.officialDocs")}</span>
 							<ExternalLinkIcon size={11} />
 						</button>
 					)}
@@ -117,7 +119,7 @@ export function NeedsConfigCard({
 											onChange={(e) => setFormValues((prev) => ({ ...prev, [def.key]: e.target.checked }))}
 											className="rounded border-white/20 bg-white/10 accent-indigo-500"
 										/>
-										<span>启用</span>
+										<span>{t("marketplace.ui.enable")}</span>
 									</label>
 								) : (
 									<input
@@ -126,7 +128,7 @@ export function NeedsConfigCard({
 										onChange={(e) => setFormValues((prev) => ({ ...prev, [def.key]: e.target.value }))}
 										onMouseDown={() => command("focus_island")}
 										onFocus={() => command("focus_island")}
-										placeholder={`请输入 ${def.label}`}
+										placeholder={t("marketplace.ui.inputPlaceholder", { label: def.label })}
 										className="h-7 rounded-lg border border-white/10 bg-white/6 px-2.5 text-[11.5px] text-text placeholder:text-text-faint focus:border-white/30 focus:outline-none"
 									/>
 								)}
@@ -143,12 +145,12 @@ export function NeedsConfigCard({
 							{savedSuccess ? (
 								<>
 									<CheckIcon size={12} />
-									<span>已保存并连接</span>
+									<span>{t("marketplace.ui.savedConnected")}</span>
 								</>
 							) : (
 								<>
 									<SlidersIcon size={12} />
-									<span>保存配置并连接</span>
+									<span>{t("marketplace.ui.saveConnect")}</span>
 								</>
 							)}
 						</button>
@@ -156,7 +158,7 @@ export function NeedsConfigCard({
 				</form>
 			) : (
 				<div className="mt-3 flex items-center justify-center">
-					<span className="text-xs text-text-faint">请在设置中心“插件市场 → 已安装”中配置此插件。</span>
+					<span className="text-xs text-text-faint">{t("marketplace.ui.configHint")}</span>
 				</div>
 			)}
 		</div>

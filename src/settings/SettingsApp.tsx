@@ -1,4 +1,4 @@
-import { InfoIcon, LayoutGridIcon, PaletteIcon, SettingsIcon, StoreIcon } from "lucide-react";
+import { CommandIcon, InfoIcon, LayoutGridIcon, PaletteIcon, SettingsIcon, StoreIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { type ReactNode, useEffect } from "react";
 import { MemoryRouter, Route, Routes, useLocation, useNavigate } from "react-router";
@@ -13,6 +13,7 @@ import { MarketplacePage } from "./pages/MarketplacePage";
 import { ModulePage } from "./pages/ModulePage";
 import { ModulesPage } from "./pages/ModulesPage";
 import { PluginPage } from "./pages/PluginPage";
+import { ShortcutsPage } from "./pages/ShortcutsPage";
 
 /**
  * Settings window: frameless, with a sidebar in two groups — the app itself
@@ -71,6 +72,7 @@ function SettingsContent({ values }: { values: Record<string, unknown> }) {
 						icon={<StoreIcon size={14} />}
 						label={t("marketplace.title")}
 					/>
+					<NavItem to="/shortcuts" icon={<CommandIcon size={14} />} label={t("shortcuts.title")} />
 					<div className="flex-1" />
 					<NavItem to="/about" icon={<InfoIcon size={15} />} label={t("settings.about.title")} />
 				</nav>
@@ -83,7 +85,8 @@ function SettingsContent({ values }: { values: Record<string, unknown> }) {
 							<Route path="modules/:id" element={<ModulePage values={values} />} />
 							<Route path="plugins/:id" element={<PluginPage values={values} />} />
 							<Route path="marketplace" element={<MarketplacePage />} />
-							<Route path="about" element={<AboutPage />} />
+							<Route path="shortcuts" element={<ShortcutsPage values={values} />} />
+							<Route path="about" element={<AboutPage values={values} />} />
 						</Routes>
 					</Page>
 				</main>

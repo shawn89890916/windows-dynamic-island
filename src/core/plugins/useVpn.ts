@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { createStore } from "../island";
 import {
 	failoverNode,
@@ -24,6 +24,7 @@ interface VpnState {
 }
 /** One owner in the island keeps monitoring even when its panel is closed. */
 export function createVpnMonitor(config: VpnConfig) {
+	let currentConfig = config;
 	const store = createStore<VpnState>({
 		snapshot: null,
 		group: "",
@@ -39,9 +40,9 @@ export function createVpnMonitor(config: VpnConfig) {
 	let timer: ReturnType<typeof setTimeout> | undefined;
 	const schedule = () => {
 		if (!active) return;
-		const nextAt = Date.now() + config.interval;
+		const nextAt = Date.now() + currentConfig.interval;
 		store.set((s) => ({ ...s, nextAt }));
-		timer = setTimeout(() => void refresh(), config.interval);
+		timer = setTimeout(() => void refresh(), currentConfig.interval);
 	};
 	const operation = (run: () => Promise<void>) => {
 		if (pending) return pending;
@@ -62,9 +63,9 @@ export function createVpnMonitor(config: VpnConfig) {
 	};
 	const refresh = () =>
 		operation(async () => {
-			let snapshot = await readVpnSnapshot(config);
-			const group = selectedGroup(snapshot, config.group);
-			if (!group) throw Error(config.group ? "指定策略组不存在或不能手动切换" : "没有可手动切换的策略组");
+			let snapshot = await readVpnSnapshot(currentConfig);
+			const group = selectedGroup(snapshot, currentConfig.group);
+			if (!group) throw Error(currentConfig.group ? "指定策略组不存在或不能手动切换" : "没有可手动切换的策略组");
 			const names = groupNodes(snapshot, group);
 			if (!names.length) throw Error("该组没有直接节点，请选择包含实际节点的手动策略组");
 			if (names.length > 256) throw Error("节点超过 256 个，请选择更小的策略组");
@@ -77,7 +78,7 @@ export function createVpnMonitor(config: VpnConfig) {
 						const name = names[index++];
 						let node: NodeDelay;
 						try {
-							const result = await vpnRequest<{ delay: number }>(config, "delay", name);
+							const result = await vpnRequest<{ delay: number }>(currentConfig, "delay", name);
 							node = { name, delay: Number.isFinite(result?.delay) && result.delay > 0 ? result.delay : null };
 						} catch (err) {
 							if (String(err).includes("密钥")) throw err;
@@ -96,51 +97,53 @@ export function createVpnMonitor(config: VpnConfig) {
 			for (const result of results) if (result.status === "rejected") throw result.reason;
 			if (!active) return;
 			let notice = "";
-			const target = failoverNode(config, snapshot, group, nodes);
+			const target = failoverNode(currentConfig, snapshot, group, nodes);
 			if (target) {
-				const fresh = await readVpnSnapshot(config);
-				const currentGroup = selectedGroup(fresh, config.group);
+				const fresh = await readVpnSnapshot(currentConfig);
+				const currentGroup = selectedGroup(fresh, currentConfig.group);
 				if (
 					active &&
 					fresh.mode === snapshot.mode &&
 					currentGroup?.name === group.name &&
 					currentGroup.now === group.now
 				) {
-					await vpnRequest(config, "select", group.name, target);
+					await vpnRequest(currentConfig, "select", group.name, target);
 					if (!active) return;
-					snapshot = await readVpnSnapshot(config);
+					snapshot = await readVpnSnapshot(currentConfig);
 					if (snapshot.proxies[group.name]?.now !== target) throw Error("控制器未确认自动切换，当前节点状态未知");
 					notice = `原节点超时或不可用，已切换至 ${target}`;
 				} else snapshot = fresh;
 			}
 			const current = snapshot.proxies[group.name]?.now;
 			const failed = nodes.some((n) => n.name === current && n.delay === null);
-			if (active)
+			if (active) {
+				const sortedNodes = [...nodes].sort((a, b) => (a.delay ?? Infinity) - (b.delay ?? Infinity));
 				store.set({
 					snapshot,
 					group: group.name,
-					nodes,
+					nodes: sortedNodes,
 					busy: true,
 					updatedAt: Date.now(),
 					nextAt: 0,
 					notice,
 					error: failed ? "当前节点测速超时或不可用；未找到可用的指定候选节点" : null,
 				});
+			}
 		});
 	const change = (action: "select" | "mode", value: string) =>
 		operation(async () => {
 			if (!active) return;
 			const state = store.get();
 			if (action === "select" && !state.nodes.some((n) => n.name === value)) throw Error("节点不属于当前策略组");
-			await vpnRequest(config, action, action === "select" ? state.group : "", value);
-			const snapshot = await readVpnSnapshot(config);
+			await vpnRequest(currentConfig, action, action === "select" ? state.group : "", value);
+			const snapshot = await readVpnSnapshot(currentConfig);
 			if (!active) return;
 			if ((action === "select" ? snapshot.proxies[state.group]?.now : snapshot.mode) !== value)
 				throw Error("控制器未确认切换，请刷新查看实际状态");
 			store.set((s) => ({
 				...s,
 				snapshot,
-				group: selectedGroup(snapshot, config.group)?.name ?? s.group,
+				group: selectedGroup(snapshot, currentConfig.group)?.name ?? s.group,
 				error: null,
 				notice: action === "select" ? `已切换至 ${value}` : "分流模式已更新",
 			}));
@@ -150,10 +153,20 @@ export function createVpnMonitor(config: VpnConfig) {
 		if (active && action === "mode" && !store.get().error) await refresh();
 	};
 	return {
-		config,
+		get config() {
+			return currentConfig;
+		},
 		store,
 		refresh,
 		change: changeAndRefresh,
+		configure(next: VpnConfig) {
+			const intervalChanged = next.interval !== currentConfig.interval;
+			currentConfig = next;
+			if (active && intervalChanged && !pending) {
+				clearTimeout(timer);
+				schedule();
+			}
+		},
 		start() {
 			active = true;
 			if (!pending) void refresh();
@@ -167,13 +180,22 @@ export function createVpnMonitor(config: VpnConfig) {
 const empty = createVpnMonitor(vpnConfig({}));
 let current = empty;
 export function useVpnMonitor(settings?: Record<string, unknown>) {
-	const key = settings ? JSON.stringify(vpnConfig(settings)) : "";
-	const monitor = useMemo(() => (key ? createVpnMonitor(JSON.parse(key) as VpnConfig) : empty), [key]);
+	const configJson = settings ? JSON.stringify(vpnConfig(settings)) : "";
+	const config = useMemo(() => (configJson ? (JSON.parse(configJson) as VpnConfig) : null), [configJson]);
+	const identityKey = config ? JSON.stringify([config.endpoint, config.secret, config.group]) : "";
+	const monitorRef = useRef({ key: "", monitor: empty });
+	if (monitorRef.current.key !== identityKey) {
+		monitorRef.current = { key: identityKey, monitor: config ? createVpnMonitor(config) : empty };
+	}
+	const monitor = monitorRef.current.monitor;
+	useEffect(() => {
+		if (config) monitor.configure(config);
+	}, [monitor, config]);
 	useEffect(() => {
 		current = monitor;
-		if (key) monitor.start();
+		if (identityKey) monitor.start();
 		return () => monitor.stop();
-	}, [key, monitor]);
+	}, [identityKey, monitor]);
 	return monitor.store.use();
 }
 export function useVpn() {

@@ -134,17 +134,31 @@ export function AppearancePage({ values }: { values: Record<string, unknown> }) 
 				<ToggleRow def={appearanceSettings.animate} value={readSetting(values, appearanceSettings.animate)} />
 				<ToggleRow def={appearanceSettings.glow} value={readSetting(values, appearanceSettings.glow)} />
 				<ToggleRow def={appearanceSettings.idleClock} value={readSetting(values, appearanceSettings.idleClock)} />
+				<Row
+					label={t("appearance.tabsPosition.label")}
+					desc={windows ? t("appearance.tabsPosition.desc") : t("appearance.windowsOnly")}
+				>
+					<Segmented
+						options={[
+							{ value: "top", label: t("appearance.tabsPosition.top") },
+							{ value: "bottom", label: t("appearance.tabsPosition.bottom") },
+						]}
+						value={readSetting(values, appearanceSettings.tabsPosition)}
+						disabled={!windows}
+						onChange={(value) => setSetting(appearanceSettings.tabsPosition, value)}
+					/>
+				</Row>
 			</motion.section>
 
 			<Card>
 				<Block>
-					<Row label="物理高斯模糊深度" desc="控制灵动岛后方桌面的物理高斯漫反射光晕大小，紧凑贴合胶囊边缘" />
+					<Row label={t("appearance.blur.label")} desc={t("appearance.blur.desc")} />
 					<Segmented
 						options={[
-							{ value: "none", label: "关闭 (纯黑硬边)" },
-							{ value: "subtle", label: "微光晕 (Apple 6px)" },
-							{ value: "moderate", label: "柔和漫反射 (12px)" },
-							{ value: "ambient", label: "深邃氛围 (18px)" },
+							{ value: "none", label: t("appearance.blur.none") },
+							{ value: "subtle", label: t("appearance.blur.subtle") },
+							{ value: "moderate", label: t("appearance.blur.moderate") },
+							{ value: "ambient", label: t("appearance.blur.ambient") },
 						]}
 						value={readSetting(values, appearanceSettings.blurEffect)}
 						onChange={(val) => setSetting(appearanceSettings.blurEffect, val)}

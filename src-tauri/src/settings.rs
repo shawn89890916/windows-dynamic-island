@@ -41,6 +41,10 @@ impl Settings {
         self.data.lock().unwrap().get(key).cloned()
     }
 
+    pub fn snapshot(&self) -> Map<String, Value> {
+        self.data.lock().unwrap().clone()
+    }
+
     fn save(&self, data: &Map<String, Value>) {
         if let Some(dir) = self.path.parent() {
             let _ = std::fs::create_dir_all(dir);
@@ -116,7 +120,7 @@ fn create(app: &AppHandle) -> tauri::Result<()> {
     Ok(())
 }
 
-const REPO_URL: &str = "https://github.com/HeyyCzer/windows-island";
+const REPO_URL: &str = "https://github.com/shawn89890916/windows-dynamic-island";
 
 /// Open the GitHub repo in the default browser (About page).
 #[tauri::command]

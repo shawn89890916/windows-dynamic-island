@@ -25,7 +25,7 @@ export function VpnWidget({ settings }: { settings: Record<string, unknown> }) {
 	const current = vpn.snapshot?.proxies[vpn.group]?.now;
 	const fastest = fastestNodes(vpn.nodes, vpn.config.topCount);
 	const currentNode = vpn.nodes.find((n) => n.name === current);
-	const visibleNodes = showAll ? vpn.nodes : fastest;
+	const visibleNodes = showAll ? [...vpn.nodes].sort((a, b) => (a.delay ?? Infinity) - (b.delay ?? Infinity)) : fastest;
 	const rows =
 		current && !visibleNodes.some((n) => n.name === current)
 			? [{ name: current, delay: null }, ...visibleNodes]

@@ -4,8 +4,10 @@ import { Button } from "../../components/ui/button";
 import { Card, Row } from "../../components/ui/card";
 import { command, isTauri } from "../../core/bridge";
 import { useT } from "../../core/i18n";
+import { readSetting, updateSettings, type Values } from "../../core/settings";
+import { ToggleRow } from "../components/Toggle";
 
-const REPO_URL = "https://github.com/HeyyCzer/windows-island";
+const REPO_URL = "https://github.com/shawn89890916/windows-dynamic-island";
 
 type UpdateStatus =
 	| { state: "idle" | "checking" | "latest" | "dev" | "portable" | "store" | "error" }
@@ -47,7 +49,7 @@ function UpdateRow() {
 	);
 }
 
-export function AboutPage() {
+export function AboutPage({ values }: { values: Values }) {
 	const t = useT();
 	const openRepo = () => (isTauri ? command("open_repo") : window.open(REPO_URL, "_blank"));
 
@@ -68,6 +70,7 @@ export function AboutPage() {
 					</Button>
 				</Row>
 				<UpdateRow />
+				<ToggleRow def={updateSettings.automatic} value={readSetting(values, updateSettings.automatic)} />
 				<Row label={t("settings.about.license")} desc="GNU GPL v3.0"></Row>
 			</Card>
 		</>

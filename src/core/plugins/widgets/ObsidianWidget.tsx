@@ -24,6 +24,7 @@ import {
 	quickCaptureToObsidian,
 	searchObsidian,
 } from "../obsidianClient";
+import { quickCaptureName } from "../obsidianDailyNote";
 import { getInstalledPlugins, useInstalledPlugins } from "../registry";
 import { NeedsConfigCard } from "./NeedsConfigCard";
 
@@ -112,14 +113,9 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 	const handleCapture = (e?: React.FormEvent) => {
 		e?.preventDefault();
 		if (!captureText.trim()) return;
+		const captureName = quickCaptureName(new Date(), dailyDateFormat);
 
-		const ok = quickCaptureToObsidian(
-			vaultName,
-			`灵动速记-${new Date().toLocaleTimeString().replace(/:/g, "-")}`,
-			captureText,
-			[selectedTag],
-			vaultPath,
-		);
+		const ok = quickCaptureToObsidian(vaultName, captureName, captureText, [selectedTag], vaultPath);
 		if (ok) {
 			setCapturedSuccess(true);
 			setCaptureText("");
