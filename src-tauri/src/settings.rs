@@ -9,10 +9,12 @@ use std::sync::Mutex;
 use std::time::Duration;
 
 use serde_json::{Map, Value};
-use tauri::{AppHandle, Emitter, Manager, State, WebviewUrl, WebviewWindowBuilder};
+use tauri::{AppHandle, Emitter, Manager, State, WebviewUrl, WebviewWindowBuilder, WindowEvent};
 
 pub const CHANGED_EVENT: &str = "settings://changed";
 pub const SETTINGS_LABEL: &str = "settings";
+const SETTINGS_OPEN_EVENT: &str = "island://settings-open";
+const SETTINGS_CLOSED_EVENT: &str = "island://settings-closed";
 
 pub struct Settings {
     path: PathBuf,
@@ -88,24 +90,36 @@ pub fn open_settings(app: AppHandle) -> Result<(), String> {
 const SIZE: (f64, f64) = (860.0, 620.0);
 
 pub fn open(app: &AppHandle) -> tauri::Result<()> {
+    let _ = set_island_topmost(app, false);
     if let Some(win) = app.get_webview_window(SETTINGS_LABEL) {
-        win.unminimize()?;
-        win.show()?;
-        return win.set_focus();
+        let result = (|| {
+            win.unminimize()?;
+            win.show()?;
+            win.set_focus()?;
+            app.emit(SETTINGS_OPEN_EVENT, ())?;
+            Ok(())
+        })();
+        if result.is_err() {
+            restore_island(app);
+        }
+        return result;
     }
     // Callers are sync commands / tray / single-instance handlers on the main
     // thread, where building a webview deadlocks on Windows (WebView2 needs the
     // event loop). Build from another thread instead.
     let app = app.clone();
     std::thread::spawn(move || {
+        let _ = app.emit(SETTINGS_OPEN_EVENT, ());
         if let Err(e) = create(&app) {
             eprintln!("settings window: {e}");
+            restore_island(&app);
         }
     });
     Ok(())
 }
 
 fn create(app: &AppHandle) -> tauri::Result<()> {
+    let handle = app.clone();
     let win = WebviewWindowBuilder::new(app, SETTINGS_LABEL, WebviewUrl::App("index.html".into()))
         .title(crate::i18n::t(app, "window.settings"))
         .inner_size(SIZE.0, SIZE.1)
@@ -115,9 +129,26 @@ fn create(app: &AppHandle) -> tauri::Result<()> {
         .decorations(false)
         .background_color(tauri::webview::Color(12, 12, 16, 255))
         .build()?;
+    win.on_window_event(move |event| {
+        if matches!(event, WindowEvent::Destroyed) {
+            restore_island(&handle);
+        }
+    });
     win.show()?;
     win.set_focus()?;
     Ok(())
+}
+
+fn set_island_topmost(app: &AppHandle, topmost: bool) -> tauri::Result<()> {
+    if let Some(island) = app.get_webview_window(crate::window::ISLAND_LABEL) {
+        island.set_always_on_top(topmost)?;
+    }
+    Ok(())
+}
+
+fn restore_island(app: &AppHandle) {
+    let _ = set_island_topmost(app, true);
+    let _ = app.emit(SETTINGS_CLOSED_EVENT, ());
 }
 
 const REPO_URL: &str = "https://github.com/shawn89890916/windows-dynamic-island";

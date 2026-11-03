@@ -43,20 +43,20 @@ export function AppearancePage({ values }: { values: Record<string, unknown> }) 
 			<Card>
 				<Block>
 					<Row label={t("appearance.style.label")} desc={t("appearance.style.desc")} />
-					<div className="grid grid-cols-2 gap-2.5">
+					<div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
 						{STYLES.map((s) => (
 							<button
 								type="button"
 								key={s.id}
 								className={cn(
-									"flex flex-col gap-1 rounded-xl bg-white/3 px-2.5 pt-2.5 pb-3 text-left shadow-[inset_0_0_0_1px_var(--hairline)] transition-[box-shadow,background] duration-200 hover:bg-white/5",
+									"flex w-full min-w-0 flex-col gap-1 whitespace-normal rounded-xl bg-white/3 px-2.5 pt-2.5 pb-3 text-left shadow-[inset_0_0_0_1px_var(--hairline)] transition-[box-shadow,background] duration-200 hover:bg-white/5",
 									style === s.id && "shadow-[inset_0_0_0_2px_var(--accent)]",
 								)}
 								onClick={() => setSetting(appearanceSettings.style, s.id)}
 							>
 								<StylePreview style={s.id} rim={s.id === "windows" ? rim : []} />
-								<span className="mt-1.5 text-[13.5px] font-[650]">{t(s.name)}</span>
-								<Desc>{t(s.desc)}</Desc>
+								<span className="mt-1.5 w-full min-w-0 text-[13.5px] font-[650]">{t(s.name)}</span>
+								<Desc className="block w-full min-w-0 whitespace-normal break-words">{t(s.desc)}</Desc>
 							</button>
 						))}
 					</div>
