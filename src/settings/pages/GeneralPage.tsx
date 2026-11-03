@@ -29,6 +29,7 @@ export function GeneralPage({ values }: { values: Record<string, unknown> }) {
 					value={readSetting(values, positionSettings.returnDelay)}
 					disabled={!readSetting(values, positionSettings.returnToCenter)}
 				/>
+				<TopMarginRow value={Number(readSetting(values, positionSettings.topMargin) || 0)} />
 			</Card>
 		</>
 	);
@@ -151,6 +152,64 @@ function SecondsRow({ value, disabled }: { value: number; disabled: boolean }) {
 				onBlur={commit}
 				onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
 			/>
+		</Row>
+	);
+}
+
+function TopMarginRow({ value }: { value: number }) {
+	const t = useT();
+	const def = positionSettings.topMargin;
+	const [draft, setDraft] = useState(String(value));
+	useEffect(() => setDraft(String(value)), [value]);
+	const commit = (num?: number) => {
+		const n = num ?? Math.round(Number(draft));
+		if (Number.isFinite(n) && n >= 0 && n <= 240) {
+			setSetting(def, n);
+			setDraft(String(n));
+		} else {
+			setDraft(String(value));
+		}
+	};
+
+	return (
+		<Row as="label" label={t(def.label)} desc={t(def.description)}>
+			<div className="flex items-center gap-2">
+				<div className="flex items-center gap-1">
+					<button
+						type="button"
+						onClick={() => commit(0)}
+						className={`rounded-md px-2 py-1 text-xs transition-colors cursor-pointer ${
+							value === 0
+								? "bg-white/16 text-white font-medium"
+								: "bg-white/6 text-text-faint hover:bg-white/10 hover:text-text"
+						}`}
+					>
+						0px 贴顶
+					</button>
+					<button
+						type="button"
+						onClick={() => commit(48)}
+						className={`rounded-md px-2 py-1 text-xs transition-colors cursor-pointer ${
+							value === 48
+								? "bg-accent text-white font-semibold shadow-xs"
+								: "bg-white/6 text-text-faint hover:bg-white/10 hover:text-text"
+						}`}
+						title="适合 Windows 顶部任务栏"
+					>
+						48px 避让任务栏
+					</button>
+				</div>
+				<NumberField
+					unit="px"
+					min={0}
+					max={240}
+					step={2}
+					value={draft}
+					onChange={(e) => setDraft(e.target.value)}
+					onBlur={() => commit()}
+					onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+				/>
+			</div>
 		</Row>
 	);
 }

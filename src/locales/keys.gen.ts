@@ -31,6 +31,8 @@ export type MessageKey =
 	| "settings.returnToCenter.desc"
 	| "settings.returnDelay.label"
 	| "settings.returnDelay.desc"
+	| "settings.topMargin.label"
+	| "settings.topMargin.desc"
 	| "settings.about.title"
 	| "settings.about.version"
 	| "settings.about.source"

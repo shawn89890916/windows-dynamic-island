@@ -175,6 +175,12 @@ export const positionSettings = {
 		description: "settings.returnDelay.desc",
 		default: 5,
 	} satisfies SettingDef<number>,
+	topMargin: {
+		key: "island.topMargin",
+		label: "settings.topMargin.label" as unknown as MessageKey,
+		description: "settings.topMargin.desc" as unknown as MessageKey,
+		default: 0,
+	} satisfies SettingDef<number>,
 };
 
 /**

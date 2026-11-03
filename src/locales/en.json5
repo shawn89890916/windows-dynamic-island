@@ -66,6 +66,10 @@
       label: "Return after",
       desc: "Seconds before a dragged island slides back to the middle.",
     },
+    topMargin: {
+      label: "Top vertical offset (avoid top taskbar)",
+      desc: "Additional vertical distance from the top screen edge. Set to 48 px if your Windows taskbar is placed at the top.",
+    },
     about: {
       title: "About",
       // {version}: the app version, e.g. 1.2.3

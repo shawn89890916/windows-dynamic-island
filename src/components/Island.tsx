@@ -5,6 +5,7 @@ import { useTauriEvent } from "../core/bridge";
 import { cn } from "../core/cn";
 import { useSyncLocale } from "../core/i18n";
 import { type IslandApi, IslandContext } from "../core/island";
+import { positionSettings, readSetting, useSettings } from "../core/settings";
 import { useHitRects } from "../core/useHitRects";
 import { useIslandController } from "../core/useIslandController";
 import { useIslandDrag } from "../core/useIslandDrag";
@@ -23,8 +24,11 @@ export function Island() {
 	const ctl = useIslandController(builtinModules);
 	const { mode, primary, secondary, focused } = ctl;
 	const look = useAppearance();
+	const s = useSettings();
+	const topMargin = Math.max(0, Number(readSetting(s, positionSettings.topMargin)) || 0);
 	const windows = look.style === "windows";
 	const v = variantOf(look);
+	const effectiveTop = v.top + topMargin;
 	useHitRects();
 	useSyncLocale();
 	useIslandFileDrop(ctl);
@@ -40,8 +44,9 @@ export function Island() {
 
 	const drag = useIslandDrag({
 		width: g.width,
-		leftExtra: g.ear + (resting ? ambientWidth(ctl.entries.filter((e) => e.view.ambient).length) : 0),
-		rightExtra: g.ear + (showSecondary ? BUBBLE_GAP + BUBBLE : 0),
+		leftExtra:
+			(effectiveTop > 0 ? 0 : g.ear) + (resting ? ambientWidth(ctl.entries.filter((e) => e.view.ambient).length) : 0),
+		rightExtra: (effectiveTop > 0 ? 0 : g.ear) + (showSecondary ? BUBBLE_GAP + BUBBLE : 0),
 		canReturn: !big,
 		onDragChange: ctl.lockHover,
 	});
@@ -80,7 +85,7 @@ export function Island() {
 						)}
 						{...(hidden || swallowed ? {} : { "data-hit": true })}
 						{...ctl.domHover}
-						style={{ ...drag.style, marginTop: v.top }}
+						style={{ ...drag.style, marginTop: effectiveTop }}
 						onPointerDown={drag.onPointerDown}
 						onClickCapture={drag.onClickCapture}
 						onUpdate={drag.onShellUpdate}
@@ -90,7 +95,7 @@ export function Island() {
 							width: g.width,
 							height: g.height,
 							opacity: hidden ? 0 : 1,
-							y: hidden ? -g.height - 12 - v.top : 0,
+							y: hidden ? -g.height - 12 - effectiveTop : 0,
 						}}
 						transition={transition}
 						onClick={() => {
@@ -114,8 +119,8 @@ export function Island() {
 								style={{ opacity: hidden || swallowed ? 0 : 1 }}
 							/>
 						)}
-						{/* Concave "ears" that blend the notch into the top edge of the screen. */}
-						{!windows && (
+						{/* Concave "ears" that blend the notch into the top edge of the screen. Only when attached to screen top */}
+						{!windows && effectiveTop === 0 && (
 							<>
 								<motion.span
 									className="pointer-events-none absolute top-0 right-full bg-[radial-gradient(circle_at_0_100%,transparent_70%,var(--island)_71%)]"
