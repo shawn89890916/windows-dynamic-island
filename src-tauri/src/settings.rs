@@ -102,7 +102,7 @@ pub fn open(app: &AppHandle) -> tauri::Result<()> {
 }
 
 fn create(app: &AppHandle) -> tauri::Result<()> {
-    let _win = WebviewWindowBuilder::new(app, SETTINGS_LABEL, WebviewUrl::App("index.html".into()))
+    let win = WebviewWindowBuilder::new(app, SETTINGS_LABEL, WebviewUrl::App("index.html".into()))
         .title(crate::i18n::t(app, "window.settings"))
         .inner_size(SIZE.0, SIZE.1)
         .resizable(false)
@@ -111,6 +111,8 @@ fn create(app: &AppHandle) -> tauri::Result<()> {
         .decorations(false)
         .background_color(tauri::webview::Color(12, 12, 16, 255))
         .build()?;
+    win.show()?;
+    win.set_focus()?;
     Ok(())
 }
 

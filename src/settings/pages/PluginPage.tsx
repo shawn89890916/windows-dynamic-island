@@ -7,7 +7,6 @@ import {
 	EyeOffIcon,
 	HelpCircleIcon,
 	InfoIcon,
-	PlayIcon,
 	RefreshCwIcon,
 	RotateCcwIcon,
 	SlidersIcon,
@@ -20,7 +19,6 @@ import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router";
 import { Card, Row } from "../../components/ui/card";
 import { Input, Select } from "../../components/ui/form";
-import { command } from "../../core/bridge";
 import { useT } from "../../core/i18n";
 import { useCatalog } from "../../core/plugins/catalog";
 import {
@@ -276,22 +274,6 @@ export function PluginPage({
 
 						<Row label={t("layout.place")} desc={t("layout.placeDesc")} disabled={!plugin.enabled}>
 							<PlacementSelect moduleId={manifest.id} disabled={!plugin.enabled} />
-						</Row>
-
-						<Row
-							label="在灵动岛中测试展开"
-							desc="触发灵动岛展开并即时预览此插件的界面排版与动画"
-							disabled={!plugin.enabled}
-						>
-							<button
-								type="button"
-								disabled={!plugin.enabled}
-								onClick={() => command("focus_island")}
-								className="flex h-8 items-center gap-1.5 rounded-lg border border-white/10 bg-white/6 px-3 text-xs font-medium text-text hover:bg-white/12 disabled:opacity-40 transition-colors"
-							>
-								<PlayIcon size={12} className="text-emerald-400" />
-								<span>展开测试</span>
-							</button>
 						</Row>
 					</Card>
 

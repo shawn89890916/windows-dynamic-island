@@ -68,19 +68,28 @@ export function createVpnMonitor(config: VpnConfig) {
 			const names = groupNodes(snapshot, group);
 			if (!names.length) throw Error("该组没有直接节点，请选择包含实际节点的手动策略组");
 			if (names.length > 256) throw Error("节点超过 256 个，请选择更小的策略组");
+			store.set((s) => ({ ...s, snapshot, group: group.name, nodes: [], updatedAt: 0 }));
 			const nodes: NodeDelay[] = [];
 			let index = 0;
 			const results = await Promise.allSettled(
 				Array.from({ length: Math.min(4, names.length) }, async () => {
 					while (active && index < names.length) {
 						const name = names[index++];
+						let node: NodeDelay;
 						try {
 							const result = await vpnRequest<{ delay: number }>(config, "delay", name);
-							nodes.push({ name, delay: Number.isFinite(result?.delay) && result.delay > 0 ? result.delay : null });
+							node = { name, delay: Number.isFinite(result?.delay) && result.delay > 0 ? result.delay : null };
 						} catch (err) {
 							if (String(err).includes("密钥")) throw err;
-							nodes.push({ name, delay: null });
+							node = { name, delay: null };
 						}
+						nodes.push(node);
+						if (active)
+							store.set((s) => ({
+								...s,
+								nodes: [...nodes].sort((a, b) => (a.delay ?? Infinity) - (b.delay ?? Infinity)),
+								updatedAt: Date.now(),
+							}));
 					}
 				}),
 			);

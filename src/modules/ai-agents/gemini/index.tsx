@@ -1,13 +1,13 @@
 import { providerAction } from "../../../core/bridge";
 import type { AgentDefinition } from "../common/types";
-import { GeminiIcon } from "./GeminiIcon";
+import { AntigravityIcon } from "./AntigravityIcon";
 import { useGemini } from "./useGemini";
 
 export const geminiAgent: AgentDefinition = {
 	id: "gemini",
 	name: "Antigravity",
 	color: "#388BFD",
-	Icon: GeminiIcon,
+	Icon: AntigravityIcon,
 	useAgent: useGemini,
 	usageUrl: "https://aistudio.google.com",
 	launchApp: () => providerAction("gemini", "launch").then(() => {}),

@@ -311,7 +311,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		name: "AI 智能中枢",
 		titleKey: "marketplace.plugins.aiHub.name",
 		descKey: "marketplace.plugins.aiHub.desc",
-		version: "1.0.0",
+		version: "1.0.1",
 		description: "全场景 AI 智能体控制中枢，聚合 Antigravity、Claude Code、Codex 与 ChatGPT 运行监控与全局指令调度。",
 		author: {
 			name: "Antigravity",
@@ -342,8 +342,8 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		name: "VPN 代理监控",
 		titleKey: "marketplace.plugins.vpn.name",
 		descKey: "marketplace.plugins.vpn.desc",
-		version: "1.0.0",
-		description: "连接本机 Clash 控制器，显示最快节点、定时延迟测试与指定候选节点故障切换。",
+		version: "1.0.1",
+		description: "连接本机 Clash 控制器，实时显示测速结果，按延迟排序查看全部或最快节点，并支持指定候选节点故障切换。",
 		author: {
 			name: "UniClash",
 			url: "https://github.com",

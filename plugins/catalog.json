@@ -719,7 +719,7 @@
       "name": "AI 智能中枢",
       "titleKey": "marketplace.plugins.aiHub.name",
       "descKey": "marketplace.plugins.aiHub.desc",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "description": "全场景 AI 智能体控制中枢，聚合 Antigravity、Claude Code、Codex 与 ChatGPT 运行监控与全局指令调度。",
       "author": {
         "name": "Antigravity",
@@ -790,16 +790,16 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.ai-hub.island-plugin.json",
-      "sha256": "f000383842251ba7db7f7d7755ce5bc99ff07987ae087f15a9c5fc80e359add5",
-      "packageSize": 47022
+      "sha256": "23077ebac7dba39df1353dbddad417df3aa08616939e8d53d5ce67a7b92f758d",
+      "packageSize": 46832
     },
     {
       "id": "com.island.vpn",
       "name": "VPN 代理监控",
       "titleKey": "marketplace.plugins.vpn.name",
       "descKey": "marketplace.plugins.vpn.desc",
-      "version": "1.0.0",
-      "description": "连接本机 Clash 控制器，显示最快节点、定时延迟测试与指定候选节点故障切换。",
+      "version": "1.0.1",
+      "description": "连接本机 Clash 控制器，实时显示测速结果，按延迟排序查看全部或最快节点，并支持指定候选节点故障切换。",
       "author": {
         "name": "UniClash",
         "url": "https://github.com"
@@ -913,8 +913,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.vpn.island-plugin.json",
-      "sha256": "07536a18baf89d358a16154865e88f33aafa46aae98028ddc03eef5e0e040dde",
-      "packageSize": 50683
+      "sha256": "f00966321e841b072c6ef61344ae2089ff27a805edf7cc1c861529ca1d6c8495",
+      "packageSize": 55223
     },
     {
       "id": "com.island.im-notifications",

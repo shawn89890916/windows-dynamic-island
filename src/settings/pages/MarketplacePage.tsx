@@ -14,6 +14,7 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Card } from "../../components/ui/card";
+import { openExternal } from "../../core/bridge";
 import { useT } from "../../core/i18n";
 import { useCatalog } from "../../core/plugins/catalog";
 import {
@@ -391,6 +392,12 @@ export function MarketplacePage() {
 										href="https://github.com/shawn89890916/windows-dynamic-island/blob/main/plugins/DEVELOPING.md"
 										target="_blank"
 										rel="noreferrer"
+										onClick={(event) => {
+											event.preventDefault();
+											void openExternal(
+												"https://github.com/shawn89890916/windows-dynamic-island/blob/main/plugins/DEVELOPING.md",
+											);
+										}}
 										className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
 									>
 										<span>查阅灵动岛插件开发官方文档</span>

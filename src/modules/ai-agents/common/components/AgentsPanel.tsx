@@ -1,10 +1,8 @@
-import { CheckIcon, ExternalLinkIcon, SendIcon, SparklesIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { ExternalLinkIcon } from "lucide-react";
+import { useState } from "react";
 import { SectionLabel } from "../../../../components/ui/text";
-import { command } from "../../../../core/bridge";
 import { cn } from "../../../../core/cn";
 import { useT } from "../../../../core/i18n";
-import { useIsland } from "../../../../core/island";
 import { useNow } from "../format";
 import type { AgentDefinition, AgentSessionRef, AgentSnapshot } from "../types";
 import { AgentCard } from "./AgentCard";
@@ -25,28 +23,9 @@ export function AgentsPanel({
 	const busy = sessions.some((s) => s.session.status === "working" || s.session.status === "waiting");
 	const now = useNow(busy ? 1000 : 30_000);
 	const t = useT();
-	const island = useIsland();
 	const asking = sessions.filter((s) => s.session.permission && s.agent.decide);
 	// Picked tab, else the agent of the busiest session.
 	const [picked, setPicked] = useState<string | null>(null);
-	const [promptInput, setPromptInput] = useState("");
-	const [dispatchedSuccess, setDispatchedSuccess] = useState(false);
-	const [dispatchError, setDispatchError] = useState("");
-	const [dispatching, setDispatching] = useState(false);
-	const inputRef = useRef<HTMLInputElement>(null);
-
-	const takeKeyboard = () => {
-		island.keepOpen(true, "agents-prompt-input");
-		command("focus_island");
-		window.setTimeout(() => inputRef.current?.focus(), 30);
-	};
-
-	useEffect(() => {
-		return () => {
-			island.keepOpen(false, "agents-prompt-input");
-			command("restore_focus");
-		};
-	}, [island]);
 
 	const index = Math.max(
 		0,
@@ -55,40 +34,20 @@ export function AgentsPanel({
 	const agent = agents[index];
 	const usage = snapshots[index]?.usage;
 
-	const handleDispatchPrompt = async (e?: React.FormEvent) => {
-		e?.preventDefault();
-		if (!promptInput.trim() || dispatching) return;
-		setDispatching(true);
-		setDispatchError("");
-		try {
-			await navigator.clipboard.writeText(promptInput.trim());
-			if (agent.launchApp) await agent.launchApp();
-			else if (sessions[0]?.session && agent.openSession) await agent.openSession(sessions[0].session);
-			setDispatchedSuccess(true);
-			setPromptInput("");
-			void command("restore_focus");
-			setTimeout(() => setDispatchedSuccess(false), 2400);
-		} catch (err) {
-			setDispatchError(err instanceof Error ? err.message : String(err));
-		} finally {
-			setDispatching(false);
-		}
-	};
-
 	const agentSession = sessions.find((s) => s.agent.id === agent.id)?.session;
 	const statusKey = agentSession?.status ?? "idle";
 	const statusText =
 		snapshots[index]?.connection === "disconnected"
-			? "未连接"
+			? t("agents.status.disconnected")
 			: snapshots[index]?.connection === "connected"
-				? "已连接"
+				? t("agents.status.connected")
 				: statusKey === "working"
 					? t("agents.status.working")
 					: statusKey === "waiting"
 						? t("agents.status.waiting")
 						: statusKey === "done"
 							? t("agents.status.done")
-							: "就绪";
+							: t("agents.status.idle");
 
 	// Something to answer: just that, and the sessions.
 	if (asking.length) {
@@ -160,62 +119,6 @@ export function AgentsPanel({
 			</div>
 
 			<AgentCard key={agent.id} agent={agent} snapshot={snapshots[index]} now={now} />
-
-			{/* Universal AI Command & Prompt Dispatcher */}
-			<form
-				data-no-drag
-				onSubmit={handleDispatchPrompt}
-				className="flex items-center gap-2 rounded-[13px] bg-white/5 px-3 py-1.5 border border-white/8 focus-within:border-white/20 transition-colors"
-				onClick={(e) => e.stopPropagation()}
-			>
-				<SparklesIcon size={14} className="flex-none" style={{ color: agent.color }} />
-				<input
-					ref={inputRef}
-					type="text"
-					value={promptInput}
-					onChange={(e) => setPromptInput(e.target.value)}
-					onMouseDown={takeKeyboard}
-					onFocus={takeKeyboard}
-					onBlur={() => {
-						island.keepOpen(false, "agents-prompt-input");
-						command("restore_focus");
-					}}
-					onKeyDown={(e) => {
-						if (e.key === "Escape") {
-							inputRef.current?.blur();
-							command("restore_focus");
-						}
-					}}
-					placeholder={t("agents.promptPlaceholder", { agent: agent.name })}
-					className="min-w-0 flex-1 bg-transparent text-[12px] text-text placeholder:text-text-faint focus:outline-none"
-				/>
-				<button
-					type="submit"
-					disabled={!promptInput.trim() || dispatching}
-					className={cn(
-						"flex h-6 cursor-pointer items-center gap-1 rounded-[8px] px-2.5 text-[11px] font-bold text-white transition-opacity",
-						dispatchedSuccess ? "bg-[#30D158]" : "disabled:opacity-40 disabled:cursor-not-allowed",
-					)}
-					style={{ background: dispatchedSuccess ? "#30D158" : agent.color }}
-				>
-					{dispatchedSuccess ? (
-						<>
-							<CheckIcon size={11} />
-							<span>{t("agents.dispatched", { agent: agent.name })}</span>
-						</>
-					) : (
-						<>
-							<SendIcon size={11} />
-							<span>{t("agents.dispatchBtn")}</span>
-						</>
-					)}
-				</button>
-			</form>
-			{dispatchError && (
-				<p role="alert" className="text-[11px] text-danger">
-					{dispatchError}
-				</p>
-			)}
 
 			{usage?.daily.length ? <UsageChart usage={usage} color={agent.color} /> : null}
 

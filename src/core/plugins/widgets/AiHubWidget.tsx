@@ -19,7 +19,7 @@ import { CodexIcon } from "../../../modules/ai-agents/codex/CodexIcon";
 import { useCodex } from "../../../modules/ai-agents/codex/useCodex";
 import { formatTokens } from "../../../modules/ai-agents/common/format";
 import type { AgentSnapshot } from "../../../modules/ai-agents/common/types";
-import { GeminiIcon } from "../../../modules/ai-agents/gemini/GeminiIcon";
+import { AntigravityIcon } from "../../../modules/ai-agents/gemini/AntigravityIcon";
 import { useGemini } from "../../../modules/ai-agents/gemini/useGemini";
 
 export type AgentId = "gemini" | "claude" | "codex" | "chatgpt";
@@ -138,7 +138,7 @@ export function AiHubWidget({ settings }: { settings: Record<string, unknown> })
 	const renderAgentIcon = (id: AgentId, size = 15) => {
 		switch (id) {
 			case "gemini":
-				return <GeminiIcon size={size} />;
+				return <AntigravityIcon size={size} />;
 			case "claude":
 				return <ClaudeIcon size={size} />;
 			case "codex":
