@@ -58,9 +58,11 @@ type, and stone interaction accent. Color is reserved for alert text. Task rows
 use checkboxes with explicit labels; clicking a title does not complete a task.
 The task list owns its wheel scrolling. Keyboard focus uses a 2px stone outline.
 
-`src/assets/navopath.svg` is the official vector source from NavoPath's
-`assets/navopath-icon.svg`, with a white front-facing N and black extrusion. Its 1.3 KiB source replaces the
-206 KiB raster asset, so high-DPI rendering does not require a large bitmap.
+`src/assets/navopath.png` is a 96 px, transparent derivative of NavoPath's
+`public/navopath-icon.png`, with the original white front-facing N and black
+extrusion. The 3.5 kB asset preserves the original silhouette; the editable SVG
+in that project has a different silhouette and is not used here. The old
+1024 px asset was 206 kB.
 The same asset supplies the launcher, collapsed view, calendar and widget.
 
 ## Verification

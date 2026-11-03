@@ -1,6 +1,6 @@
 import { CircleIcon, ExternalLinkIcon, LoaderCircleIcon, PlusIcon, RefreshCwIcon, SlidersIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import navopathLogo from "../../../assets/navopath.svg";
+import navopathLogo from "../../../assets/navopath.png";
 import { command, openExternal } from "../../bridge";
 import { useT } from "../../i18n";
 import { useIsland } from "../../island";

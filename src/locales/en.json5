@@ -508,9 +508,9 @@
       busy: "Enabling…",
       failed: "Failed — try again",
     },
-    promptPlaceholder: "Send prompt or question to {agent}… (Enter to dispatch)",
-    dispatchBtn: "Dispatch",
-    dispatched: "Dispatched to {agent}",
+    promptPlaceholder: "Write for {agent}… (Enter to copy and open, then paste in the client)",
+    dispatchBtn: "Copy & open",
+    dispatched: "Copied; paste in {agent}",
     launchApp: "Open App",
   },
 

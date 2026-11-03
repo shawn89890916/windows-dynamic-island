@@ -5,6 +5,14 @@ flows, against the current repository plus the NavoPath fixes. Findings below
 are not changes to the other integrations. No messages, notes or prompts were
 sent or created for testing.
 
+Update for v0.4.10: the owner subsequently authorized VPN and Obsidian repairs.
+VPN now uses a real local controller with bounded periodic probes, verified
+selection and opt-in allowlisted failover. Obsidian settings are consolidated,
+daily-note naming is configurable, and diagnostics no longer open notes.
+The built-in AI panel also has real Antigravity quota reads and truthful
+copy-and-open wording. The separate marketplace AI Hub finding below remains.
+See `connections-v0.4.10.md` for current setup and validation boundaries.
+
 ## Confirmed findings
 
 | Priority | Connection | Finding and impact | Owning source |

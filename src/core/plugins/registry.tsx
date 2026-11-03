@@ -15,13 +15,14 @@ import {
 	TrendingUpIcon,
 } from "lucide-react";
 import { type ReactNode, useSyncExternalStore } from "react";
-import navopathLogo from "../../assets/navopath.svg";
+import navopathLogo from "../../assets/navopath.png";
 import { command, isTauri } from "../bridge";
 import { type MessageKey, type Translate, useT } from "../i18n";
 import type { IslandModule, ModuleEntry, ModuleView } from "../types";
 import { MARKETPLACE_CATALOG } from "./catalog";
 import { usePomodoroLive } from "./pluginActivityStore";
 import type { InstalledPlugin, PluginManifest } from "./types";
+import { useVpnMonitor } from "./useVpn";
 import { AiHubWidget } from "./widgets/AiHubWidget";
 import { CryptoTickerWidget } from "./widgets/CryptoTickerWidget";
 import { EverythingWidget } from "./widgets/EverythingWidget";
@@ -596,10 +597,28 @@ export function createPluginModuleEntry(
  */
 export function usePluginModuleEntries(): ModuleEntry[] {
 	const plugins = useInstalledPlugins();
+	const vpnPlugin = plugins.find((p) => p.enabled && p.manifest.id === "com.island.vpn");
+	const vpn = useVpnMonitor(vpnPlugin?.customSettings);
 	const pomodoro = usePomodoroLive();
 	const t = useT();
 
-	return plugins.filter((p) => p.enabled).map((plugin) => createPluginModuleEntry(plugin, pomodoro, t));
+	return plugins
+		.filter((p) => p.enabled)
+		.map((plugin) => {
+			const entry = createPluginModuleEntry(plugin, pomodoro, t);
+			if (plugin.manifest.id === "com.island.vpn") {
+				entry.view.compact = {
+					left: <span className="max-w-48 truncate text-xs">{vpn.snapshot?.proxies[vpn.group]?.now || "VPN"}</span>,
+					right: (
+						<span className="text-[11px] text-text-dim">
+							{vpn.busy ? "测速中…" : vpn.error ? "超时 / 异常" : "节点监控"}
+						</span>
+					),
+					width: 280,
+				};
+			}
+			return entry;
+		});
 }
 
 export function createPluginModule(plugin: InstalledPlugin): IslandModule {

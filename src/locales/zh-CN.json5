@@ -504,9 +504,9 @@
       busy: "正在启用…",
       failed: "失败 — 请重试",
     },
-    promptPlaceholder: "向 {agent} 发送指令或提问… (回车调度并唤起客户端)",
-    dispatchBtn: "调度",
-    dispatched: "已调度至 {agent}",
+    promptPlaceholder: "写给 {agent} 的内容…（回车复制并打开，再到客户端粘贴）",
+    dispatchBtn: "复制并打开",
+    dispatched: "已复制，请在 {agent} 粘贴",
     launchApp: "打开客户端",
   },
 

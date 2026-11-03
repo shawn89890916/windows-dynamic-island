@@ -478,9 +478,9 @@
       busy: "Ativando…",
       failed: "Falhou — tentar de novo",
     },
-    promptPlaceholder: "Enviar instrução ou pergunta para {agent}… (Enter para enviar)",
-    dispatchBtn: "Despachar",
-    dispatched: "Despachado para {agent}",
+    promptPlaceholder: "Escreva para {agent}… (Enter para copiar e abrir; cole no cliente)",
+    dispatchBtn: "Copiar e abrir",
+    dispatched: "Copiado; cole em {agent}",
     launchApp: "Abrir App",
   },
 

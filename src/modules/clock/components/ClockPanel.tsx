@@ -1,6 +1,6 @@
 import { CircleIcon, LoaderCircleIcon, PlusIcon, RefreshCwIcon, SlidersIcon } from "lucide-react";
 import { useEffect, useMemo, useState, type WheelEvent } from "react";
-import navopathLogo from "../../../assets/navopath.svg";
+import navopathLogo from "../../../assets/navopath.png";
 import { command } from "../../../core/bridge";
 import { cn } from "../../../core/cn";
 import { useLocale, useT } from "../../../core/i18n";

@@ -110,9 +110,9 @@
 		scrollbar-width: none;
 	}
 
-	/* Preflight sets 1.5; the UI was drawn with the browser's `normal`. */
+	/* A stable line box also leaves room for Chinese glyphs and diacritics. */
 	html {
-		line-height: normal;
+		line-height: 1.4;
 	}
 
 	html,
@@ -134,7 +134,16 @@
 		border: 0;
 		padding: 0;
 		cursor: pointer;
+		flex-shrink: 0;
+		white-space: nowrap;
 	}
+}
+
+/* Short panels scroll at their shared viewport instead of squeezing the
+   module's header, controls and text to fit a fixed height. Inner lists keep
+   their own min-height: 0 and scrolling behavior. */
+.island-panel > * {
+	min-height: min-content;
 }
 
 /* The PiP and settings windows are opaque. */

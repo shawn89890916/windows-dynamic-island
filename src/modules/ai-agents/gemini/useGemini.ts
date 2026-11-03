@@ -1,88 +1,24 @@
 import { useProvider } from "../../../core/bridge";
-import { useT } from "../../../core/i18n";
-import type { AgentSnapshot, AgentStatus, UsageLimit } from "../common/types";
+import type { AgentSnapshot, UsageLimit } from "../common/types";
 
 export interface GeminiState {
 	available?: boolean;
-	sessions?: {
-		id: string;
-		project: string;
-		cwd: string;
-		status: Exclude<AgentStatus, "limitsReset">;
-		activity: { kind: string; arg?: string } | null;
-		turnStartedAt: number | null;
-		finishedAt: number | null;
-		lastEventAt: number;
-		model: string | null;
-		contextPct: number | null;
-		summary: string | null;
-		prompt: string | null;
-	}[];
-	limits?: {
-		fiveHour?: { usedPct: number; resetsAt: number | null };
-		sevenDay?: { usedPct: number; resetsAt: number | null };
-	};
-	model?: string;
-	tokensToday?: { input: number; output: number; cacheRead: number; cacheWrite: number; messages: number };
-	usage?: { daily: { date: string; tokens: number; responses: number }[]; last5hTokens: number };
+	connected?: boolean;
+	error?: string;
+	limits?: UsageLimit[];
 }
-
 export const PROVIDER = "gemini";
 
+/** The backend only publishes verified quota data, never invented sessions/tokens. */
 export function useGemini(): AgentSnapshot {
 	const state = useProvider<GeminiState>(PROVIDER);
-	const t = useT();
-
-	if (!state?.available) {
-		return {
-			available: true,
-			model: "Gemini / Antigravity",
-			limits: [],
-			limitsHint: "未连接后台服务 · 支持下方指令调度与唤起",
-			sessions: [],
-		};
-	}
-
-	const sessions = state.sessions ?? [];
-
-	const limits: UsageLimit[] = [];
-	if (state?.limits?.fiveHour) {
-		limits.push({
-			id: "gemini-5h",
-			label: t("agents.limit.fiveHour"),
-			usedPct: state.limits.fiveHour.usedPct,
-			resetsAt: state.limits.fiveHour.resetsAt,
-		});
-	}
-	if (state?.limits?.sevenDay) {
-		limits.push({
-			id: "gemini-7d",
-			label: t("agents.limit.sevenDay"),
-			usedPct: state.limits.sevenDay.usedPct,
-			resetsAt: state.limits.sevenDay.resetsAt,
-		});
-	}
-
 	return {
-		available: true,
-		model: state?.model ?? "Gemini",
-		tokensToday: state?.tokensToday,
-		usage: state?.usage,
-		limits,
-		limitsHint: t("agents.noLimits"),
-		sessions: sessions.map((s) => ({
-			id: s.id,
-			title: s.project,
-			status: s.status,
-			activity: s.activity?.arg ? `编辑 ${s.activity.arg}` : "运行中",
-			turnStartedAt: s.turnStartedAt,
-			finishedAt: s.finishedAt,
-			lastEventAt: s.lastEventAt,
-			model: s.model,
-			contextPct: s.contextPct,
-			summary: s.summary,
-			prompt: s.prompt,
-			cwd: s.cwd,
-		})),
+		available: state?.available === true,
+		connection: state?.connected ? "connected" : "disconnected",
+		model: state?.connected ? "本机服务已连接" : "未连接",
+		limits: state?.connected ? (state.limits ?? []) : [],
+		limitsHint: state?.error || "正在读取 Antigravity 本机服务…",
+		metricsHint: "本机服务提供额度信息，未提供 Token 统计或会话状态。",
+		sessions: [],
 	};
 }

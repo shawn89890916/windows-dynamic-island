@@ -9,7 +9,7 @@ import { LAUNCHER } from "../../core/useIslandController";
 
 const tabs = tv({
 	slots: {
-		base: "mb-2.5 flex items-center gap-1 overflow-x-auto overflow-y-hidden no-scrollbar max-w-full",
+		base: "mb-2.5 flex shrink-0 items-center gap-1 overflow-x-auto overflow-y-hidden no-scrollbar max-w-full",
 		tab: "relative flex h-7.5 shrink-0 items-center gap-1.75 rounded-[15px] pr-3 pl-2 text-[13px] font-semibold text-text-dim whitespace-nowrap transition-colors duration-200 hover:text-text",
 		pill: "absolute inset-0 rounded-[inherit] bg-white/10",
 		part: "relative flex shrink-0 items-center justify-center whitespace-nowrap",

@@ -74,7 +74,7 @@ export function AgentCard({ agent, snapshot, now }: { agent: AgentDefinition; sn
 						</span>
 					)
 				) : (
-					<span className="text-[11px] text-text-faint">{tr("agents.noSessions")}</span>
+					<span className="text-[11px] text-text-faint">{snapshot.metricsHint ?? tr("agents.noSessions")}</span>
 				)}
 				{t && (
 					<dl className="mt-1 grid grid-cols-[auto_auto] gap-x-3 gap-y-0.5 text-[11.5px] [&_dd]:text-right [&_dd]:text-text-dim [&_dd]:tabular-nums [&_dt]:text-text-faint">

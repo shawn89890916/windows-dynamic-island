@@ -25,7 +25,8 @@ import { useT } from "../../core/i18n";
 import { MARKETPLACE_CATALOG } from "../../core/plugins/catalog";
 import { queryEverything } from "../../core/plugins/everythingClient";
 import { fetchNavoPathSummary, fetchNavoPathTasks } from "../../core/plugins/navopathMcp";
-import { openDailyNote, openObsidianVault } from "../../core/plugins/obsidianClient";
+import { fetchRecentNotes } from "../../core/plugins/obsidianClient";
+import { dailyNoteName } from "../../core/plugins/obsidianDailyNote";
 import {
 	installPlugin,
 	renderPluginIcon,
@@ -35,6 +36,7 @@ import {
 	useInstalledPlugins,
 } from "../../core/plugins/registry";
 import type { PluginSettingField } from "../../core/plugins/types";
+import { readVpnSnapshot, vpnConfig } from "../../core/plugins/vpnClient";
 import { BackLink } from "../components/Heading";
 import { PlacementSelect } from "../components/PlacementSelect";
 import { Toggle } from "../components/Toggle";
@@ -139,23 +141,22 @@ const PLUGIN_GUIDES: Record<string, PluginGuide> = {
 		],
 		steps: [
 			{
-				title: "确认知识库名称 (Vault Name)",
-				desc: "打开 Obsidian 窗口，在左下角或仓库选择列表中查看当前知识库文件夹名字（如 Obsidian Vault），并在上方填入。",
-				tip: "必须与 Obsidian 实际打开的仓库名完全一致，区分大小写。",
+				title: "选择知识库路径",
+				desc: "填写实际知识库文件夹的绝对路径，名称会从路径自动提取。最近笔记共用 Everything 插件的索引端口。",
 			},
 			{
 				title: "设置每日日记目录",
-				desc: "在上方「每日日记存储目录」填入你存放 Daily Note 的相对文件夹（例如：cxy更新日志 或 Daily Notes）。",
+				desc: "日记目录填写相对文件夹，留空使用仓库根目录。命名默认 YYYY-MM-DD，也支持 YYYY年MM月DD日、YYYY/MM/DD；请与 Obsidian 的日记设置保持一致。",
 			},
 			{
 				title: "灵动岛沉浸式记录",
-				desc: "展开 Obsidian 组件后：点击「今日日记」一键唤起 Obsidian 并自动定位或创建今天的日记文件；在输入框输入灵感文字并选择标签，一键将闪念想法追加写入今日日志尾部！",
+				desc: "点击「今日日记」打开按目录和格式确定的文件。闪念速记会创建独立笔记，标签会写入内容；连接诊断只检查索引与命名，不会创建日记。",
 			},
 		],
 		features: [
 			"通过官方 obsidian:// 深度协议通信，零后台常驻进程，零额外内存开销",
 			"每日日记一键打开与自动补全当日日期",
-			"闪念灵感极速追加到日志末尾，不错过任何火花",
+			"闪念与标签创建为独立笔记",
 			"配合 Everything 插件可毫秒级秒搜库内历史笔记",
 		],
 		faq: [
@@ -234,26 +235,30 @@ const PLUGIN_GUIDES: Record<string, PluginGuide> = {
 	},
 
 	"com.island.vpn": {
-		summary: "实时代理与网络加速监控，直连 UniClash / Clash 核心控制器，毫秒级测速与上下行速率动态波形看板。",
+		summary: "本机控制器节点列表、定时测速、真实节点切换及指定候选节点故障切换。",
 		prerequisites: [
 			"电脑已运行 UniClash、Clash Verge 或 Clash for Windows 客户端",
-			"代理核心控制器端口已启用（UniClash 默认 8993，Clash 默认 9090）",
+			"在客户端启用 External Controller，例如 127.0.0.1:9090；混合代理端口不能用于控制节点",
 		],
 		steps: [
 			{
 				title: "检查代理客户端端口",
-				desc: "打开你的代理软件设置界面，查看混合代理端口或 External Controller 端口。UniClash 默认为 8993，Clash 内核控制器默认为 9090。",
+				desc: "在代理客户端启用 External Controller 并监听 127.0.0.1。记录控制地址与 Secret；不要填写 7890、8993 等混合代理端口。",
 			},
 			{
 				title: "填入端口配置",
-				desc: "在上方「代理混合端口」中填入对应的端口号，灵动岛将自动连接并监听网络上下行吞吐速率。",
+				desc: "填写完整控制地址与 Secret，点击测试验证。选择包含实际节点的手动策略组，列表显示本轮最快的几个节点，点击节点名称切换。",
 			},
 			{
 				title: "选择分流模式",
-				desc: "支持在规则分流 (Rule)、全局代理 (Global) 与直连模式 (Direct) 之间一键切换。",
+				desc: "默认每轮完成后等待 60 秒再测速，可修改间隔、超时及展示数量。勾选候选节点后开启自动切换；仅当前节点本轮失败时切换到可用候选，不会为了更低延迟反复换节点，直连模式不触发。",
 			},
 		],
-		features: ["实时上下行速率动态波形渲染", "一键切换代理分流模式与节点延迟测速", "断网与代理异常即时状态指示"],
+		features: [
+			"最快节点与当前节点延迟",
+			"节点、规则/全局/直连模式实际切换并回读确认",
+			"超时提示、可调测速间隔及指定候选节点故障切换",
+		],
 	},
 
 	"com.island.pomodoro": {
@@ -470,12 +475,11 @@ export function PluginPage({
 			} else if (manifest.id === "com.island.obsidian") {
 				const vaultPath = String(formValues.vaultPath || "").trim();
 				const vault = String(formValues.vaultName || (vaultPath ? vaultPath.split(/[\\/]/).pop() : "Obsidian Vault"));
-				const daily = String(formValues.dailyFolder || "cxy更新日志");
-				openObsidianVault(vault, vaultPath);
-				openDailyNote(vault, daily, vaultPath);
+				const preview = dailyNoteName(new Date(), String(formValues.dailyDateFormat || "YYYY-MM-DD"));
+				const notes = await fetchRecentNotes(vault, 8080, vaultPath);
 				setDiagResult({
 					status: "success",
-					message: `已向系统广播唤起指令：尝试通过 obsidian:// 协议直连知识库「${vault}」${vaultPath ? ` (路径: ${vaultPath})` : ""} 并自动定位日记目录「${daily}」。若 Obsidian 已打开，将直接切换并聚焦。`,
+					message: `索引读取正常：${notes.length} 条近期笔记。今日日记文件名预览：${preview}.md；本次测试没有创建或打开日记。`,
 				});
 			} else if (manifest.id === "com.island.weather") {
 				const city = String(formValues.city || "Beijing").trim();
@@ -510,10 +514,10 @@ export function PluginPage({
 					message: `行情接口连通正常！${pair} 现货当前最新成交价格为：$${Number(data.price).toLocaleString()} USD。`,
 				});
 			} else if (manifest.id === "com.island.vpn") {
-				const port = Number(formValues.proxyPort || 8993);
+				const state = await readVpnSnapshot(vpnConfig(formValues));
 				setDiagResult({
-					status: "info",
-					message: `已向代理客户端本地端口 ${port} 发送探测信号。若 UniClash / Clash 正在运行，流量统计将实时在灵动岛展开呈现。`,
+					status: "success",
+					message: `控制器连接正常，读取 ${Object.keys(state.proxies).length} 个节点/策略组，当前模式 ${state.mode}。本次诊断只读取状态，不切换节点或修改模式。`,
 				});
 			} else {
 				setDiagResult({

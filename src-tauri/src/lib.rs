@@ -13,6 +13,7 @@ mod sound;
 mod store;
 mod tray;
 mod updater;
+mod vpn;
 mod window;
 
 use std::sync::Arc;
@@ -95,6 +96,7 @@ pub fn run() {
             settings::open_in_folder,
             settings::everything_query,
             navopath::navopath_mcp_request,
+            vpn::vpn_request,
             updater::check_update,
             updater::install_update,
             i18n::set_locale,

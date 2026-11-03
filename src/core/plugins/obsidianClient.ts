@@ -11,6 +11,7 @@
 
 import { openExternal, openInFolder } from "../bridge";
 import { queryEverything } from "./everythingClient";
+import { dailyNoteName } from "./obsidianDailyNote";
 
 export interface ObsidianNote {
 	name: string;
@@ -49,12 +50,13 @@ export function openObsidianNote(vaultName: string, filePath: string, vaultPath 
 	}
 }
 
-export function openDailyNote(vaultName = "Obsidian Vault", dailyFolder = "cxy更新日志", vaultPath = "") {
-	const now = new Date();
-	const yyyy = now.getFullYear();
-	const mm = String(now.getMonth() + 1).padStart(2, "0");
-	const dd = String(now.getDate()).padStart(2, "0");
-	const noteName = `${yyyy}-${mm}-${dd}`;
+export function openDailyNote(
+	vaultName = "Obsidian Vault",
+	dailyFolder = "",
+	vaultPath = "",
+	dateFormat = "YYYY-MM-DD",
+) {
+	const noteName = dailyNoteName(new Date(), dateFormat);
 	const cleanFolder = dailyFolder.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
 	const targetRel = cleanFolder ? `${cleanFolder}/${noteName}` : noteName;
 
@@ -113,9 +115,8 @@ export async function fetchRecentNotes(
 	try {
 		const searchQuery = `path:"${searchTarget}" ext:md`;
 		const res = await queryEverything(searchQuery, port, 10);
-		if (!res.ok || !res.items?.length) {
-			return FALLBACK_VAULT_NOTES;
-		}
+		if (!res.ok) throw Error(res.error || "Everything 索引不可用");
+		if (!res.items?.length) return [];
 
 		const notes: ObsidianNote[] = [];
 		const matchKey = vaultPath.trim().replace(/\\/g, "/") || vaultName;
@@ -144,8 +145,8 @@ export async function fetchRecentNotes(
 		}
 
 		return notes.length > 0 ? notes : FALLBACK_VAULT_NOTES;
-	} catch {
-		return FALLBACK_VAULT_NOTES;
+	} catch (error) {
+		throw error instanceof Error ? error : new Error("无法读取笔记索引");
 	}
 }
 

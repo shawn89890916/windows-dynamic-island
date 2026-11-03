@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import { command } from "../../../core/bridge";
 import { useT } from "../../../core/i18n";
 import { useIsland } from "../../../core/island";
+import { MARKETPLACE_CATALOG } from "../catalog";
 import {
 	fetchRecentNotes,
 	type ObsidianNote,
@@ -24,6 +25,7 @@ import {
 	quickCaptureToObsidian,
 	searchObsidian,
 } from "../obsidianClient";
+import { useInstalledPlugins } from "../registry";
 import { NeedsConfigCard } from "./NeedsConfigCard";
 
 export function ObsidianIconSvg({ size = 16, className = "" }: { size?: number; className?: string }) {
@@ -46,6 +48,7 @@ export function ObsidianIconSvg({ size = 16, className = "" }: { size?: number; 
 type TabType = "capture" | "recent" | "search";
 
 export function ObsidianWidget({ settings }: { settings: Record<string, unknown> }) {
+	const plugins = useInstalledPlugins();
 	const t = useT();
 	const island = useIsland();
 
@@ -54,10 +57,17 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 	const derivedVaultName = vaultPath
 		? vaultPath.split(/[\\/]/).filter(Boolean).pop() || "Obsidian Vault"
 		: "Obsidian Vault";
-	const vaultName = rawVaultName || derivedVaultName;
+	const vaultName = vaultPath ? derivedVaultName : rawVaultName;
 	const isConfigured = Boolean(vaultPath || rawVaultName);
-	const dailyFolder = String(settings.dailyFolder || "cxy更新日志");
-	const httpPort = Number(settings.httpPort || 8080);
+	const dailyFolder = String(settings.dailyFolder ?? "");
+	const dailyDateFormat = String(settings.dailyDateFormat || "YYYY-MM-DD");
+	const httpPort = Number(
+		plugins.find((p) => p.manifest.id === "com.island.everything")?.customSettings.httpPort ||
+			settings.httpPort ||
+			8080,
+	);
+	const [connectionError, setConnectionError] = useState<string | null>(null);
+	const [indexReady, setIndexReady] = useState(false);
 
 	const [activeTab, setActiveTab] = useState<TabType>("capture");
 	const [recentNotes, setRecentNotes] = useState<ObsidianNote[]>([]);
@@ -78,9 +88,18 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 	useEffect(() => {
 		if (!vaultName && !vaultPath) return;
 		let active = true;
-		fetchRecentNotes(vaultName, httpPort, vaultPath).then((notes) => {
-			if (active) setRecentNotes(notes);
-		});
+		setIndexReady(false);
+		setConnectionError(null);
+		fetchRecentNotes(vaultName, httpPort, vaultPath)
+			.then((notes) => {
+				if (active) {
+					setRecentNotes(notes);
+					setIndexReady(true);
+				}
+			})
+			.catch((err: unknown) => {
+				if (active) setConnectionError(err instanceof Error ? err.message : String(err));
+			});
 		return () => {
 			active = false;
 		};
@@ -96,26 +115,7 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 				accentColor="#8B5CF6"
 				externalUrl="obsidian://"
 				externalLabel="打开 Obsidian"
-				settingsDefs={[
-					{
-						key: "vaultPath",
-						label: "Obsidian 仓库绝对路径 (例如 D:\\Obsidian\\MyVault)",
-						type: "text",
-						default: "",
-					},
-					{
-						key: "vaultName",
-						label: "Obsidian 仓库名称 (可选，可根据路径自动提取)",
-						type: "text",
-						default: "Obsidian Vault",
-					},
-					{
-						key: "dailyFolder",
-						label: "日记文件夹 (例如 cxy更新日志 或 Daily notes)",
-						type: "text",
-						default: "cxy更新日志",
-					},
-				]}
+				settingsDefs={MARKETPLACE_CATALOG.find((p) => p.id === "com.island.obsidian")?.settings ?? []}
 				currentSettings={settings}
 			/>
 		);
@@ -179,7 +179,13 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 						type="button"
 						whileHover={{ scale: 1.02 }}
 						whileTap={{ scale: 0.98 }}
-						onClick={() => openDailyNote(vaultName, dailyFolder, vaultPath)}
+						onClick={() => {
+							try {
+								openDailyNote(vaultName, dailyFolder, vaultPath, dailyDateFormat);
+							} catch (err) {
+								setConnectionError(err instanceof Error ? err.message : String(err));
+							}
+						}}
 						className="flex items-center justify-between rounded-xl bg-purple-500/15 border border-purple-500/25 px-2.5 py-1.5 text-xs text-purple-300 hover:bg-purple-500/22 transition-colors cursor-pointer"
 					>
 						<div className="flex items-center gap-1.5">
@@ -223,8 +229,9 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 
 				{/* Micro Footer Status */}
 				<div className="flex items-center justify-between text-[10px] text-text-faint border-t border-white/5 pt-1">
-					<span>{t("marketplace.widgets.obsidian.statusConnected")}</span>
-					<span className="font-mono text-[9px] opacity-75">v1.11+</span>
+					<span role={connectionError ? "alert" : "status"}>
+						{connectionError || (indexReady ? "笔记索引可用" : "正在检查索引…")}
+					</span>
 				</div>
 			</div>
 

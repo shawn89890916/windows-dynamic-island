@@ -80,6 +80,8 @@ export interface TokenUsage {
 }
 
 export interface AgentSnapshot {
+	connection?: "connected" | "disconnected";
+	metricsHint?: string;
 	available: boolean;
 	sessions: AgentSession[];
 	limits: UsageLimit[];

@@ -31,6 +31,8 @@ export function AgentsPanel({
 	const [picked, setPicked] = useState<string | null>(null);
 	const [promptInput, setPromptInput] = useState("");
 	const [dispatchedSuccess, setDispatchedSuccess] = useState(false);
+	const [dispatchError, setDispatchError] = useState("");
+	const [dispatching, setDispatching] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
 
 	const takeKeyboard = () => {
@@ -53,36 +55,40 @@ export function AgentsPanel({
 	const agent = agents[index];
 	const usage = snapshots[index]?.usage;
 
-	const handleDispatchPrompt = (e?: React.FormEvent) => {
+	const handleDispatchPrompt = async (e?: React.FormEvent) => {
 		e?.preventDefault();
-		if (!promptInput.trim()) return;
-
-		if (navigator.clipboard) {
-			navigator.clipboard.writeText(promptInput.trim());
+		if (!promptInput.trim() || dispatching) return;
+		setDispatching(true);
+		setDispatchError("");
+		try {
+			await navigator.clipboard.writeText(promptInput.trim());
+			if (agent.launchApp) await agent.launchApp();
+			else if (sessions[0]?.session && agent.openSession) await agent.openSession(sessions[0].session);
+			setDispatchedSuccess(true);
+			setPromptInput("");
+			void command("restore_focus");
+			setTimeout(() => setDispatchedSuccess(false), 2400);
+		} catch (err) {
+			setDispatchError(err instanceof Error ? err.message : String(err));
+		} finally {
+			setDispatching(false);
 		}
-
-		if (agent.launchApp) {
-			agent.launchApp();
-		} else if (sessions[0]?.session && agent.openSession) {
-			agent.openSession(sessions[0].session);
-		}
-
-		setDispatchedSuccess(true);
-		setPromptInput("");
-		command("restore_focus");
-		setTimeout(() => setDispatchedSuccess(false), 2400);
 	};
 
 	const agentSession = sessions.find((s) => s.agent.id === agent.id)?.session;
 	const statusKey = agentSession?.status ?? "idle";
 	const statusText =
-		statusKey === "working"
-			? t("agents.status.working")
-			: statusKey === "waiting"
-				? t("agents.status.waiting")
-				: statusKey === "done"
-					? t("agents.status.done")
-					: "就绪";
+		snapshots[index]?.connection === "disconnected"
+			? "未连接"
+			: snapshots[index]?.connection === "connected"
+				? "已连接"
+				: statusKey === "working"
+					? t("agents.status.working")
+					: statusKey === "waiting"
+						? t("agents.status.waiting")
+						: statusKey === "done"
+							? t("agents.status.done")
+							: "就绪";
 
 	// Something to answer: just that, and the sessions.
 	if (asking.length) {
@@ -181,11 +187,11 @@ export function AgentsPanel({
 						}
 					}}
 					placeholder={t("agents.promptPlaceholder", { agent: agent.name })}
-					className="w-full bg-transparent text-[12px] text-text placeholder:text-text-faint focus:outline-none"
+					className="min-w-0 flex-1 bg-transparent text-[12px] text-text placeholder:text-text-faint focus:outline-none"
 				/>
 				<button
 					type="submit"
-					disabled={!promptInput.trim()}
+					disabled={!promptInput.trim() || dispatching}
 					className={cn(
 						"flex h-6 cursor-pointer items-center gap-1 rounded-[8px] px-2.5 text-[11px] font-bold text-white transition-opacity",
 						dispatchedSuccess ? "bg-[#30D158]" : "disabled:opacity-40 disabled:cursor-not-allowed",
@@ -205,6 +211,11 @@ export function AgentsPanel({
 					)}
 				</button>
 			</form>
+			{dispatchError && (
+				<p role="alert" className="text-[11px] text-danger">
+					{dispatchError}
+				</p>
+			)}
 
 			{usage?.daily.length ? <UsageChart usage={usage} color={agent.color} /> : null}
 
