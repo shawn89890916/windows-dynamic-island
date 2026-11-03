@@ -92,6 +92,7 @@ pub fn run() {
             settings::set_autostart,
             settings::open_repo,
             settings::open_external,
+            settings::open_in_folder,
             settings::everything_query,
             navopath::navopath_mcp_request,
             updater::check_update,

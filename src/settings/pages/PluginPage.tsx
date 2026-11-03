@@ -465,13 +465,14 @@ export function PluginPage({
 					});
 				}
 			} else if (manifest.id === "com.island.obsidian") {
-				const vault = String(formValues.vaultName || "Obsidian Vault");
+				const vaultPath = String(formValues.vaultPath || "").trim();
+				const vault = String(formValues.vaultName || (vaultPath ? vaultPath.split(/[\\/]/).pop() : "Obsidian Vault"));
 				const daily = String(formValues.dailyFolder || "cxy更新日志");
-				openObsidianVault(vault);
-				openDailyNote(vault, daily);
+				openObsidianVault(vault, vaultPath);
+				openDailyNote(vault, daily, vaultPath);
 				setDiagResult({
 					status: "success",
-					message: `已向系统广播唤起指令：尝试通过 obsidian:// 协议打开知识库「${vault}」并自动定位日记目录「${daily}」。若 Obsidian 已打开，将直接切换并聚焦。`,
+					message: `已向系统广播唤起指令：尝试通过 obsidian:// 协议直连知识库「${vault}」${vaultPath ? ` (路径: ${vaultPath})` : ""} 并自动定位日记目录「${daily}」。若 Obsidian 已打开，将直接切换并聚焦。`,
 				});
 			} else if (manifest.id === "com.island.weather") {
 				const city = String(formValues.city || "Beijing").trim();

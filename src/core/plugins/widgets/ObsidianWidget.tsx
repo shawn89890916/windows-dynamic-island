@@ -3,6 +3,7 @@ import {
 	CalendarDaysIcon,
 	ExternalLinkIcon,
 	FileTextIcon,
+	FolderOpenIcon,
 	PenLineIcon,
 	PlusIcon,
 	SearchIcon,
@@ -17,6 +18,7 @@ import {
 	fetchRecentNotes,
 	type ObsidianNote,
 	openDailyNote,
+	openInFolder,
 	openObsidianNote,
 	openObsidianVault,
 	quickCaptureToObsidian,
@@ -47,8 +49,13 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 	const t = useT();
 	const island = useIsland();
 
-	const vaultName = String(settings.vaultName || "Obsidian Vault").trim();
-	const isConfigured = Boolean(vaultName);
+	const vaultPath = String(settings.vaultPath || "").trim();
+	const rawVaultName = String(settings.vaultName || "").trim();
+	const derivedVaultName = vaultPath
+		? vaultPath.split(/[\\/]/).filter(Boolean).pop() || "Obsidian Vault"
+		: "Obsidian Vault";
+	const vaultName = rawVaultName || derivedVaultName;
+	const isConfigured = Boolean(vaultPath || rawVaultName);
 	const dailyFolder = String(settings.dailyFolder || "cxy更新日志");
 	const httpPort = Number(settings.httpPort || 8080);
 
@@ -69,38 +76,44 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 	}, [island]);
 
 	useEffect(() => {
-		if (!vaultName) return;
+		if (!vaultName && !vaultPath) return;
 		let active = true;
-		fetchRecentNotes(vaultName, httpPort).then((notes) => {
+		fetchRecentNotes(vaultName, httpPort, vaultPath).then((notes) => {
 			if (active) setRecentNotes(notes);
 		});
 		return () => {
 			active = false;
 		};
-	}, [vaultName, httpPort]);
+	}, [vaultName, vaultPath, httpPort]);
 
 	if (!isConfigured) {
 		return (
 			<NeedsConfigCard
 				pluginId="com.island.obsidian"
 				title="Obsidian 知识库"
-				description="未配置知识库仓库。请输入您的 Obsidian 仓库名称以打通闪念速记、每日日记与笔记快速检索。"
+				description="未配置知识库仓库。请输入您的本地 Obsidian 仓库路径（或仓库名称），以打通闪念速记、每日日记与笔记快速检索。"
 				icon={<ObsidianIconSvg size={18} />}
 				accentColor="#8B5CF6"
 				externalUrl="obsidian://"
 				externalLabel="打开 Obsidian"
 				settingsDefs={[
 					{
-						key: "vaultName",
-						label: "Obsidian 仓库名称 (必须与 Obsidian 中完全一致)",
+						key: "vaultPath",
+						label: "Obsidian 仓库绝对路径 (例如 D:\\Obsidian\\MyVault)",
 						type: "text",
 						default: "",
 					},
 					{
-						key: "dailyFolder",
-						label: "日记文件夹 (例如 Daily notes)",
+						key: "vaultName",
+						label: "Obsidian 仓库名称 (可选，可根据路径自动提取)",
 						type: "text",
-						default: "Daily notes",
+						default: "Obsidian Vault",
+					},
+					{
+						key: "dailyFolder",
+						label: "日记文件夹 (例如 cxy更新日志 或 Daily notes)",
+						type: "text",
+						default: "cxy更新日志",
 					},
 				]}
 				currentSettings={settings}
@@ -117,6 +130,7 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 			`灵动速记-${new Date().toLocaleTimeString().replace(/:/g, "-")}`,
 			captureText,
 			[selectedTag],
+			vaultPath,
 		);
 		if (ok) {
 			setCapturedSuccess(true);
@@ -128,7 +142,7 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 	const handleSearch = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!searchQuery.trim()) return;
-		searchObsidian(vaultName, searchQuery.trim());
+		searchObsidian(vaultName, searchQuery.trim(), vaultPath);
 	};
 
 	const todayStr = `${new Date().getMonth() + 1}月${new Date().getDate()}日`;
@@ -153,7 +167,9 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 							<span className="truncate font-semibold text-text text-[13px]">Obsidian</span>
 							<span className="size-1.5 rounded-full bg-emerald-400" />
 						</div>
-						<span className="truncate text-[10.5px] text-text-faint font-mono block">{vaultName}</span>
+						<span className="truncate text-[10px] text-text-faint font-mono block" title={vaultPath || vaultName}>
+							{vaultPath ? vaultPath.split(/[\\/]/).pop() : vaultName}
+						</span>
 					</div>
 				</div>
 
@@ -163,7 +179,7 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 						type="button"
 						whileHover={{ scale: 1.02 }}
 						whileTap={{ scale: 0.98 }}
-						onClick={() => openDailyNote(vaultName, dailyFolder)}
+						onClick={() => openDailyNote(vaultName, dailyFolder, vaultPath)}
 						className="flex items-center justify-between rounded-xl bg-purple-500/15 border border-purple-500/25 px-2.5 py-1.5 text-xs text-purple-300 hover:bg-purple-500/22 transition-colors cursor-pointer"
 					>
 						<div className="flex items-center gap-1.5">
@@ -175,19 +191,34 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 						</span>
 					</motion.button>
 
-					<motion.button
-						type="button"
-						whileHover={{ scale: 1.02 }}
-						whileTap={{ scale: 0.98 }}
-						onClick={() => openObsidianVault(vaultName)}
-						className="flex items-center justify-between rounded-xl bg-white/4 border border-white/6 px-2.5 py-1.5 text-xs text-text-muted hover:text-text hover:bg-white/8 transition-colors cursor-pointer"
-					>
-						<div className="flex items-center gap-1.5">
-							<BookOpenIcon size={13} className="text-text-faint" />
-							<span className="text-[11px]">{t("marketplace.widgets.obsidian.openApp")}</span>
-						</div>
-						<ExternalLinkIcon size={11} className="text-text-faint" />
-					</motion.button>
+					<div className="flex items-center gap-1">
+						<motion.button
+							type="button"
+							whileHover={{ scale: 1.02 }}
+							whileTap={{ scale: 0.98 }}
+							onClick={() => openObsidianVault(vaultName, vaultPath)}
+							className="flex flex-1 items-center justify-between rounded-xl bg-white/4 border border-white/6 px-2.5 py-1.5 text-xs text-text-muted hover:text-text hover:bg-white/8 transition-colors cursor-pointer"
+						>
+							<div className="flex items-center gap-1.5">
+								<BookOpenIcon size={13} className="text-text-faint" />
+								<span className="text-[11px]">{t("marketplace.widgets.obsidian.openApp")}</span>
+							</div>
+							<ExternalLinkIcon size={11} className="text-text-faint" />
+						</motion.button>
+
+						{vaultPath && (
+							<motion.button
+								type="button"
+								whileHover={{ scale: 1.06 }}
+								whileTap={{ scale: 0.92 }}
+								title="打开本地仓库文件夹"
+								onClick={() => openInFolder(vaultPath)}
+								className="flex size-7.5 shrink-0 items-center justify-center rounded-xl bg-white/4 border border-white/6 text-text-faint hover:text-white hover:bg-white/8 transition-colors cursor-pointer"
+							>
+								<FolderOpenIcon size={13} />
+							</motion.button>
+						)}
+					</div>
 				</div>
 
 				{/* Micro Footer Status */}
@@ -332,7 +363,7 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 										<motion.div
 											key={note.path}
 											whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.08)" }}
-											onClick={() => openObsidianNote(vaultName, note.path)}
+											onClick={() => openObsidianNote(vaultName, note.path, vaultPath)}
 											className="group flex items-center justify-between rounded-xl bg-white/4 border border-white/6 px-2.5 py-1 text-xs cursor-pointer hover:border-purple-500/30 transition-colors"
 										>
 											<div className="flex items-center gap-2 min-w-0 flex-1 pr-2">

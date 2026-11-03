@@ -3,12 +3,14 @@
  *
  * Supports:
  * - Obsidian URI protocol scheme (obsidian://open, obsidian://new, obsidian://search)
- * - Real-time vault markdown file discovery via Everything HTTP indexer (with seamless local fallback)
+ * - Custom Vault absolute path or vault name
+ * - Real-time vault markdown file discovery via Everything backend indexer
  * - Quick capture / Flash note creation
  * - Daily Note (cxy更新日志 / Daily notes) direct access
  */
 
-import { openExternal } from "../bridge";
+import { openExternal, openInFolder } from "../bridge";
+import { queryEverything } from "./everythingClient";
 
 export interface ObsidianNote {
 	name: string;
@@ -24,23 +26,44 @@ export function openProtocolUrl(url: string) {
 	openExternal(url);
 }
 
-export function openObsidianVault(vaultName = "Obsidian Vault") {
-	openProtocolUrl(`obsidian://open?vault=${encodeURIComponent(vaultName)}`);
+export function openObsidianVault(vaultName = "Obsidian Vault", vaultPath = "") {
+	const p = vaultPath.trim();
+	if (p) {
+		openProtocolUrl(`obsidian://open?path=${encodeURIComponent(p.replace(/\\/g, "/"))}`);
+	} else {
+		openProtocolUrl(`obsidian://open?vault=${encodeURIComponent(vaultName)}`);
+	}
 }
 
-export function openObsidianNote(vaultName: string, filePath: string) {
-	const cleanPath = filePath.replace(/\\/g, "/").replace(/^\/+/, "");
-	openProtocolUrl(`obsidian://open?vault=${encodeURIComponent(vaultName)}&file=${encodeURIComponent(cleanPath)}`);
+export function openObsidianNote(vaultName: string, filePath: string, vaultPath = "") {
+	const cleanFile = filePath.replace(/\\/g, "/").replace(/^\/+/, "");
+	const p = vaultPath.trim().replace(/\\/g, "/").replace(/\/+$/, "");
+
+	if (cleanFile.includes(":")) {
+		openProtocolUrl(`obsidian://open?path=${encodeURIComponent(cleanFile)}`);
+	} else if (p) {
+		const fullPath = cleanFile.startsWith(p) ? cleanFile : `${p}/${cleanFile}`;
+		openProtocolUrl(`obsidian://open?path=${encodeURIComponent(fullPath)}`);
+	} else {
+		openProtocolUrl(`obsidian://open?vault=${encodeURIComponent(vaultName)}&file=${encodeURIComponent(cleanFile)}`);
+	}
 }
 
-export function openDailyNote(vaultName = "Obsidian Vault", dailyFolder = "cxy更新日志") {
+export function openDailyNote(vaultName = "Obsidian Vault", dailyFolder = "cxy更新日志", vaultPath = "") {
 	const now = new Date();
 	const yyyy = now.getFullYear();
-	// Format matches user's convention, e.g. "cxy更新日志/2026-11-03.md" or "cxy更新日志/2026-11-3.md"
-	const noteName = `${yyyy}-${now.getMonth() + 1}-${now.getDate()}`;
+	const mm = String(now.getMonth() + 1).padStart(2, "0");
+	const dd = String(now.getDate()).padStart(2, "0");
+	const noteName = `${yyyy}-${mm}-${dd}`;
 	const cleanFolder = dailyFolder.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
-	const targetPath = cleanFolder ? `${cleanFolder}/${noteName}` : noteName;
-	openProtocolUrl(`obsidian://open?vault=${encodeURIComponent(vaultName)}&file=${encodeURIComponent(targetPath)}`);
+	const targetRel = cleanFolder ? `${cleanFolder}/${noteName}` : noteName;
+
+	const p = vaultPath.trim().replace(/\\/g, "/").replace(/\/+$/, "");
+	if (p) {
+		openProtocolUrl(`obsidian://open?path=${encodeURIComponent(`${p}/${targetRel}.md`)}`);
+	} else {
+		openProtocolUrl(`obsidian://open?vault=${encodeURIComponent(vaultName)}&file=${encodeURIComponent(targetRel)}`);
+	}
 }
 
 export function quickCaptureToObsidian(
@@ -48,61 +71,71 @@ export function quickCaptureToObsidian(
 	title: string,
 	content: string,
 	tags: string[] = [],
+	vaultPath = "",
 ): boolean {
 	if (!title && !content) return false;
 	const tagStr = tags.length > 0 ? `\n\n${tags.map((t) => (t.startsWith("#") ? t : `#${t}`)).join(" ")}` : "";
 	const finalContent = `${content.trim()}${tagStr}\n\n> 记录于 Windows 灵动岛 · ${new Date().toLocaleString()}`;
 	const noteName = title.trim() || `速记-${new Date().toISOString().slice(0, 10)}-${Date.now().toString().slice(-4)}`;
-	openProtocolUrl(
-		`obsidian://new?vault=${encodeURIComponent(vaultName)}&name=${encodeURIComponent(noteName)}&content=${encodeURIComponent(finalContent)}`,
-	);
+
+	const p = vaultPath.trim().replace(/\\/g, "/").replace(/\/+$/, "");
+	if (p) {
+		openProtocolUrl(
+			`obsidian://new?path=${encodeURIComponent(`${p}/${noteName}.md`)}&content=${encodeURIComponent(finalContent)}`,
+		);
+	} else {
+		openProtocolUrl(
+			`obsidian://new?vault=${encodeURIComponent(vaultName)}&name=${encodeURIComponent(noteName)}&content=${encodeURIComponent(finalContent)}`,
+		);
+	}
 	return true;
 }
 
-export function searchObsidian(vaultName: string, query: string) {
-	openProtocolUrl(`obsidian://search?vault=${encodeURIComponent(vaultName)}&query=${encodeURIComponent(query)}`);
+export function searchObsidian(vaultName: string, query: string, vaultPath = "") {
+	const p = vaultPath.trim().replace(/\\/g, "/");
+	if (p) {
+		openProtocolUrl(`obsidian://search?path=${encodeURIComponent(p)}&query=${encodeURIComponent(query)}`);
+	} else {
+		openProtocolUrl(`obsidian://search?vault=${encodeURIComponent(vaultName)}&query=${encodeURIComponent(query)}`);
+	}
 }
 
-export async function fetchRecentNotes(vaultName = "Obsidian Vault", port = 8080): Promise<ObsidianNote[]> {
+export { openInFolder };
+
+export async function fetchRecentNotes(
+	vaultName = "Obsidian Vault",
+	port = 8080,
+	vaultPath = "",
+): Promise<ObsidianNote[]> {
+	const searchTarget = vaultPath.trim() || vaultName;
+	if (!searchTarget) return FALLBACK_VAULT_NOTES;
+
 	try {
-		const controller = new AbortController();
-		const timeoutId = setTimeout(() => controller.abort(), 1200);
-		const searchQuery = `path:"${vaultName}" ext:md`;
-		const url = `http://127.0.0.1:${port}/?search=${encodeURIComponent(searchQuery)}&json=1&count=8&sort=date_modified&ascending=0`;
-		const resp = await fetch(url, { signal: controller.signal });
-		clearTimeout(timeoutId);
-
-		if (!resp.ok) {
-			return FALLBACK_VAULT_NOTES;
-		}
-
-		const data = await resp.json();
-		if (!data.results || !Array.isArray(data.results)) {
+		const searchQuery = `path:"${searchTarget}" ext:md`;
+		const res = await queryEverything(searchQuery, port, 10);
+		if (!res.ok || !res.items?.length) {
 			return FALLBACK_VAULT_NOTES;
 		}
 
 		const notes: ObsidianNote[] = [];
-		for (const item of data.results) {
+		const matchKey = vaultPath.trim().replace(/\\/g, "/") || vaultName;
+
+		for (const item of res.items) {
 			const fullPath = item.path ? `${item.path}\\${item.name}` : item.name;
-			// Filter out .trash and .obsidian system directories
 			if (fullPath.includes(".trash") || fullPath.includes(".obsidian")) {
 				continue;
 			}
-			const vaultIndex = fullPath.indexOf(vaultName);
+			const normalizedPath = fullPath.replace(/\\/g, "/");
+			const vaultIndex = normalizedPath.toLowerCase().indexOf(matchKey.toLowerCase());
 			const relPath =
-				vaultIndex !== -1
-					? fullPath
-							.slice(vaultIndex + vaultName.length)
-							.replace(/^[\\/]+/, "")
-							.replace(/\\/g, "/")
-					: item.name;
+				vaultIndex !== -1 ? normalizedPath.slice(vaultIndex + matchKey.length).replace(/^[\\/]+/, "") : item.name;
 
 			const parts = relPath.split("/");
 			const folder = parts.length > 1 ? parts.slice(0, -1).join("/") : "根目录";
 
 			notes.push({
-				name: item.name,
-				path: relPath,
+				name: item.name.replace(/\.md$/i, ""),
+				path: fullPath,
 				folder,
 				modifiedTime: item.date_modified ? formatModifiedTime(item.date_modified) : "近期更新",
 				size: item.size,
@@ -118,6 +151,8 @@ export async function fetchRecentNotes(vaultName = "Obsidian Vault", port = 8080
 
 function formatModifiedTime(raw: string | number): string {
 	if (!raw) return "近期更新";
-	// Everything date format or timestamp
-	return "刚刚";
+	if (typeof raw === "string" && raw.includes("-")) {
+		return raw.slice(5, 16);
+	}
+	return "刚刚更新";
 }
