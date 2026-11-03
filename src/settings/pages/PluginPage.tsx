@@ -105,7 +105,7 @@ const PLUGIN_GUIDES: Record<string, PluginGuide> = {
 		steps: [
 			{
 				title: "获取 NavoPath MCP 凭证",
-				desc: "登录 NavoPath 规划器平台，前往「设置 → 高级 → 日历与集成 → MCP」页面，按设备名称生成个人访问令牌，并立即复制完整的 nvp_... 内容（原文只显示一次）。",
+				desc: "登录 NavoPath 规划器平台，前往「设置 → 日历与集成 → MCP」页面（旧版位于「高级」下），按设备名称生成个人访问令牌，并立即复制完整的 nvp_... 内容（原文只显示一次）。",
 				link: { url: "https://navopath-planner.vercel.app", label: "访问 NavoPath 官方平台" },
 			},
 			{
