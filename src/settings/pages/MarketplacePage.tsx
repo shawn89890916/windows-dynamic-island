@@ -13,6 +13,7 @@ import {
 	UploadCloudIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { Card } from "../../components/ui/card";
 import { useT } from "../../core/i18n";
 import { MARKETPLACE_CATALOG } from "../../core/plugins/catalog";
@@ -21,10 +22,9 @@ import {
 	renderPluginIcon,
 	togglePlugin,
 	uninstallPlugin,
-	updatePluginSettings,
 	useInstalledPlugins,
 } from "../../core/plugins/registry";
-import type { InstalledPlugin, PluginCategory, PluginManifest } from "../../core/plugins/types";
+import type { PluginCategory, PluginManifest } from "../../core/plugins/types";
 import { Lead, Title } from "../components/Heading";
 import { Toggle } from "../components/Toggle";
 
@@ -37,10 +37,10 @@ const CATEGORIES: { id: PluginCategory | "all"; label: string }[] = [
 
 export function MarketplacePage() {
 	const t = useT();
+	const navigate = useNavigate();
 	const [tab, setTab] = useState<"explore" | "installed" | "sideload">("explore");
 	const [search, setSearch] = useState("");
 	const [activeCategory, setActiveCategory] = useState<PluginCategory | "all">("all");
-	const [configuringPlugin, setConfiguringPlugin] = useState<InstalledPlugin | null>(null);
 
 	// Direct sideload & install state
 	const [importUrl, setImportUrl] = useState("");
@@ -185,6 +185,7 @@ export function MarketplacePage() {
 									plugin={plugin}
 									isInstalled={isInstalled}
 									onInstall={() => installPlugin(plugin)}
+									onConfigure={() => navigate(`/plugins/${plugin.id}`)}
 								/>
 							);
 						})}
@@ -204,18 +205,21 @@ export function MarketplacePage() {
 			{tab === "installed" && (
 				<div className="flex flex-col gap-3">
 					{installed.map((item) => (
-						<Card key={item.manifest.id} className="p-3.5 overflow-hidden">
+						<Card key={item.manifest.id} className="p-3.5 overflow-hidden transition-all hover:border-white/12">
 							<div className="flex items-center justify-between gap-3 min-w-0">
-								<div className="flex min-w-0 flex-1 items-center gap-3">
+								<div
+									className="group/item flex min-w-0 flex-1 items-center gap-3 cursor-pointer"
+									onClick={() => navigate(`/plugins/${item.manifest.id}`)}
+								>
 									<div
-										className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-white/6"
+										className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-white/6 transition-transform group-hover/item:scale-105"
 										style={{ color: item.manifest.accentColor }}
 									>
 										{renderPluginIcon(item.manifest.icon, 20)}
 									</div>
 									<div className="min-w-0 flex-1">
 										<div className="flex items-center gap-2">
-											<h4 className="truncate text-[13px] font-semibold text-text">
+											<h4 className="truncate text-[13px] font-semibold text-text group-hover/item:text-accent transition-colors">
 												{item.manifest.titleKey ? t(item.manifest.titleKey) : item.manifest.name}
 											</h4>
 											<span className="flex-none rounded bg-white/8 px-1.5 py-0.2 text-[10px] text-text-faint">
@@ -232,22 +236,20 @@ export function MarketplacePage() {
 								</div>
 
 								<div className="flex flex-none items-center gap-2">
-									{item.manifest.settings && item.manifest.settings.length > 0 && (
-										<button
-											type="button"
-											onClick={() => setConfiguringPlugin(item)}
-											className="flex h-7 items-center gap-1.5 rounded-lg border border-white/8 bg-white/4 px-2.5 text-xs text-text-faint hover:bg-white/8 hover:text-text"
-										>
-											<SlidersIcon size={13} />
-											<span>配置</span>
-										</button>
-									)}
+									<button
+										type="button"
+										onClick={() => navigate(`/plugins/${item.manifest.id}`)}
+										className="flex h-7 items-center gap-1.5 rounded-lg border border-white/8 bg-white/4 px-2.5 text-xs text-text-faint hover:bg-white/10 hover:text-text transition-colors cursor-pointer"
+									>
+										<SlidersIcon size={13} />
+										<span>配置</span>
+									</button>
 									<Toggle checked={item.enabled} onChange={() => togglePlugin(item.manifest.id)} />
 									<button
 										type="button"
 										onClick={() => uninstallPlugin(item.manifest.id)}
 										title="卸载插件"
-										className="flex h-7 w-7 items-center justify-center rounded-lg text-text-faint hover:bg-red-500/10 hover:text-red-400"
+										className="flex h-7 w-7 items-center justify-center rounded-lg text-text-faint hover:bg-red-500/10 hover:text-red-400 cursor-pointer"
 									>
 										<Trash2Icon size={14} />
 									</button>
@@ -401,18 +403,6 @@ export function MarketplacePage() {
 					</Card>
 				</div>
 			)}
-
-			{/* Configuration Drawer / Modal */}
-			{configuringPlugin && (
-				<ConfigModal
-					plugin={configuringPlugin}
-					onClose={() => setConfiguringPlugin(null)}
-					onSave={(newSettings) => {
-						updatePluginSettings(configuringPlugin.manifest.id, newSettings);
-						setConfiguringPlugin(null);
-					}}
-				/>
-			)}
 		</div>
 	);
 }
@@ -435,10 +425,12 @@ function PluginCard({
 	plugin,
 	isInstalled,
 	onInstall,
+	onConfigure,
 }: {
 	plugin: PluginManifest;
 	isInstalled: boolean;
 	onInstall: () => void;
+	onConfigure?: () => void;
 }) {
 	const t = useT();
 	const title = plugin.titleKey ? t(plugin.titleKey) : plugin.name;
@@ -447,7 +439,10 @@ function PluginCard({
 		<Card className="flex flex-col justify-between p-3.5 transition-all hover:border-white/12">
 			<div>
 				<div className="flex items-start justify-between gap-2">
-					<div className="flex items-center gap-2.5">
+					<div
+						className={`flex items-center gap-2.5 ${isInstalled ? "cursor-pointer group/card" : ""}`}
+						onClick={isInstalled ? onConfigure : undefined}
+					>
 						<div
 							className="flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-white/6"
 							style={{ color: plugin.accentColor }}
@@ -455,7 +450,13 @@ function PluginCard({
 							{renderPluginIcon(plugin.icon, 18)}
 						</div>
 						<div className="min-w-0">
-							<h4 className="truncate text-[13px] font-semibold text-text">{title}</h4>
+							<h4
+								className={`truncate text-[13px] font-semibold text-text ${
+									isInstalled ? "group-hover/card:text-accent transition-colors" : ""
+								}`}
+							>
+								{title}
+							</h4>
 							<span className="text-[11px] text-text-faint">by {plugin.author.name}</span>
 						</div>
 					</div>
@@ -478,15 +479,27 @@ function PluginCard({
 			<div className="mt-4 flex items-center justify-between border-t border-white/6 pt-3">
 				<span className="text-[10px] text-text-faint">免费开源</span>
 				{isInstalled ? (
-					<span className="flex items-center gap-1 text-xs font-medium text-emerald-400">
-						<CheckIcon size={13} />
-						已安装
-					</span>
+					<div className="flex items-center gap-2">
+						<span className="flex items-center gap-1 text-xs font-medium text-emerald-400">
+							<CheckIcon size={13} />
+							已安装
+						</span>
+						{onConfigure && (
+							<button
+								type="button"
+								onClick={onConfigure}
+								className="flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1 text-xs font-medium text-text transition-colors hover:bg-white/20 active:scale-95 cursor-pointer"
+							>
+								<SlidersIcon size={12} />
+								<span>配置</span>
+							</button>
+						)}
+					</div>
 				) : (
 					<button
 						type="button"
 						onClick={onInstall}
-						className="flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1 text-xs font-medium text-text transition-colors hover:bg-white/20 active:scale-95"
+						className="flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1 text-xs font-medium text-text transition-colors hover:bg-white/20 active:scale-95 cursor-pointer"
 					>
 						<DownloadIcon size={12} />
 						安装
@@ -494,113 +507,5 @@ function PluginCard({
 				)}
 			</div>
 		</Card>
-	);
-}
-
-function ConfigModal({
-	plugin,
-	onClose,
-	onSave,
-}: {
-	plugin: InstalledPlugin;
-	onClose: () => void;
-	onSave: (settings: Record<string, unknown>) => void;
-}) {
-	const t = useT();
-	const [values, setValues] = useState<Record<string, unknown>>({
-		...plugin.customSettings,
-	});
-
-	const { manifest } = plugin;
-	const title = manifest.titleKey ? t(manifest.titleKey) : manifest.name;
-
-	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs">
-			<div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#18181f] p-5 shadow-2xl">
-				<div className="flex items-center justify-between border-b border-white/8 pb-3">
-					<div className="flex items-center gap-2">
-						{renderPluginIcon(manifest.icon, 18, manifest.accentColor)}
-						<h3 className="text-sm font-semibold text-text">{title}</h3>
-					</div>
-					<button type="button" onClick={onClose} className="text-sm text-text-faint hover:text-text">
-						✕
-					</button>
-				</div>
-
-				<div className="my-4 flex max-h-80 flex-col gap-3 overflow-y-auto pr-1">
-					{manifest.settings?.map((field) => (
-						<div key={field.key} className="flex flex-col gap-1.5">
-							<span className="text-xs font-medium text-text">{field.label}</span>
-							{field.description && <p className="text-[11px] text-text-faint">{field.description}</p>}
-
-							{field.type === "text" && (
-								<input
-									type="text"
-									value={String(values[field.key] ?? field.default ?? "")}
-									onChange={(e) => setValues({ ...values, [field.key]: e.target.value })}
-									className="h-8 rounded-lg border border-white/8 bg-white/4 px-2.5 text-xs text-text focus:border-white/20 focus:outline-none"
-								/>
-							)}
-
-							{field.type === "number" && (
-								<input
-									type="number"
-									value={Number(values[field.key] ?? field.default ?? 0)}
-									onChange={(e) => setValues({ ...values, [field.key]: Number(e.target.value) })}
-									className="h-8 rounded-lg border border-white/8 bg-white/4 px-2.5 text-xs text-text focus:border-white/20 focus:outline-none"
-								/>
-							)}
-
-							{field.type === "password" && (
-								<input
-									type="password"
-									value={String(values[field.key] ?? field.default ?? "")}
-									onChange={(e) => setValues({ ...values, [field.key]: e.target.value })}
-									className="h-8 rounded-lg border border-white/8 bg-white/4 px-2.5 text-xs text-text focus:border-white/20 focus:outline-none"
-								/>
-							)}
-
-							{field.type === "boolean" && (
-								<Toggle
-									checked={Boolean(values[field.key] ?? field.default ?? false)}
-									onChange={(v) => setValues({ ...values, [field.key]: v })}
-								/>
-							)}
-
-							{field.type === "select" && (
-								<select
-									value={String(values[field.key] ?? field.default ?? "")}
-									onChange={(e) => setValues({ ...values, [field.key]: e.target.value })}
-									className="h-8 rounded-lg border border-white/8 bg-[#202028] px-2 text-xs text-text focus:border-white/20 focus:outline-none"
-								>
-									{field.options?.map((opt) => (
-										<option key={opt.value} value={opt.value}>
-											{opt.label}
-										</option>
-									))}
-								</select>
-							)}
-						</div>
-					))}
-				</div>
-
-				<div className="flex items-center justify-end gap-2 border-t border-white/8 pt-3">
-					<button
-						type="button"
-						onClick={onClose}
-						className="rounded-lg bg-white/5 px-3 py-1.5 text-xs text-text-faint hover:bg-white/10 hover:text-text"
-					>
-						取消
-					</button>
-					<button
-						type="button"
-						onClick={() => onSave(values)}
-						className="rounded-lg bg-white/15 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-white/25"
-					>
-						保存设置
-					</button>
-				</div>
-			</div>
-		</div>
 	);
 }

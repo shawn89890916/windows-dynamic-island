@@ -476,9 +476,15 @@ function GenericPluginWidget({ plugin }: { plugin: InstalledPlugin }) {
 					type="button"
 					onClick={(e) => {
 						e.stopPropagation();
+						try {
+							localStorage.setItem("settings_navigate", `/plugins/${manifest.id}`);
+							if (isTauri) {
+								emit("settings://navigate", `/plugins/${manifest.id}`);
+							}
+						} catch {}
 						command("open_settings");
 					}}
-					className="flex h-8.5 shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3.5 text-xs font-semibold text-text transition-all hover:bg-white/18 active:scale-95 whitespace-nowrap ml-3"
+					className="flex h-8.5 shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3.5 text-xs font-semibold text-text transition-all hover:bg-white/18 active:scale-95 whitespace-nowrap ml-3 cursor-pointer"
 				>
 					<SlidersIcon size={12} className="opacity-70" />
 					<span>{t("marketplace.widgets.generic.configure")}</span>

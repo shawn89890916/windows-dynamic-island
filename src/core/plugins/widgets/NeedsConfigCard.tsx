@@ -62,16 +62,31 @@ export function NeedsConfigCard({
 					</div>
 				</div>
 
-				{externalUrl && (
+				<div className="flex items-center gap-1.5">
 					<button
 						type="button"
-						onClick={() => command("open_external", { url: externalUrl })}
-						className="flex items-center gap-1 text-[11px] font-medium text-text-dim hover:text-text bg-white/6 hover:bg-white/10 px-2.5 py-1 rounded-lg transition-colors"
+						onClick={() => {
+							try {
+								localStorage.setItem("settings_navigate", `/plugins/${pluginId}`);
+							} catch {}
+							command("open_settings");
+						}}
+						className="flex items-center gap-1 text-[11px] font-medium text-text-dim hover:text-text bg-white/6 hover:bg-white/10 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
 					>
-						<span>{externalLabel || "官方说明"}</span>
-						<ExternalLinkIcon size={11} />
+						<SlidersIcon size={11} />
+						<span>配置与教程</span>
 					</button>
-				)}
+					{externalUrl && (
+						<button
+							type="button"
+							onClick={() => command("open_external", { url: externalUrl })}
+							className="flex items-center gap-1 text-[11px] font-medium text-text-dim hover:text-text bg-white/6 hover:bg-white/10 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+						>
+							<span>{externalLabel || "官方说明"}</span>
+							<ExternalLinkIcon size={11} />
+						</button>
+					)}
+				</div>
 			</div>
 
 			{settingsDefs && settingsDefs.length > 0 ? (

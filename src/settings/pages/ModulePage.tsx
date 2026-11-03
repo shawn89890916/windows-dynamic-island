@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { Navigate, useParams } from "react-router";
 import { Card, Row } from "../../components/ui/card";
 import { useT } from "../../core/i18n";
+import { useInstalledPlugins } from "../../core/plugins/registry";
 import { moduleEnabled, readSetting, setSetting } from "../../core/settings";
 import type { IslandModule } from "../../core/types";
 import { useAllModules } from "../../modules";
@@ -9,10 +10,16 @@ import { BackLink, Title } from "../components/Heading";
 import { PlacementSelect } from "../components/PlacementSelect";
 import { ShortcutRow } from "../components/ShortcutRow";
 import { Toggle, ToggleRow } from "../components/Toggle";
+import { PluginPage } from "./PluginPage";
 
 export function ModulePage({ values }: { values: Record<string, unknown> }) {
 	const { id } = useParams();
+	const plugins = useInstalledPlugins();
 	const allModules = useAllModules();
+	const plugin = plugins.find((p) => p.manifest.id === id);
+	if (plugin) {
+		return <PluginPage pluginId={id} from="modules" values={values} />;
+	}
 	const module = allModules.find((m) => m.id === id);
 	if (!module) return <Navigate to="/modules" replace />;
 	// Keyed so each module's `useHiddenSettings` hook gets its own component.
