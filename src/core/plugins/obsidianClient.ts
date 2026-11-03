@@ -16,50 +16,7 @@ export interface ObsidianNote {
 	size?: number;
 }
 
-export const FALLBACK_VAULT_NOTES: ObsidianNote[] = [
-	{
-		name: "2026-11-2.md",
-		path: "cxy更新日志/2026-11-2.md",
-		folder: "cxy更新日志",
-		modifiedTime: "今日 06:25",
-		size: 2048,
-	},
-	{
-		name: "日程助理状态.md",
-		path: "升学/资料/00-交接文档/日程助理状态.md",
-		folder: "升学/资料",
-		modifiedTime: "前天 10:58",
-		size: 4620,
-	},
-	{
-		name: "Memo.md",
-		path: "Memo.md",
-		folder: "根目录",
-		modifiedTime: "前天 10:27",
-		size: 1530,
-	},
-	{
-		name: "三校门户与材料收件核查.md",
-		path: "升学/资料/07-材料清单/三校门户与材料收件核查-2026-11-01.md",
-		folder: "升学/资料",
-		modifiedTime: "11-01 10:30",
-		size: 3820,
-	},
-	{
-		name: "3D打印耗材对比.md",
-		path: "3D打印/3D打印耗材对比.md",
-		folder: "3D打印",
-		modifiedTime: "10-28 14:12",
-		size: 5120,
-	},
-	{
-		name: "AI运转存档.md",
-		path: "AI使用/2026.9.24存档 opus5.5运转.md",
-		folder: "AI使用",
-		modifiedTime: "10-24 16:40",
-		size: 8940,
-	},
-];
+export const FALLBACK_VAULT_NOTES: ObsidianNote[] = [];
 
 export function openProtocolUrl(url: string) {
 	if (typeof window !== "undefined") {

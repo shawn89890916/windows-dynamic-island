@@ -10,38 +10,33 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { command } from "../../../core/bridge";
-import { useT } from "../../../core/i18n";
 import { useIsland } from "../../../core/island";
 import { ChatGptIcon } from "../../../modules/ai-agents/chatgpt/ChatGptIcon";
+import { useChatGpt } from "../../../modules/ai-agents/chatgpt/useChatGpt";
 import { ClaudeIcon } from "../../../modules/ai-agents/claude/ClaudeIcon";
+import { useClaude } from "../../../modules/ai-agents/claude/useClaude";
 import { CodexIcon } from "../../../modules/ai-agents/codex/CodexIcon";
+import { useCodex } from "../../../modules/ai-agents/codex/useCodex";
+import { formatTokens } from "../../../modules/ai-agents/common/format";
+import type { AgentSnapshot } from "../../../modules/ai-agents/common/types";
 import { GeminiIcon } from "../../../modules/ai-agents/gemini/GeminiIcon";
+import { useGemini } from "../../../modules/ai-agents/gemini/useGemini";
 
 export type AgentId = "gemini" | "claude" | "codex" | "chatgpt";
 
-interface AgentMeta {
+interface AgentDef {
 	id: AgentId;
 	name: string;
 	brandColor: string;
-	model: string;
-	status: "working" | "idle" | "ready";
-	activeTask: string;
-	tokensToday: string;
-	limitsUsed: number;
 	protocolUrl: string;
 	webUrl: string;
 }
 
-const AGENTS: Record<AgentId, AgentMeta> = {
+const AGENT_CONFIGS: Record<AgentId, AgentDef> = {
 	gemini: {
 		id: "gemini",
 		name: "Antigravity",
 		brandColor: "#388BFD",
-		model: "Gemini 3.8 / Pro",
-		status: "working",
-		activeTask: "AI智能中枢全栈调度与状态监控构建中",
-		tokensToday: "142k / 58k",
-		limitsUsed: 38,
 		protocolUrl: "antigravity://",
 		webUrl: "https://aistudio.google.com",
 	},
@@ -49,11 +44,6 @@ const AGENTS: Record<AgentId, AgentMeta> = {
 		id: "claude",
 		name: "Claude Code",
 		brandColor: "#D97757",
-		model: "Claude 3.7 Sonnet",
-		status: "ready",
-		activeTask: "HTTP Hooks 本地端点实时接入中",
-		tokensToday: "210k / 84k",
-		limitsUsed: 42,
 		protocolUrl: "claude://",
 		webUrl: "https://claude.ai",
 	},
@@ -61,11 +51,6 @@ const AGENTS: Record<AgentId, AgentMeta> = {
 		id: "codex",
 		name: "OpenAI Codex",
 		brandColor: "#8B9CFF",
-		model: "GPT-5 Codex",
-		status: "working",
-		activeTask: "代码沙箱环境与终端交互监控",
-		tokensToday: "96k / 41k",
-		limitsUsed: 22,
 		protocolUrl: "codex://",
 		webUrl: "https://chatgpt.com/codex",
 	},
@@ -73,27 +58,33 @@ const AGENTS: Record<AgentId, AgentMeta> = {
 		id: "chatgpt",
 		name: "ChatGPT",
 		brandColor: "#10A37F",
-		model: "GPT-4o / o1",
-		status: "idle",
-		activeTask: "Windows 桌面应用在线等待提问",
-		tokensToday: "85k / 32k",
-		limitsUsed: 18,
 		protocolUrl: "chatgpt://",
 		webUrl: "https://chatgpt.com",
 	},
 };
 
 export function AiHubWidget({ settings }: { settings: Record<string, unknown> }) {
-	const t = useT();
 	const island = useIsland();
 
-	const initialAgent = (settings.defaultAgent as AgentId) || "gemini";
+	const initialAgent = (settings.defaultAgent as AgentId) || "claude";
 	const [activeAgentId, setActiveAgentId] = useState<AgentId>(initialAgent);
 	const [promptInput, setPromptInput] = useState("");
 	const [dispatchedSuccess, setDispatchedSuccess] = useState(false);
 
 	const inputRef = useRef<HTMLInputElement>(null);
-	const currentAgent = AGENTS[activeAgentId];
+
+	// Read REAL live snapshots from each agent provider
+	const claudeSnap = useClaude();
+	const codexSnap = useCodex();
+	const geminiSnap = useGemini();
+	const chatgptSnap = useChatGpt();
+
+	const snapshots: Record<AgentId, AgentSnapshot> = {
+		claude: claudeSnap,
+		codex: codexSnap,
+		gemini: geminiSnap,
+		chatgpt: chatgptSnap,
+	};
 
 	useEffect(() => {
 		return () => {
@@ -101,9 +92,31 @@ export function AiHubWidget({ settings }: { settings: Record<string, unknown> })
 		};
 	}, [island]);
 
-	const handleLaunchApp = (agent: AgentMeta, e?: React.MouseEvent) => {
+	const currentMeta = AGENT_CONFIGS[activeAgentId];
+	const currentSnap = snapshots[activeAgentId];
+
+	const isAvailable = currentSnap?.available ?? false;
+	const activeSession = currentSnap?.sessions?.[0];
+	const isWorking = activeSession?.status === "working";
+
+	const activeTaskText = !isAvailable
+		? "未检测到本地环境 / 尚未配置"
+		: activeSession
+			? activeSession.activity || activeSession.prompt || activeSession.title || "正在处理任务"
+			: "就绪 · 暂无活跃会话";
+
+	const tokensTotal = currentSnap?.tokensToday
+		? currentSnap.tokensToday.input +
+			currentSnap.tokensToday.output +
+			currentSnap.tokensToday.cacheRead +
+			currentSnap.tokensToday.cacheWrite
+		: null;
+	const tokensText = tokensTotal !== null ? formatTokens(tokensTotal) : "--";
+
+	const limitPct = currentSnap?.limits?.[0]?.usedPct ?? null;
+
+	const handleLaunchApp = (agent: AgentDef, e?: React.MouseEvent) => {
 		e?.stopPropagation();
-		// Try protocol URL then fallback to webUrl
 		if (typeof window !== "undefined") {
 			const a = document.createElement("a");
 			a.href = agent.protocolUrl;
@@ -119,13 +132,11 @@ export function AiHubWidget({ settings }: { settings: Record<string, unknown> })
 		e?.preventDefault();
 		if (!promptInput.trim()) return;
 
-		// Copy prompt to clipboard
 		if (navigator.clipboard) {
 			navigator.clipboard.writeText(promptInput.trim());
 		}
 
-		// Launch the agent application
-		handleLaunchApp(currentAgent);
+		handleLaunchApp(currentMeta);
 
 		setDispatchedSuccess(true);
 		setPromptInput("");
@@ -149,17 +160,16 @@ export function AiHubWidget({ settings }: { settings: Record<string, unknown> })
 		<div className="flex h-full flex-col justify-between select-none px-1 py-0.5">
 			{/* Top Bar: Multi-Agent Switcher Tabs & Launch Action */}
 			<div className="flex items-center justify-between border-b border-white/8 pb-1.5">
-				{/* 4 Agent Pills */}
 				<div className="flex items-center gap-1.5" role="tablist">
-					{(Object.keys(AGENTS) as AgentId[]).map((agentKey) => {
-						const a = AGENTS[agentKey];
+					{(Object.keys(AGENT_CONFIGS) as AgentId[]).map((agentKey) => {
+						const a = AGENT_CONFIGS[agentKey];
+						const snap = snapshots[agentKey];
 						const isSelected = a.id === activeAgentId;
+						const hasWork = snap?.sessions?.some((s) => s.status === "working");
 						return (
-							<motion.button
+							<button
 								key={a.id}
 								type="button"
-								whileHover={{ scale: 1.04 }}
-								whileTap={{ scale: 0.96 }}
 								onClick={() => setActiveAgentId(a.id)}
 								className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors cursor-pointer border ${
 									isSelected
@@ -173,60 +183,63 @@ export function AiHubWidget({ settings }: { settings: Record<string, unknown> })
 							>
 								{renderAgentIcon(a.id, 13)}
 								<span>{a.name}</span>
-								{a.status === "working" && (
+								{hasWork && (
 									<span className="size-1.5 rounded-full animate-pulse" style={{ backgroundColor: a.brandColor }} />
 								)}
-							</motion.button>
+							</button>
 						);
 					})}
 				</div>
 
-				{/* Quick Launch Button */}
-				<motion.button
+				<button
 					type="button"
-					whileHover={{ scale: 1.05 }}
-					whileTap={{ scale: 0.95 }}
-					onClick={(e) => handleLaunchApp(currentAgent, e)}
+					onClick={(e) => handleLaunchApp(currentMeta, e)}
 					className="flex items-center gap-1 rounded-xl bg-white/6 border border-white/8 px-2.5 py-1 text-[11px] text-text-muted hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
 				>
-					<span className="text-[10.5px]">{t("marketplace.widgets.aiHub.launchApp")}</span>
+					<span className="text-[10.5px]">打开客户端</span>
 					<ExternalLinkIcon size={11} />
-				</motion.button>
+				</button>
 			</div>
 
-			{/* Middle Row: Live Agent HUD Telemetry */}
+			{/* Middle Row: Real Agent HUD Telemetry */}
 			<div className="grid grid-cols-[1.6fr_1fr] gap-3 items-center py-1">
 				{/* Left HUD: Active Task & Model */}
 				<div className="flex flex-col justify-center gap-1 rounded-xl bg-white/4 border border-white/6 px-3 py-1.5">
 					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-1.5">
-							<FlameIcon size={12} style={{ color: currentAgent.brandColor }} />
-							<span className="text-[11px] font-semibold text-text truncate">{currentAgent.activeTask}</span>
+						<div className="flex items-center gap-1.5 min-w-0 flex-1 mr-2">
+							<FlameIcon
+								size={12}
+								className="flex-none"
+								style={{ color: isWorking ? currentMeta.brandColor : "#64748B" }}
+							/>
+							<span className="text-[11px] font-semibold text-text truncate">{activeTaskText}</span>
 						</div>
-						<span
-							className="rounded-md px-1.5 py-0.2 text-[9.5px] font-mono font-medium"
-							style={{
-								backgroundColor: `${currentAgent.brandColor}22`,
-								color: currentAgent.brandColor,
-							}}
-						>
-							{currentAgent.model}
-						</span>
+						{currentSnap?.model && (
+							<span
+								className="rounded-md px-1.5 py-0.2 text-[9.5px] font-mono font-medium flex-none"
+								style={{
+									backgroundColor: `${currentMeta.brandColor}22`,
+									color: currentMeta.brandColor,
+								}}
+							>
+								{currentSnap.model}
+							</span>
+						)}
 					</div>
 
 					{/* Rate limit / Context meter */}
 					<div className="flex items-center gap-2 pt-0.5">
 						<div className="h-1 flex-1 rounded-full bg-white/10 overflow-hidden">
-							<motion.div
-								initial={{ width: 0 }}
-								animate={{ width: `${currentAgent.limitsUsed}%` }}
-								transition={{ duration: 0.4 }}
-								className="h-full rounded-full"
-								style={{ backgroundColor: currentAgent.brandColor }}
+							<div
+								className="h-full rounded-full transition-all duration-300"
+								style={{
+									width: limitPct !== null ? `${limitPct}%` : "0%",
+									backgroundColor: currentMeta.brandColor,
+								}}
 							/>
 						</div>
 						<span className="font-mono text-[9.5px] text-text-faint tabular-nums shrink-0">
-							{t("marketplace.widgets.aiHub.contextUsed")}: {currentAgent.limitsUsed}%
+							{limitPct !== null ? `额度消耗: ${limitPct}%` : "暂无限额统计"}
 						</span>
 					</div>
 				</div>
@@ -236,22 +249,20 @@ export function AiHubWidget({ settings }: { settings: Record<string, unknown> })
 					<div className="flex items-center justify-between text-[10.5px]">
 						<span className="text-text-faint flex items-center gap-1">
 							<Code2Icon size={12} />
-							{t("marketplace.widgets.aiHub.tokensToday")}
+							今日消耗
 						</span>
-						<span className="font-mono text-text font-medium text-[11px] tabular-nums">{currentAgent.tokensToday}</span>
+						<span className="font-mono text-text font-medium text-[11px] tabular-nums">{tokensText}</span>
 					</div>
 					<div className="flex items-center justify-between text-[10.5px]">
 						<span className="text-text-faint flex items-center gap-1">
 							<ActivityIcon size={12} />
-							{t("marketplace.widgets.aiHub.statusLabel")}
+							运行状态
 						</span>
 						<span
 							className="font-medium text-[10.5px]"
-							style={{ color: currentAgent.status === "working" ? "#34D399" : "#94A3B8" }}
+							style={{ color: isWorking ? "#34D399" : isAvailable ? "#94A3B8" : "#E11D48" }}
 						>
-							{currentAgent.status === "working"
-								? t("marketplace.widgets.aiHub.statusWorking")
-								: t("marketplace.widgets.aiHub.statusReady")}
+							{isWorking ? "工作执行中" : isAvailable ? "就绪" : "未连接"}
 						</span>
 					</div>
 				</div>
@@ -263,7 +274,7 @@ export function AiHubWidget({ settings }: { settings: Record<string, unknown> })
 				className="flex items-center gap-2 rounded-xl bg-white/6 border border-white/8 focus-within:border-indigo-400/50 px-3 py-1 transition-colors"
 				data-no-drag
 			>
-				<BotIcon size={14} style={{ color: currentAgent.brandColor }} className="shrink-0" />
+				<BotIcon size={14} style={{ color: currentMeta.brandColor }} className="shrink-0" />
 				<input
 					ref={inputRef}
 					type="text"
@@ -275,9 +286,7 @@ export function AiHubWidget({ settings }: { settings: Record<string, unknown> })
 						island.keepOpen(true, "ai-hub");
 						command("focus_island");
 					}}
-					placeholder={t("marketplace.widgets.aiHub.placeholderPrompt", {
-						name: currentAgent.name,
-					})}
+					placeholder={`向 ${currentMeta.name} 发送指令并唤起...`}
 					className="flex-1 min-w-0 bg-transparent text-xs text-text placeholder:text-text-faint focus:outline-none"
 				/>
 
@@ -290,22 +299,20 @@ export function AiHubWidget({ settings }: { settings: Record<string, unknown> })
 							className="text-[10px] font-medium text-emerald-400 shrink-0 flex items-center gap-1"
 						>
 							<CheckCircle2Icon size={11} />
-							{t("marketplace.widgets.aiHub.dispatched")}
+							<span>已唤起调度</span>
 						</motion.span>
 					)}
 				</AnimatePresence>
 
-				<motion.button
+				<button
 					type="submit"
-					whileHover={{ scale: 1.08 }}
-					whileTap={{ scale: 0.92 }}
 					disabled={!promptInput.trim()}
 					className="flex items-center gap-1 rounded-lg px-2.5 py-0.8 text-[11px] font-medium text-white shadow disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-					style={{ backgroundColor: currentAgent.brandColor }}
+					style={{ backgroundColor: currentMeta.brandColor }}
 				>
 					<SendIcon size={11} />
-					<span>{t("marketplace.widgets.aiHub.btnSend")}</span>
-				</motion.button>
+					<span>调度</span>
+				</button>
 			</form>
 		</div>
 	);

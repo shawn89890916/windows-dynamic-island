@@ -47,7 +47,7 @@ export function SecondaryBubble({ entry, ...bubble }: BubbleProps & { entry: Mod
 }
 
 const bubble = tv({
-	base: "absolute top-0 left-[calc(100%+10px)] grid size-9.5 place-items-center rounded-full bg-island/90 backdrop-blur-2xl shadow-[0_12px_28px_-10px_rgba(0,0,0,0.7),inset_0_0_0_1px_rgba(255,255,255,0.09)] cursor-pointer select-none",
+	base: "absolute top-0 left-[calc(100%+10px)] grid size-9.5 place-items-center rounded-full bg-black shadow-[0_12px_28px_-10px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.08)] cursor-pointer select-none",
 	variants: {
 		ambient: { true: "pointer-events-auto relative left-auto flex-none origin-top" },
 	},

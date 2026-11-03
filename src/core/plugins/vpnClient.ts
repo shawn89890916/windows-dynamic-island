@@ -46,8 +46,7 @@ export async function pingProxy(
 		clearTimeout(timer);
 		return Math.round(performance.now() - start);
 	} catch {
-		// If fetch fails (CORS or network), return a fallback latency if proxy is active
-		return Math.round(38 + Math.random() * 25);
+		return null;
 	}
 }
 

@@ -235,7 +235,27 @@ export function ImNotificationWidget({ settings }: { settings: Record<string, un
 				{/* Middle: Top 2-3 Recent Messages */}
 				<div className="flex flex-col gap-1 min-h-0 py-0.5">
 					{filteredMessages.length === 0 ? (
-						<div className="py-4 text-center text-xs text-text-faint">{t("marketplace.widgets.im.noMessages")}</div>
+						<div className="flex flex-col items-center justify-center py-2.5 gap-2">
+							<span className="text-xs text-text-faint">暂无未读消息 · 微信与 QQ 桌面客户端已就绪</span>
+							<div className="flex items-center gap-2">
+								<button
+									type="button"
+									onClick={openWeChat}
+									className="flex items-center gap-1.5 rounded-full bg-[#07C160]/15 hover:bg-[#07C160]/25 text-[#07C160] px-3 py-1 text-[11px] font-semibold transition-colors"
+								>
+									<WeChatIcon size={12} />
+									<span>打开微信</span>
+								</button>
+								<button
+									type="button"
+									onClick={openQQ}
+									className="flex items-center gap-1.5 rounded-full bg-[#12B7F5]/15 hover:bg-[#12B7F5]/25 text-[#12B7F5] px-3 py-1 text-[11px] font-semibold transition-colors"
+								>
+									<QqIcon size={12} />
+									<span>打开 QQ</span>
+								</button>
+							</div>
+						</div>
 					) : (
 						filteredMessages.slice(0, 2).map((msg) => (
 							<motion.div

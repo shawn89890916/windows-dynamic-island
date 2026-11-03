@@ -1,3 +1,4 @@
+import { emit, listen } from "@tauri-apps/api/event";
 import {
 	CloudSunIcon,
 	CoffeeIcon,
@@ -15,7 +16,7 @@ import {
 } from "lucide-react";
 import { type ReactNode, useSyncExternalStore } from "react";
 import navopathLogo from "../../assets/navopath.png";
-import { command } from "../bridge";
+import { command, isTauri } from "../bridge";
 import { type MessageKey, type Translate, useT } from "../i18n";
 import type { IslandModule, ModuleView } from "../types";
 import { MARKETPLACE_CATALOG } from "./catalog";
@@ -78,6 +79,17 @@ export function renderPluginIcon(iconName: string, size = 14, color?: string): R
 	}
 }
 
+function hydratePluginWithCatalog(item: InstalledPlugin): InstalledPlugin {
+	const catalogMatch = MARKETPLACE_CATALOG.find((m) => m.id === item.manifest.id);
+	if (catalogMatch) {
+		return {
+			...item,
+			manifest: { ...item.manifest, ...catalogMatch },
+		};
+	}
+	return item;
+}
+
 // In-memory state and event dispatch
 let installedPlugins: InstalledPlugin[] = loadInstalledPlugins();
 const listeners = new Set<() => void>();
@@ -91,16 +103,7 @@ function loadInstalledPlugins(): InstalledPlugin[] {
 		const raw = localStorage.getItem(STORAGE_KEY);
 		if (raw) {
 			const list: InstalledPlugin[] = JSON.parse(raw);
-			return list.map((item) => {
-				const catalogMatch = MARKETPLACE_CATALOG.find((m) => m.id === item.manifest.id);
-				if (catalogMatch) {
-					return {
-						...item,
-						manifest: { ...item.manifest, ...catalogMatch },
-					};
-				}
-				return item;
-			});
+			return list.map(hydratePluginWithCatalog);
 		}
 	} catch {
 		// fallback
@@ -125,6 +128,49 @@ function saveInstalledPlugins() {
 		console.error("Failed to save installed plugins", e);
 	}
 	notify();
+	if (isTauri) {
+		command("set_setting", { key: "plugins.installed", value: installedPlugins }).catch(() => {});
+		emit("plugins://changed", installedPlugins).catch(() => {});
+	}
+}
+
+if (typeof window !== "undefined") {
+	window.addEventListener("storage", (e) => {
+		if (e.key === STORAGE_KEY && e.newValue) {
+			try {
+				const list: InstalledPlugin[] = JSON.parse(e.newValue);
+				installedPlugins = list.map(hydratePluginWithCatalog);
+				notify();
+			} catch {
+				// ignore
+			}
+		}
+	});
+
+	if (isTauri) {
+		listen<InstalledPlugin[]>("plugins://changed", (e) => {
+			if (e.payload && Array.isArray(e.payload)) {
+				installedPlugins = e.payload.map(hydratePluginWithCatalog);
+				notify();
+			}
+		});
+
+		listen<Record<string, unknown>>("settings://changed", (e) => {
+			if (Array.isArray(e.payload?.["plugins.installed"])) {
+				installedPlugins = (e.payload["plugins.installed"] as InstalledPlugin[]).map(hydratePluginWithCatalog);
+				notify();
+			}
+		});
+
+		command<Record<string, unknown>>("get_settings")
+			.then((settings) => {
+				if (Array.isArray(settings?.["plugins.installed"])) {
+					installedPlugins = (settings["plugins.installed"] as InstalledPlugin[]).map(hydratePluginWithCatalog);
+					notify();
+				}
+			})
+			.catch(() => {});
+	}
 }
 
 export function getInstalledPlugins(): InstalledPlugin[] {
@@ -492,7 +538,7 @@ export function createPluginModule(plugin: InstalledPlugin): IslandModule {
 
 				return {
 					active: isRunning,
-					priority: 75,
+					priority: 85,
 					icon,
 					accent,
 					compact: {

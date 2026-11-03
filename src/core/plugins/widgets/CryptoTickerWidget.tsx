@@ -1,11 +1,9 @@
-import { ArrowDownRightIcon, ArrowUpRightIcon, RefreshCwIcon } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
-import { useT } from "../../../core/i18n";
+import { AlertTriangleIcon, ArrowDownRightIcon, ArrowUpRightIcon, RefreshCwIcon, TrendingUpIcon } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { NeedsConfigCard } from "./NeedsConfigCard";
 
-interface CryptoItem {
+interface LiveCryptoItem {
 	symbol: string;
-	name: string;
 	pair: string;
 	price: string;
 	change: number;
@@ -15,202 +13,201 @@ interface CryptoItem {
 	glyph: string;
 }
 
-const DEFAULT_ITEMS: CryptoItem[] = [
-	{
-		symbol: "BTC",
-		name: "Bitcoin",
-		pair: "BTC / USD",
-		price: "$88,420.50",
-		change: 3.42,
-		high24h: "$89,200",
-		low24h: "$85,310",
-		color: "#F7931A",
-		glyph: "₿",
-	},
-	{
-		symbol: "ETH",
-		name: "Ethereum",
-		pair: "ETH / USD",
-		price: "$3,315.80",
-		change: 2.15,
-		high24h: "$3,350",
-		low24h: "$3,210",
-		color: "#627EEA",
-		glyph: "Ξ",
-	},
-	{
-		symbol: "SOL",
-		name: "Solana",
-		pair: "SOL / USD",
-		price: "$182.40",
-		change: -1.28,
-		high24h: "$188",
-		low24h: "$179",
-		color: "#14F195",
-		glyph: "◎",
-	},
-	{
-		symbol: "NVDA",
-		name: "Nvidia",
-		pair: "NVDA / USD",
-		price: "$139.20",
-		change: 4.35,
-		high24h: "$141",
-		low24h: "$134",
-		color: "#76B900",
-		glyph: "▲",
-	},
-];
+interface BinanceTicker {
+	symbol: string;
+	lastPrice: string;
+	priceChangePercent: string;
+	highPrice: string;
+	lowPrice: string;
+}
 
-export function CryptoTickerWidget({ settings: _settings }: { settings: Record<string, unknown> }) {
-	const t = useT();
-	const [items, setItems] = useState<CryptoItem[]>(DEFAULT_ITEMS);
-	const [activeSymbol, setActiveSymbol] = useState("BTC");
-	const [refreshing, setRefreshing] = useState(false);
+const COLOR_MAP: Record<string, { color: string; glyph: string }> = {
+	BTC: { color: "#F7931A", glyph: "₿" },
+	ETH: { color: "#627EEA", glyph: "Ξ" },
+	SOL: { color: "#14F195", glyph: "◎" },
+	BNB: { color: "#F3BA2F", glyph: "BNB" },
+	DOGE: { color: "#C2A633", glyph: "Ð" },
+	XRP: { color: "#23292F", glyph: "✕" },
+};
 
-	const activeItem = items.find((i) => i.symbol === activeSymbol) ?? items[0];
+export function CryptoTickerWidget({ settings }: { settings: Record<string, unknown> }) {
+	const isConfigured = Boolean(settings.configured && settings.symbols);
+	const symbolsRaw = String(settings.symbols || "").trim();
 
-	const handleRefresh = (e: React.MouseEvent) => {
-		e.stopPropagation();
-		setRefreshing(true);
-		setTimeout(() => {
-			setItems((prev) =>
-				prev.map((item) => {
-					const delta = (Math.random() - 0.48) * 0.4;
-					const newChange = Number((item.change + delta).toFixed(2));
-					return { ...item, change: newChange };
-				}),
-			);
-			setRefreshing(false);
-		}, 350);
-	};
+	const [items, setItems] = useState<LiveCryptoItem[]>([]);
+	const [activeSymbol, setActiveSymbol] = useState<string>("");
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 
-	const isPos = activeItem.change >= 0;
+	const fetchRealQuotes = useCallback(async () => {
+		const symbolList = symbolsRaw
+			.split(/[,，\s]+/)
+			.map((s) => s.trim().toUpperCase())
+			.filter(Boolean);
+
+		if (!symbolList.length) return;
+		setLoading(true);
+		setError(null);
+
+		try {
+			// Query Binance live 24hr ticker API
+			const pairs = symbolList.map((s) => `"${s}USDT"`).join(",");
+			const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=[${pairs}]`);
+			if (!res.ok) throw new Error("行情服务器响应异常，请检查代币代码");
+			const rawList = (await res.json()) as BinanceTicker[];
+
+			if (!Array.isArray(rawList)) {
+				throw new Error("无法读取行情数据");
+			}
+
+			const parsed: LiveCryptoItem[] = rawList.map((item) => {
+				const base = item.symbol.replace("USDT", "");
+				const meta = COLOR_MAP[base] || { color: "#818cf8", glyph: base.slice(0, 2) };
+				const lastPrice = Number.parseFloat(item.lastPrice);
+				const priceChangePercent = Number.parseFloat(item.priceChangePercent);
+				const highPrice = Number.parseFloat(item.highPrice);
+				const lowPrice = Number.parseFloat(item.lowPrice);
+
+				return {
+					symbol: base,
+					pair: `${base} / USDT`,
+					price: `$${lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`,
+					change: priceChangePercent,
+					high24h: `$${highPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+					low24h: `$${lowPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+					color: meta.color,
+					glyph: meta.glyph,
+				};
+			});
+
+			setItems(parsed);
+			if (parsed.length > 0 && !activeSymbol) {
+				setActiveSymbol(parsed[0].symbol);
+			}
+		} catch (err) {
+			setError(err instanceof Error ? err.message : String(err));
+		} finally {
+			setLoading(false);
+		}
+	}, [symbolsRaw, activeSymbol]);
+
+	useEffect(() => {
+		if (isConfigured) {
+			fetchRealQuotes();
+			const interval = setInterval(fetchRealQuotes, 20_000);
+			return () => clearInterval(interval);
+		}
+	}, [isConfigured, fetchRealQuotes]);
+
+	if (!isConfigured) {
+		return (
+			<NeedsConfigCard
+				pluginId="com.island.crypto-ticker"
+				title="行情监控"
+				description="未配置自选监控标的。请输入关注的代码（逗号分隔），直连行情接口实时看盘。"
+				icon={<TrendingUpIcon size={18} />}
+				accentColor="#66BB6A"
+				settingsDefs={[
+					{
+						key: "symbols",
+						label: "自选代币/交易对（如 BTC, ETH, SOL）",
+						type: "text",
+						default: "BTC, ETH",
+					},
+				]}
+				currentSettings={settings}
+			/>
+		);
+	}
+
+	if (loading && items.length === 0) {
+		return (
+			<div className="flex h-full items-center justify-center gap-2 text-xs text-text-faint">
+				<RefreshCwIcon size={14} className="animate-spin text-emerald-400" />
+				<span>正在连接获取 {symbolsRaw} 实时行情...</span>
+			</div>
+		);
+	}
+
+	if (error && items.length === 0) {
+		return (
+			<div className="flex h-full items-center justify-between px-4 text-xs">
+				<div className="flex items-center gap-2 text-rose-400">
+					<AlertTriangleIcon size={16} />
+					<span>{error}</span>
+				</div>
+				<button
+					type="button"
+					onClick={fetchRealQuotes}
+					className="flex items-center gap-1 rounded-lg bg-white/8 px-2.5 py-1 text-[11px] text-text hover:bg-white/16"
+				>
+					<RefreshCwIcon size={11} />
+					<span>重试</span>
+				</button>
+			</div>
+		);
+	}
+
+	const current = items.find((i) => i.symbol === activeSymbol) || items[0];
+	if (!current) return null;
+
+	const isUp = current.change >= 0;
 
 	return (
-		<div className="flex h-full flex-col justify-center gap-2 px-1 select-none">
-			{/* Top Hero Row: Crisp Active Asset Spotlight with Spring Morph */}
-			<div className="flex items-center justify-between border-b border-white/8 pb-1.5">
-				<div className="flex items-center gap-3 min-w-0">
-					{/* Brand Squircle with Glyph & Pop Transition */}
-					<AnimatePresence mode="popLayout" initial={false}>
-						<motion.div
-							key={activeItem.symbol}
-							initial={{ scale: 0.7, rotate: -20, opacity: 0 }}
-							animate={{ scale: 1, rotate: 0, opacity: 1 }}
-							exit={{ scale: 0.7, rotate: 20, opacity: 0 }}
-							transition={{ type: "spring", stiffness: 480, damping: 25 }}
-							className="flex size-10 shrink-0 items-center justify-center rounded-2xl text-base font-bold text-white shadow-md"
-							style={{ backgroundColor: `${activeItem.color}28`, color: activeItem.color }}
-						>
-							{activeItem.glyph}
-						</motion.div>
-					</AnimatePresence>
-					<div className="min-w-0">
-						<div className="flex items-center gap-2">
-							<span className="text-[13px] font-bold text-white font-mono tracking-tight">{activeItem.pair}</span>
-							<span className="size-1.5 shrink-0 rounded-full bg-emerald-400 animate-pulse" />
-							<span className="text-xs text-text-faint truncate">({activeItem.name})</span>
-						</div>
-						<div className="flex items-center gap-2 text-[10.5px] font-mono text-text-faint mt-0.5">
-							<span>
-								{t("marketplace.widgets.crypto.high")}:{" "}
-								<span className="font-semibold text-text">{activeItem.high24h}</span>
-							</span>
-							<span className="opacity-40">·</span>
-							<span>
-								{t("marketplace.widgets.crypto.low")}:{" "}
-								<span className="font-semibold text-text">{activeItem.low24h}</span>
-							</span>
-						</div>
-					</div>
+		<div className="flex h-full items-center justify-between px-3 select-none">
+			{/* Leading Column: Icon, Pair Name & Real 24h Metrics */}
+			<div className="flex w-[210px] shrink-0 items-center gap-3">
+				<div
+					className="flex size-11.5 shrink-0 items-center justify-center rounded-2xl text-white font-bold text-lg shadow-sm"
+					style={{ backgroundColor: current.color }}
+				>
+					{current.glyph}
 				</div>
-
-				{/* Big Crisp Live Price & Glowing Change Pill */}
-				<div className="flex shrink-0 items-center gap-3">
-					<div className="text-right">
-						<AnimatePresence mode="popLayout" initial={false}>
-							<motion.div
-								key={activeItem.price}
-								initial={{ opacity: 0, y: 6 }}
-								animate={{ opacity: 1, y: 0 }}
-								exit={{ opacity: 0, y: -6 }}
-								transition={{ type: "spring", stiffness: 450, damping: 26 }}
-								className="font-mono text-[22px]/[1.1] font-bold tracking-tight text-white tabular-nums drop-shadow-sm"
-							>
-								{activeItem.price}
-							</motion.div>
-						</AnimatePresence>
-						<div className="mt-0.5 flex items-center justify-end">
-							<span
-								className={`flex items-center gap-0.5 rounded-full px-2 py-0.2 text-[10.5px] font-mono font-bold whitespace-nowrap shadow-sm border ${
-									isPos
-										? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
-										: "bg-rose-500/20 text-rose-400 border-rose-500/30"
-								}`}
-							>
-								{isPos ? <ArrowUpRightIcon size={11} /> : <ArrowDownRightIcon size={11} />}
-								<span>
-									{isPos ? "+" : ""}
-									{activeItem.change}%
-								</span>
-							</span>
-						</div>
+				<div className="flex min-w-0 flex-col">
+					<div className="flex items-center gap-1.5">
+						<span className="text-[13px] font-semibold text-text truncate">{current.pair}</span>
+						<span
+							className={`flex items-center rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
+								isUp ? "bg-emerald-500/18 text-emerald-400" : "bg-rose-500/18 text-rose-400"
+							}`}
+						>
+							{isUp ? <ArrowUpRightIcon size={11} /> : <ArrowDownRightIcon size={11} />}
+							{Math.abs(current.change).toFixed(2)}%
+						</span>
 					</div>
-
-					<motion.button
-						type="button"
-						whileHover={{ scale: 1.08 }}
-						whileTap={{ scale: 0.88 }}
-						transition={{ type: "spring", stiffness: 500, damping: 24 }}
-						onClick={handleRefresh}
-						title={t("marketplace.widgets.crypto.refresh")}
-						className="flex size-7.5 shrink-0 items-center justify-center rounded-full bg-white/10 text-text-faint transition-colors hover:bg-white/18 hover:text-white border border-white/8"
-					>
-						<RefreshCwIcon size={12} className={refreshing ? "animate-spin text-emerald-400" : ""} />
-					</motion.button>
+					<div className="mt-0.5 font-mono text-[22px]/[1.1] font-bold text-text tabular-nums truncate">
+						{current.price}
+					</div>
+					<div className="flex items-center gap-2 text-[10px] text-text-faint font-mono">
+						<span>高: {current.high24h}</span>
+						<span>低: {current.low24h}</span>
+					</div>
 				</div>
 			</div>
 
-			{/* Bottom Grid: Snug & Cohesive 4-Asset Cards with Morphing Layout Glow */}
-			<div className="grid grid-cols-4 gap-2 pt-0.5">
+			{/* Center / Trailing: Live Quotes Ticker Switcher */}
+			<div className="flex items-center gap-2 overflow-x-auto pr-1">
 				{items.map((item) => {
-					const isSelected = item.symbol === activeSymbol;
-					const pos = item.change >= 0;
+					const itemUp = item.change >= 0;
+					const isSelected = item.symbol === current.symbol;
 					return (
-						<motion.button
+						<button
 							key={item.symbol}
 							type="button"
-							whileHover={{ scale: 1.03 }}
-							whileTap={{ scale: 0.96 }}
-							transition={{ type: "spring", stiffness: 450, damping: 25 }}
-							onClick={(e) => {
-								e.stopPropagation();
-								setActiveSymbol(item.symbol);
-							}}
-							className="relative flex flex-col justify-between rounded-xl p-2 text-left transition-colors bg-white/4 border border-white/6 hover:border-white/14"
+							onClick={() => setActiveSymbol(item.symbol)}
+							className={`flex flex-col items-center rounded-xl px-2.5 py-1.5 border transition-all min-w-[70px] ${
+								isSelected
+									? "bg-white/12 border-white/20 shadow-sm"
+									: "bg-white/4 border-white/6 hover:bg-white/8 hover:border-white/10"
+							}`}
 						>
-							{isSelected && (
-								<motion.div
-									layoutId="crypto-active-glow"
-									className="absolute inset-0 rounded-xl bg-white/14 ring-2 ring-emerald-400/80 shadow-md"
-									transition={{ type: "spring", stiffness: 420, damping: 28 }}
-								/>
-							)}
-							<div className="relative z-10 flex items-center justify-between">
-								<div className="flex items-center gap-1.5">
-									<span className="size-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-									<span className="font-mono text-xs font-bold text-white">{item.symbol}</span>
-								</div>
-								<span className={`text-[10px] font-mono font-bold ${pos ? "text-emerald-400" : "text-rose-400"}`}>
-									{pos ? "+" : ""}
-									{item.change}%
-								</span>
-							</div>
-							<div className="relative z-10 mt-1 flex items-baseline justify-between">
-								<span className="font-mono text-[11.5px] font-semibold text-text tabular-nums">{item.price}</span>
-							</div>
-						</motion.button>
+							<span className="text-[11px] font-bold text-text">{item.symbol}</span>
+							<span className="font-mono text-[10.5px] text-text-dim tabular-nums">{item.price}</span>
+							<span className={`text-[9.5px] font-semibold ${itemUp ? "text-emerald-400" : "text-rose-400"}`}>
+								{itemUp ? "+" : ""}
+								{item.change.toFixed(2)}%
+							</span>
+						</button>
 					);
 				})}
 			</div>

@@ -32,7 +32,9 @@ export function useChatGpt(): AgentSnapshot {
 	const state = useProvider<ChatGptState>(PROVIDER);
 	const t = useT();
 
-	const sessions = state?.sessions ?? [];
+	if (!state?.available) return { available: false, sessions: [], limits: [] };
+
+	const sessions = state.sessions ?? [];
 
 	const limits: UsageLimit[] = [];
 	if (state?.limits?.threeHour) {

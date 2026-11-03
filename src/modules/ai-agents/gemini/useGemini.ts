@@ -33,7 +33,9 @@ export function useGemini(): AgentSnapshot {
 	const state = useProvider<GeminiState>(PROVIDER);
 	const t = useT();
 
-	const sessions = state?.sessions ?? [];
+	if (!state?.available) return { available: false, sessions: [], limits: [] };
+
+	const sessions = state.sessions ?? [];
 
 	const limits: UsageLimit[] = [];
 	if (state?.limits?.fiveHour) {

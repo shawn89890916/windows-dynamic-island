@@ -22,6 +22,7 @@ import {
 	quickCaptureToObsidian,
 	searchObsidian,
 } from "../obsidianClient";
+import { NeedsConfigCard } from "./NeedsConfigCard";
 
 export function ObsidianIconSvg({ size = 16, className = "" }: { size?: number; className?: string }) {
 	return (
@@ -46,8 +47,9 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 	const t = useT();
 	const island = useIsland();
 
-	const vaultName = String(settings.vaultName || "Obsidian Vault");
-	const dailyFolder = String(settings.dailyFolder || "cxy更新日志");
+	const isConfigured = Boolean(settings.configured && settings.vaultName);
+	const vaultName = String(settings.vaultName || "").trim();
+	const dailyFolder = String(settings.dailyFolder || "Daily notes");
 	const httpPort = Number(settings.httpPort || 8080);
 
 	const [activeTab, setActiveTab] = useState<TabType>("capture");
@@ -67,6 +69,7 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 	}, [island]);
 
 	useEffect(() => {
+		if (!vaultName) return;
 		let active = true;
 		fetchRecentNotes(vaultName, httpPort).then((notes) => {
 			if (active) setRecentNotes(notes);
@@ -75,6 +78,35 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 			active = false;
 		};
 	}, [vaultName, httpPort]);
+
+	if (!isConfigured) {
+		return (
+			<NeedsConfigCard
+				pluginId="com.island.obsidian"
+				title="Obsidian 知识库"
+				description="未配置知识库仓库。请输入您的 Obsidian 仓库名称以打通闪念速记、每日日记与笔记快速检索。"
+				icon={<ObsidianIconSvg size={18} />}
+				accentColor="#8B5CF6"
+				externalUrl="obsidian://"
+				externalLabel="打开 Obsidian"
+				settingsDefs={[
+					{
+						key: "vaultName",
+						label: "Obsidian 仓库名称 (必须与 Obsidian 中完全一致)",
+						type: "text",
+						default: "",
+					},
+					{
+						key: "dailyFolder",
+						label: "日记文件夹 (例如 Daily notes)",
+						type: "text",
+						default: "Daily notes",
+					},
+				]}
+				currentSettings={settings}
+			/>
+		);
+	}
 
 	const handleCapture = (e?: React.FormEvent) => {
 		e?.preventDefault();

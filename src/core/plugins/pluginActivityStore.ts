@@ -1,4 +1,6 @@
+import { emit, listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useState } from "react";
+import { command, isTauri } from "../bridge";
 
 /**
  * Global persistent store for Plugin Live Activities (实时活动).
@@ -63,6 +65,10 @@ function savePomodoro() {
 		// ignore
 	}
 	for (const cb of pomodoroListeners) cb();
+	if (isTauri) {
+		emit("pomodoro://update", pomodoroState).catch(() => {});
+		command("set_setting", { key: "pomodoro.state", value: pomodoroState }).catch(() => {});
+	}
 }
 
 // Background timer ticker that runs continuously
@@ -90,13 +96,49 @@ if (typeof window !== "undefined") {
 			savePomodoro();
 		}
 	}, 500);
+
+	window.addEventListener("storage", (e) => {
+		if (e.key === "island_pomodoro_state" && e.newValue) {
+			try {
+				pomodoroState = JSON.parse(e.newValue);
+				for (const cb of pomodoroListeners) cb();
+			} catch {
+				// ignore
+			}
+		}
+	});
+
+	if (isTauri) {
+		listen<PomodoroStoreState>("pomodoro://update", (e) => {
+			if (e.payload) {
+				pomodoroState = e.payload;
+				for (const cb of pomodoroListeners) cb();
+			}
+		});
+
+		listen<Record<string, unknown>>("settings://changed", (e) => {
+			if (e.payload?.["pomodoro.state"]) {
+				pomodoroState = e.payload["pomodoro.state"] as PomodoroStoreState;
+				for (const cb of pomodoroListeners) cb();
+			}
+		});
+
+		command<Record<string, unknown>>("get_settings")
+			.then((settings) => {
+				if (settings?.["pomodoro.state"]) {
+					pomodoroState = settings["pomodoro.state"] as PomodoroStoreState;
+					for (const cb of pomodoroListeners) cb();
+				}
+			})
+			.catch(() => {});
+	}
 }
 
 export function usePomodoroLive() {
 	const [state, setState] = useState<PomodoroStoreState>(pomodoroState);
 
 	useEffect(() => {
-		const update = () => setState(pomodoroState);
+		const update = () => setState({ ...pomodoroState });
 		pomodoroListeners.add(update);
 		return () => {
 			pomodoroListeners.delete(update);
@@ -116,9 +158,13 @@ export function usePomodoroLive() {
 
 	const pause = useCallback(() => {
 		if (!pomodoroState.isRunning) return;
+		const remaining = pomodoroState.targetEndTime
+			? Math.max(0, Math.round((pomodoroState.targetEndTime - Date.now()) / 1000))
+			: pomodoroState.timeLeft;
 		pomodoroState = {
 			...pomodoroState,
 			isRunning: false,
+			timeLeft: remaining,
 			targetEndTime: null,
 		};
 		savePomodoro();
@@ -153,19 +199,29 @@ export function usePomodoroLive() {
 			...pomodoroState,
 			workDuration: workMins,
 			breakDuration: breakMins,
-			timeLeft: (pomodoroState.mode === "work" ? workMins : breakMins) * 60,
+			timeLeft: pomodoroState.isRunning
+				? pomodoroState.timeLeft
+				: (pomodoroState.mode === "work" ? workMins : breakMins) * 60,
 		};
 		savePomodoro();
 	}, []);
 
-	const minutes = Math.floor(state.timeLeft / 60);
-	const seconds = state.timeLeft % 60;
+	const now = Date.now();
+	let currentSecs = state.timeLeft;
+	if (state.isRunning && state.targetEndTime) {
+		currentSecs = Math.max(0, Math.round((state.targetEndTime - now) / 1000));
+	}
+
+	const minutes = Math.floor(currentSecs / 60);
+	const seconds = currentSecs % 60;
 	const formattedTime = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 	const totalSecs = (state.mode === "work" ? state.workDuration : state.breakDuration) * 60;
-	const progressPercent = Math.round(((totalSecs - state.timeLeft) / totalSecs) * 100);
+	const progressPercent =
+		totalSecs > 0 ? Math.min(100, Math.max(0, Math.round(((totalSecs - currentSecs) / totalSecs) * 100))) : 0;
 
 	return {
 		...state,
+		timeLeft: currentSecs,
 		start,
 		pause,
 		reset,

@@ -75,9 +75,9 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 	const [summary, setSummary] = useState<NavoPathSummary | null>(() => {
 		try {
 			const s = localStorage.getItem("island_navopath_summary");
-			return s ? JSON.parse(s) : { projects: 10, openTasks: 18, completedTasks: 327 };
+			return s ? JSON.parse(s) : null;
 		} catch {
-			return { projects: 10, openTasks: 18, completedTasks: 327 };
+			return null;
 		}
 	});
 	const [tasks, setTasks] = useState<NavoPathTask[]>(() => {
@@ -324,8 +324,18 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 				{/* Center Content: NavoPath Tasks OR Calendar Events */}
 				{activeTab === "navopath" && navopathEnabled ? (
 					<div className="flex flex-col gap-1.5 my-1">
-						{/* Focus Item Hero Banner */}
-						{focusTask ? (
+						{!token ? (
+							<div className="flex items-center justify-between rounded-[8px] bg-white/4 px-2.5 py-1.5 text-[11px] text-text-faint">
+								<span>尚未配置 NavoPath 凭据</span>
+								<button
+									type="button"
+									onClick={() => command("open_external", { url: "https://navopath-planner.vercel.app" })}
+									className="text-amber-400 hover:underline"
+								>
+									获取 Token
+								</button>
+							</div>
+						) : focusTask ? (
 							<div
 								className="flex items-center justify-between gap-2 rounded-[9px] bg-amber-500/10 border border-amber-500/25 px-2.5 py-1.5 cursor-pointer hover:bg-amber-500/15 transition-colors"
 								onClick={(e) => handleCompleteTask(focusTask.id, e)}

@@ -103,9 +103,13 @@ export function Island() {
 							}
 						}}
 					>
-						{/* Ambient Gaussian blur shadow beneath the island */}
+						{/* Apple-style Gaussian Blur diffused shadow beneath the island */}
 						<div
-							className="pointer-events-none absolute -inset-2 -z-10 rounded-[28px] bg-black/45 blur-xl transition-opacity duration-300"
+							className="pointer-events-none absolute -inset-3 -z-10 rounded-[34px] bg-black/80 filter blur-xl transition-opacity duration-300"
+							style={{ opacity: hidden || swallowed ? 0 : 1 }}
+						/>
+						<div
+							className="pointer-events-none absolute -inset-6 -z-20 rounded-[44px] bg-black/45 filter blur-2xl transition-opacity duration-300"
 							style={{ opacity: hidden || swallowed ? 0 : 1 }}
 						/>
 						{/* Concave "ears" that blend the notch into the top edge of the screen. */}

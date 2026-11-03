@@ -1,24 +1,110 @@
-import { CircleIcon, ExternalLinkIcon, Gamepad2Icon, MessageSquareIcon } from "lucide-react";
+import { CircleIcon, ExternalLinkIcon, Gamepad2Icon, MessageSquareIcon, RefreshCwIcon } from "lucide-react";
 import { motion } from "motion/react";
-import { useState } from "react";
-import { useT } from "../../../core/i18n";
+import { useCallback, useEffect, useState } from "react";
+import { NeedsConfigCard } from "./NeedsConfigCard";
 
 interface SteamFriend {
 	id: string;
 	name: string;
 	game?: string;
 	status: "in-game" | "online" | "away";
-	playtime?: string;
 }
 
-const DEMO_FRIENDS: SteamFriend[] = [
-	{ id: "1", name: "CyberMonkey", game: "Black Myth: Wukong", status: "in-game", playtime: "42h" },
-	{ id: "2", name: "GabeN", game: "Counter-Strike 2", status: "in-game", playtime: "Competitive" },
-];
+interface RawPlayer {
+	steamid: string;
+	personaname?: string;
+	gameextrainfo?: string;
+	personastate: number;
+}
 
-export function SteamFriendsWidget({ settings: _settings }: { settings: Record<string, unknown> }) {
-	const t = useT();
-	const [friends] = useState<SteamFriend[]>(DEMO_FRIENDS);
+export function SteamFriendsWidget({ settings }: { settings: Record<string, unknown> }) {
+	const isConfigured = Boolean(settings.configured && settings.steamApiKey && settings.steamId64);
+	const apiKey = String(settings.steamApiKey || "").trim();
+	const steamId = String(settings.steamId64 || "").trim();
+
+	const [friends, setFriends] = useState<SteamFriend[]>([]);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+
+	const fetchSteamFriends = useCallback(async () => {
+		if (!apiKey || !steamId) return;
+		setLoading(true);
+		setError(null);
+
+		try {
+			// Query Steam Web API: GetFriendList then GetPlayerSummaries
+			const friendListRes = await fetch(
+				`https://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key=${apiKey}&steamid=${steamId}&relationship=friend`,
+			);
+			if (!friendListRes.ok) throw new Error("无法连接 Steam Web API，请检查 Key 与 ID");
+			const friendJson = await friendListRes.json();
+			const rawFriends = (friendJson.friendslist?.friends || []) as { steamid: string }[];
+			if (!rawFriends.length) {
+				setFriends([]);
+				return;
+			}
+
+			const ids = rawFriends
+				.slice(0, 16)
+				.map((f) => f.steamid)
+				.join(",");
+			const summariesRes = await fetch(
+				`https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${ids}`,
+			);
+			const summariesJson = await summariesRes.json();
+			const players = (summariesJson.response?.players || []) as RawPlayer[];
+
+			const parsed: SteamFriend[] = players
+				.map((p) => ({
+					id: p.steamid,
+					name: p.personaname || "Steam 好友",
+					game: p.gameextrainfo,
+					status: (p.gameextrainfo ? "in-game" : p.personastate > 0 ? "online" : "away") as SteamFriend["status"],
+				}))
+				.sort((a, b) => (b.game ? 1 : 0) - (a.game ? 1 : 0));
+
+			setFriends(parsed);
+		} catch (err) {
+			setError(err instanceof Error ? err.message : String(err));
+		} finally {
+			setLoading(false);
+		}
+	}, [apiKey, steamId]);
+
+	useEffect(() => {
+		if (isConfigured) {
+			fetchSteamFriends();
+		}
+	}, [isConfigured, fetchSteamFriends]);
+
+	if (!isConfigured) {
+		return (
+			<NeedsConfigCard
+				pluginId="com.island.steam-friends"
+				title="Steam 动态"
+				description="未配置 Steam 凭证。请输入 Steam Web API Key 与 17 位 SteamID64，以同步好友在玩与在线动态。"
+				icon={<Gamepad2Icon size={18} />}
+				accentColor="#AB47BC"
+				externalUrl="https://steamcommunity.com/dev/apikey"
+				externalLabel="获取 API Key"
+				settingsDefs={[
+					{
+						key: "steamApiKey",
+						label: "Steam Web API Key",
+						type: "password",
+						default: "",
+					},
+					{
+						key: "steamId64",
+						label: "SteamID64 (例如 76561198...)",
+						type: "text",
+						default: "",
+					},
+				]}
+				currentSettings={settings}
+			/>
+		);
+	}
 
 	const playingFriends = friends.filter((f) => f.status === "in-game");
 
@@ -32,82 +118,92 @@ export function SteamFriendsWidget({ settings: _settings }: { settings: Record<s
 					</div>
 					<div className="min-w-0">
 						<div className="flex items-center gap-2 flex-wrap">
-							<span className="text-[13px] font-semibold text-text whitespace-nowrap">
-								{t("marketplace.widgets.steam.title")}
-							</span>
+							<span className="text-[13px] font-semibold text-text whitespace-nowrap">Steam 动态</span>
 							<span className="rounded-full bg-emerald-500/18 px-2 py-0.2 text-[10px] font-medium text-emerald-400 whitespace-nowrap">
-								{t("marketplace.widgets.steam.inGameCount", { n: playingFriends.length })}
+								{playingFriends.length} 人在玩
 							</span>
 						</div>
-						<p className="text-[11px] text-text-faint whitespace-nowrap">
-							{t("marketplace.widgets.steam.friendsOnline", { n: 4 })}
-						</p>
+						<p className="text-[11px] text-text-faint whitespace-nowrap">共 {friends.length} 位在线好友</p>
 					</div>
 				</div>
 
-				<motion.button
-					type="button"
-					whileHover={{ scale: 1.05 }}
-					whileTap={{ scale: 0.92 }}
-					transition={{ type: "spring", stiffness: 500, damping: 25 }}
-					onClick={(e) => {
-						e.stopPropagation();
-						window.open("steam://open/friends", "_blank");
-					}}
-					className="flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3.5 text-xs font-semibold text-text transition-colors hover:bg-white/18 active:scale-95 whitespace-nowrap ml-3"
-				>
-					<span>{t("marketplace.widgets.steam.openSteam")}</span>
-					<ExternalLinkIcon size={12} className="opacity-60" />
-				</motion.button>
+				<div className="flex items-center gap-2 ml-3">
+					<button
+						type="button"
+						onClick={fetchSteamFriends}
+						disabled={loading}
+						className="flex size-7.5 items-center justify-center rounded-full bg-white/6 text-text-faint hover:bg-white/12 hover:text-text transition-colors"
+						title="刷新好友动态"
+					>
+						<RefreshCwIcon size={12} className={loading ? "animate-spin text-purple-400" : ""} />
+					</button>
+
+					<motion.button
+						type="button"
+						whileHover={{ scale: 1.05 }}
+						whileTap={{ scale: 0.92 }}
+						onClick={(e) => {
+							e.stopPropagation();
+							window.open("steam://open/friends", "_blank");
+						}}
+						className="flex h-7.5 shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3 text-xs font-semibold text-text transition-colors hover:bg-white/18"
+					>
+						<span>打开 Steam</span>
+						<ExternalLinkIcon size={11} className="opacity-60" />
+					</motion.button>
+				</div>
 			</div>
 
-			{/* 2-Column Spacious Friend Cards with Tactile Springs */}
-			<div className="grid grid-cols-2 gap-2.5 pt-0.5">
-				{friends.map((f) => (
-					<motion.div
-						key={f.id}
-						whileHover={{ scale: 1.02, backgroundColor: "rgba(255, 255, 255, 0.07)" }}
-						whileTap={{ scale: 0.98 }}
-						transition={{ type: "spring", stiffness: 450, damping: 28 }}
-						className="group flex flex-col justify-between rounded-2xl border border-white/6 bg-white/4 p-3 transition-colors hover:border-white/15"
-					>
-						<div className="flex items-center justify-between gap-2">
-							<div className="flex items-center gap-2.5 min-w-0">
-								<div className="relative shrink-0">
-									<div className="flex size-8 items-center justify-center rounded-xl bg-purple-500/20 text-xs font-bold text-text">
-										{f.name.slice(0, 1)}
+			{/* Friends Cards or Real Empty State */}
+			{friends.length === 0 ? (
+				<div className="flex items-center justify-center py-4 text-xs text-text-faint">
+					{loading ? "正在同步 Steam 好友..." : error ? error : "暂无好友在玩游戏"}
+				</div>
+			) : (
+				<div className="grid grid-cols-2 gap-2 max-h-[105px] overflow-y-auto pr-0.5">
+					{friends.map((f) => (
+						<div
+							key={f.id}
+							className="flex flex-col justify-between rounded-xl border border-white/6 bg-white/4 p-2 transition-colors hover:border-white/15"
+						>
+							<div className="flex items-center justify-between gap-1.5">
+								<div className="flex items-center gap-2 min-w-0">
+									<div className="relative shrink-0">
+										<div className="flex size-6 items-center justify-center rounded-lg bg-purple-500/20 text-[10px] font-bold text-text">
+											{f.name.slice(0, 1)}
+										</div>
+										<CircleIcon
+											size={6}
+											className={`absolute -right-0.5 -bottom-0.5 ${
+												f.game ? "fill-emerald-400 text-emerald-400" : "fill-sky-400 text-sky-400"
+											}`}
+										/>
 									</div>
-									<CircleIcon size={8} className="absolute -right-0.5 -bottom-0.5 fill-emerald-400 text-emerald-400" />
+									<span className="truncate text-[11.5px] font-semibold text-text">{f.name}</span>
 								</div>
-								<div className="min-w-0 flex flex-col">
-									<span className="truncate text-xs font-semibold text-text">{f.name}</span>
-									<span className="text-[10px] text-text-faint">{f.playtime}</span>
-								</div>
+
+								<button
+									type="button"
+									title="发起聊天"
+									onClick={(e) => {
+										e.stopPropagation();
+										window.open(`steam://friends/message/${f.id}`, "_blank");
+									}}
+									className="rounded-full p-1 text-text-faint hover:text-text"
+								>
+									<MessageSquareIcon size={11} />
+								</button>
 							</div>
 
-							<motion.button
-								type="button"
-								whileHover={{ scale: 1.2 }}
-								whileTap={{ scale: 0.85 }}
-								title={t("marketplace.widgets.steam.chat")}
-								onClick={(e) => {
-									e.stopPropagation();
-									window.open(`steam://friends/message/${f.id}`, "_blank");
-								}}
-								className="rounded-full p-1.5 text-text-faint opacity-60 transition-opacity hover:opacity-100 hover:text-text shrink-0"
-							>
-								<MessageSquareIcon size={13} />
-							</motion.button>
+							<div className="mt-1 flex items-center">
+								<span className="truncate rounded px-1.5 py-0.2 text-[10px] font-medium bg-emerald-500/12 text-emerald-400">
+									{f.game ? `正在玩 ${f.game}` : "在线"}
+								</span>
+							</div>
 						</div>
-
-						<div className="mt-2.5 flex items-center">
-							<span className="truncate rounded-md bg-emerald-500/12 px-2 py-0.5 text-[11px] font-medium text-emerald-400">
-								{f.game ? `${t("marketplace.widgets.steam.playing")} ${f.game}` : t("marketplace.widgets.steam.online")}
-							</span>
-						</div>
-					</motion.div>
-				))}
-			</div>
+					))}
+				</div>
+			)}
 		</div>
 	);
 }

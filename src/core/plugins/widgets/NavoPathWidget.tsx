@@ -1,6 +1,6 @@
 import { CheckCircle2Icon, CheckIcon, CircleIcon, ExternalLinkIcon, PlusIcon, RefreshCwIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import navopathLogo from "../../../assets/navopath.png";
 import { command } from "../../../core/bridge";
 import { useT } from "../../../core/i18n";
@@ -13,24 +13,25 @@ import {
 	type NavoPathSummary,
 	type NavoPathTask,
 } from "../navopathMcp";
+import { NeedsConfigCard } from "./NeedsConfigCard";
 
 const DEFAULT_ENDPOINT = "https://navopath-mcp.shawn89890916.workers.dev/mcp";
-const DEFAULT_TOKEN = "nvp_13bded77b94e65938c7487640e6b94a15d29de62326c7085fb40c3409d6f252e";
 
 export function NavoPathWidget({ settings }: { settings: Record<string, unknown> }) {
 	const t = useT();
 	const island = useIsland();
 	const inputRef = useRef<HTMLInputElement>(null);
 
+	const isConfigured = Boolean(settings.configured && settings.token);
 	const endpoint = String(settings.mcpEndpoint || DEFAULT_ENDPOINT);
-	const token = String(settings.token || DEFAULT_TOKEN);
+	const token = String(settings.token || "").trim();
 
 	const [summary, setSummary] = useState<NavoPathSummary | null>(() => {
 		try {
 			const saved = localStorage.getItem("island_navopath_summary");
-			return saved ? JSON.parse(saved) : { projects: 10, openTasks: 18, completedTasks: 327 };
+			return saved ? JSON.parse(saved) : null;
 		} catch {
-			return { projects: 10, openTasks: 18, completedTasks: 327 };
+			return null;
 		}
 	});
 
@@ -47,37 +48,65 @@ export function NavoPathWidget({ settings }: { settings: Record<string, unknown>
 	const [newTaskTitle, setNewTaskTitle] = useState("");
 	const [completingId, setCompletingId] = useState<string | null>(null);
 
-	const loadData = async () => {
-		if (!token) return;
-		setLoading(true);
-		try {
-			const [sum, taskList] = await Promise.all([
-				fetchNavoPathSummary(endpoint, token).catch(() => null),
-				fetchNavoPathTasks(endpoint, token, 8).catch(() => []),
-			]);
-			if (sum) {
-				setSummary(sum);
-				localStorage.setItem("island_navopath_summary", JSON.stringify(sum));
-			}
-			if (taskList && Array.isArray(taskList)) {
-				setTasks(taskList);
-				localStorage.setItem("island_navopath_tasks", JSON.stringify(taskList));
-			}
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: fetch on config update
-	useEffect(() => {
-		loadData();
-	}, [endpoint, token]);
-
 	useEffect(() => {
 		return () => {
 			island.keepOpen(false, "navopath");
 		};
 	}, [island]);
+
+	const loadData = useCallback(async () => {
+		if (!token) return;
+		setLoading(true);
+		try {
+			const [sum, taskList] = await Promise.all([
+				fetchNavoPathSummary(endpoint, token).catch(() => null),
+				fetchNavoPathTasks(endpoint, token).catch(() => []),
+			]);
+			if (sum) {
+				setSummary(sum);
+				localStorage.setItem("island_navopath_summary", JSON.stringify(sum));
+			}
+			setTasks(taskList);
+			localStorage.setItem("island_navopath_tasks", JSON.stringify(taskList));
+		} finally {
+			setLoading(false);
+		}
+	}, [endpoint, token]);
+
+	useEffect(() => {
+		if (isConfigured) {
+			loadData();
+		}
+	}, [isConfigured, loadData]);
+
+	if (!isConfigured) {
+		return (
+			<NeedsConfigCard
+				pluginId="com.island.navopath"
+				title="NavoPath 规划器"
+				description="未配置 MCP Token。请输入 NavoPath 服务端点与 Token 凭据以同步任务与规划。"
+				icon={<img src={navopathLogo} alt="NavoPath" className="size-4.5 object-contain" />}
+				accentColor="#F97316"
+				externalUrl="https://navopath-planner.vercel.app"
+				externalLabel="获取 Token"
+				settingsDefs={[
+					{
+						key: "mcpEndpoint",
+						label: "MCP 服务端点",
+						type: "text",
+						default: DEFAULT_ENDPOINT,
+					},
+					{
+						key: "token",
+						label: "Token 凭证 (nvp_...)",
+						type: "password",
+						default: "",
+					},
+				]}
+				currentSettings={settings}
+			/>
+		);
+	}
 
 	const handleComplete = async (taskId: string, e: React.MouseEvent) => {
 		e.stopPropagation();
