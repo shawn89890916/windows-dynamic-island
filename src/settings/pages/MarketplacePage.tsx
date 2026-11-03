@@ -204,24 +204,24 @@ export function MarketplacePage() {
 			{tab === "installed" && (
 				<div className="flex flex-col gap-3">
 					{installed.map((item) => (
-						<Card key={item.manifest.id} className="p-3.5">
-							<div className="flex items-center justify-between gap-3">
-								<div className="flex items-center gap-3">
+						<Card key={item.manifest.id} className="p-3.5 overflow-hidden">
+							<div className="flex items-center justify-between gap-3 min-w-0">
+								<div className="flex min-w-0 flex-1 items-center gap-3">
 									<div
 										className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-white/6"
 										style={{ color: item.manifest.accentColor }}
 									>
 										{renderPluginIcon(item.manifest.icon, 20)}
 									</div>
-									<div className="min-w-0">
+									<div className="min-w-0 flex-1">
 										<div className="flex items-center gap-2">
-											<h4 className="text-[13px] font-semibold text-text">
+											<h4 className="truncate text-[13px] font-semibold text-text">
 												{item.manifest.titleKey ? t(item.manifest.titleKey) : item.manifest.name}
 											</h4>
-											<span className="rounded bg-white/8 px-1.5 py-0.2 text-[10px] text-text-faint">
+											<span className="flex-none rounded bg-white/8 px-1.5 py-0.2 text-[10px] text-text-faint">
 												v{item.manifest.version}
 											</span>
-											<span className="rounded bg-white/5 px-1.5 py-0.2 text-[10px] text-text-faint">
+											<span className="flex-none rounded bg-white/5 px-1.5 py-0.2 text-[10px] text-text-faint">
 												{item.source === "marketplace" ? "市场下载" : "本地导入"}
 											</span>
 										</div>

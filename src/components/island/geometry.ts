@@ -75,7 +75,7 @@ export function geometry(
 		case "peek":
 		case "expanded": {
 			const size = bigSize ?? v.expanded;
-			const extra = mode === "expanded" ? v.tabBar : 0;
+			const extra = mode === "expanded" || mode === "peek" ? v.tabBar : 0;
 			return { ...v.expanded, width: size.width, height: size.height + extra };
 		}
 	}

@@ -1,57 +1,38 @@
 import { CoffeeIcon, PauseIcon, PlayIcon, RotateCcwIcon, TimerIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useT } from "../../../core/i18n";
+import { usePomodoroLive } from "../pluginActivityStore";
 
 export function PomodoroWidget({ settings }: { settings: Record<string, unknown> }) {
 	const t = useT();
+	const pomodoro = usePomodoroLive();
 	const workMinutes = Number(settings.workDuration ?? 25);
 	const breakMinutes = Number(settings.breakDuration ?? 5);
 
-	const [mode, setMode] = useState<"work" | "break">("work");
-	const [timeLeft, setTimeLeft] = useState(workMinutes * 60);
-	const [isRunning, setIsRunning] = useState(false);
-
 	useEffect(() => {
-		let timer: number | undefined;
-		if (isRunning) {
-			timer = window.setInterval(() => {
-				setTimeLeft((prev) => {
-					if (prev <= 1) {
-						const nextMode = mode === "work" ? "break" : "work";
-						setMode(nextMode);
-						return (nextMode === "work" ? workMinutes : breakMinutes) * 60;
-					}
-					return prev - 1;
-				});
-			}, 1000);
-		}
-		return () => clearInterval(timer);
-	}, [isRunning, mode, workMinutes, breakMinutes]);
+		pomodoro.setDurations(workMinutes, breakMinutes);
+	}, [workMinutes, breakMinutes, pomodoro.setDurations]);
 
-	const minutes = Math.floor(timeLeft / 60);
-	const seconds = timeLeft % 60;
-	const formattedTime = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-
-	const totalSeconds = (mode === "work" ? workMinutes : breakMinutes) * 60;
-	const progressPercent = Math.round(((totalSeconds - timeLeft) / totalSeconds) * 100);
+	const { mode, formattedTime, progressPercent, isRunning } = pomodoro;
 
 	const handleReset = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		setIsRunning(false);
-		setTimeLeft((mode === "work" ? workMinutes : breakMinutes) * 60);
+		pomodoro.reset();
 	};
 
 	const switchMode = (newMode: "work" | "break", e: React.MouseEvent) => {
 		e.stopPropagation();
-		setMode(newMode);
-		setIsRunning(false);
-		setTimeLeft((newMode === "work" ? workMinutes : breakMinutes) * 60);
+		pomodoro.switchMode(newMode);
 	};
 
 	const toggleRunning = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		setIsRunning(!isRunning);
+		if (isRunning) {
+			pomodoro.pause();
+		} else {
+			pomodoro.start();
+		}
 	};
 
 	const isWork = mode === "work";

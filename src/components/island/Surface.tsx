@@ -27,8 +27,9 @@ export function Surface({
 	return (
 		<motion.div
 			className={cn(
-				"absolute inset-0 overflow-hidden bg-island shadow-[0_14px_34px_-14px_rgba(0,0,0,0.7)] transition-shadow duration-400 ease-[ease]",
-				big && "shadow-[0_26px_60px_-18px_rgba(0,0,0,0.85),inset_0_-1px_0_rgba(255,255,255,0.06)]",
+				"absolute inset-0 overflow-hidden bg-island/90 backdrop-blur-3xl saturate-180 shadow-[0_12px_36px_-6px_rgba(0,0,0,0.65),0_4px_16px_-2px_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.09)] transition-shadow duration-400 ease-[ease]",
+				big &&
+					"shadow-[0_28px_80px_-12px_rgba(0,0,0,0.85),0_10px_32px_-4px_rgba(0,0,0,0.5),inset_0_1px_1px_0_rgba(255,255,255,0.12),inset_0_-1px_0_rgba(255,255,255,0.06)]",
 			)}
 			style={windows ? glowStyle(look) : undefined}
 			initial={false}

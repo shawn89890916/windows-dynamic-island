@@ -28,11 +28,14 @@ export function islandContent(ctl: IslandController, look: Appearance, v: Varian
 	}
 
 	if ((mode === "expanded" || mode === "peek") && (focused || ctl.launcher)) {
-		const tabs = mode === "expanded" && (
+		const tabs = (
 			<Tabs
 				entries={ctl.tabs}
 				current={ctl.tab}
-				onSelect={ctl.setTab}
+				onSelect={(id) => {
+					ctl.setTab(id);
+					ctl.expand(id);
+				}}
 				iconsOnly={windows}
 				bottom={v.tabsAtBottom}
 				transition={v.shellSpring}

@@ -389,8 +389,24 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 								type="text"
 								value={newTaskTitle}
 								onChange={(e) => setNewTaskTitle(e.target.value)}
-								onFocus={() => island.keepOpen(true, "calendar-navopath")}
-								onBlur={() => island.keepOpen(false, "calendar-navopath")}
+								onMouseDown={() => {
+									island.keepOpen(true, "calendar-navopath");
+									command("focus_island");
+								}}
+								onFocus={() => {
+									island.keepOpen(true, "calendar-navopath");
+									command("focus_island");
+								}}
+								onBlur={() => {
+									island.keepOpen(false, "calendar-navopath");
+									command("restore_focus");
+								}}
+								onKeyDown={(e) => {
+									if (e.key === "Escape") {
+										e.currentTarget.blur();
+										command("restore_focus");
+									}
+								}}
 								placeholder={t("calendar.navopath.addPlaceholder")}
 								className="w-full bg-transparent text-[11px] text-text placeholder:text-text-faint focus:outline-none"
 							/>

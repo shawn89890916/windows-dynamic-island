@@ -192,6 +192,7 @@ function tabBar(entries: ModuleEntry[], settings: Settings, focusedId: string | 
 	return entries.filter(
 		(e) =>
 			pinnedAlways.includes(e.module.id) ||
+			e.module.id.startsWith("com.island.") ||
 			(!e.view.hidden && (pinned.includes(e.module.id) || e.view.active)) ||
 			e.module.id === focusedId,
 	);

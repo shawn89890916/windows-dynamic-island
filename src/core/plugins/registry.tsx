@@ -19,6 +19,7 @@ import { command } from "../bridge";
 import { type MessageKey, type Translate, useT } from "../i18n";
 import type { IslandModule, ModuleView } from "../types";
 import { MARKETPLACE_CATALOG } from "./catalog";
+import { usePomodoroLive } from "./pluginActivityStore";
 import type { InstalledPlugin, PluginManifest } from "./types";
 import { AiHubWidget } from "./widgets/AiHubWidget";
 import { CryptoTickerWidget } from "./widgets/CryptoTickerWidget";
@@ -481,6 +482,49 @@ export function createPluginModule(plugin: InstalledPlugin): IslandModule {
 		enabledByDefault: true,
 		useView(): ModuleView {
 			const t = useT();
+
+			if (manifest.id === "com.island.pomodoro") {
+				// biome-ignore lint/correctness/useHookAtTopLevel: module instance is static
+				const pomodoro = usePomodoroLive();
+				const isRunning = pomodoro.isRunning;
+				const isWork = pomodoro.mode === "work";
+				const accent = isWork ? "#f87171" : "#34d399";
+
+				return {
+					active: isRunning,
+					priority: 75,
+					icon,
+					accent,
+					compact: {
+						left: (
+							<div className="flex items-center gap-1.5 text-xs font-semibold">
+								<span className={isRunning ? "animate-pulse" : ""}>{renderPluginIcon(manifest.icon, 14, accent)}</span>
+								<span className="text-text font-medium">
+									{isWork ? t("marketplace.widgets.pomodoro.focus") : t("marketplace.widgets.pomodoro.break")}
+								</span>
+							</div>
+						),
+						right: (
+							<div className="flex items-center gap-2">
+								<span className="font-mono text-xs font-bold text-text tabular-nums">{pomodoro.formattedTime}</span>
+								<div className="h-1.5 w-10 overflow-hidden rounded-full bg-white/10">
+									<div
+										className="h-full rounded-full transition-all duration-300"
+										style={{
+											width: `${pomodoro.progressPercent}%`,
+											backgroundColor: accent,
+										}}
+									/>
+								</div>
+							</div>
+						),
+						width: 250,
+					},
+					expanded: renderPluginWidget(plugin),
+					expandedSize: manifest.expandedSize ?? { width: 580, height: 180 },
+				};
+			}
+
 			return {
 				active: false,
 				priority: 10,

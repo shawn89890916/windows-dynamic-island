@@ -1,6 +1,7 @@
 import { CheckIcon, ExternalLinkIcon, SendIcon, SparklesIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SectionLabel } from "../../../../components/ui/text";
+import { command } from "../../../../core/bridge";
 import { cn } from "../../../../core/cn";
 import { useT } from "../../../../core/i18n";
 import { useIsland } from "../../../../core/island";
@@ -30,10 +31,18 @@ export function AgentsPanel({
 	const [picked, setPicked] = useState<string | null>(null);
 	const [promptInput, setPromptInput] = useState("");
 	const [dispatchedSuccess, setDispatchedSuccess] = useState(false);
+	const inputRef = useRef<HTMLInputElement>(null);
+
+	const takeKeyboard = () => {
+		island.keepOpen(true, "agents-prompt-input");
+		command("focus_island");
+		window.setTimeout(() => inputRef.current?.focus(), 30);
+	};
 
 	useEffect(() => {
 		return () => {
 			island.keepOpen(false, "agents-prompt-input");
+			command("restore_focus");
 		};
 	}, [island]);
 
@@ -60,6 +69,7 @@ export function AgentsPanel({
 
 		setDispatchedSuccess(true);
 		setPromptInput("");
+		command("restore_focus");
 		setTimeout(() => setDispatchedSuccess(false), 2400);
 	};
 
@@ -154,11 +164,22 @@ export function AgentsPanel({
 			>
 				<SparklesIcon size={14} className="flex-none" style={{ color: agent.color }} />
 				<input
+					ref={inputRef}
 					type="text"
 					value={promptInput}
 					onChange={(e) => setPromptInput(e.target.value)}
-					onFocus={() => island.keepOpen(true, "agents-prompt-input")}
-					onBlur={() => island.keepOpen(false, "agents-prompt-input")}
+					onMouseDown={takeKeyboard}
+					onFocus={takeKeyboard}
+					onBlur={() => {
+						island.keepOpen(false, "agents-prompt-input");
+						command("restore_focus");
+					}}
+					onKeyDown={(e) => {
+						if (e.key === "Escape") {
+							inputRef.current?.blur();
+							command("restore_focus");
+						}
+					}}
 					placeholder={t("agents.promptPlaceholder", { agent: agent.name })}
 					className="w-full bg-transparent text-[12px] text-text placeholder:text-text-faint focus:outline-none"
 				/>

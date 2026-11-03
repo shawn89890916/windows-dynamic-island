@@ -94,8 +94,20 @@ export function Island() {
 							y: hidden ? -g.height - 12 - v.top : 0,
 						}}
 						transition={transition}
-						onClick={() => resting && ctl.expand()}
+						onClick={() => {
+							if (resting || mode === "peek") ctl.expand();
+						}}
+						onMouseEnter={() => {
+							if (mode === "compact" && primary) {
+								ctl.expand(primary.module.id);
+							}
+						}}
 					>
+						{/* Ambient Gaussian blur shadow beneath the island */}
+						<div
+							className="pointer-events-none absolute -inset-2 -z-10 rounded-[28px] bg-black/45 blur-xl transition-opacity duration-300"
+							style={{ opacity: hidden || swallowed ? 0 : 1 }}
+						/>
 						{/* Concave "ears" that blend the notch into the top edge of the screen. */}
 						{!windows && (
 							<>

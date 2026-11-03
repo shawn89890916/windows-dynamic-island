@@ -60,7 +60,7 @@
 }
 
 :root {
-	--island: #000;
+	--island: rgba(10, 10, 14, 0.85);
 	--text: #f5f5f7;
 	--text-dim: rgba(245, 245, 247, 0.56);
 	--text-faint: rgba(245, 245, 247, 0.32);

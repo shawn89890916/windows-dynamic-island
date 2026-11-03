@@ -40,7 +40,7 @@ export function SettingsApp() {
 						<div className="flex-1" />
 						<NavItem to="/about" icon={<InfoIcon size={15} />} label={t("settings.about.title")} />
 					</nav>
-					<main className="min-w-0 flex-1 overflow-y-auto rounded-tl-xl bg-[#121217] shadow-[inset_1px_1px_0_var(--hairline)] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border-3 [&::-webkit-scrollbar-thumb]:border-solid [&::-webkit-scrollbar-thumb]:border-transparent [&::-webkit-scrollbar-thumb]:bg-white/12 [&::-webkit-scrollbar-thumb]:bg-clip-padding">
+					<main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto rounded-tl-xl bg-[#121217] shadow-[inset_1px_1px_0_var(--hairline)] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border-3 [&::-webkit-scrollbar-thumb]:border-solid [&::-webkit-scrollbar-thumb]:border-transparent [&::-webkit-scrollbar-thumb]:bg-white/12 [&::-webkit-scrollbar-thumb]:bg-clip-padding">
 						<Page>
 							<Routes>
 								<Route index element={<GeneralPage values={values} />} />
