@@ -116,9 +116,12 @@ export function Island() {
 							<div
 								className={cn(
 									"pointer-events-none absolute -z-10 transition-all duration-300",
-									look.blurEffect === "subtle" && "-inset-0.5 rounded-[24px] bg-black/40 filter blur-[6px]",
-									look.blurEffect === "moderate" && "-inset-1.5 rounded-[28px] bg-black/50 filter blur-[12px]",
-									look.blurEffect === "ambient" && "-inset-2.5 rounded-[32px] bg-black/60 filter blur-[18px]",
+									look.blurEffect === "subtle" &&
+										"-inset-0.5 rounded-[24px] bg-black/40 filter blur-[6px] backdrop-blur-[6px]",
+									look.blurEffect === "moderate" &&
+										"-inset-1.5 rounded-[28px] bg-black/50 filter blur-[12px] backdrop-blur-[12px]",
+									look.blurEffect === "ambient" &&
+										"-inset-2.5 rounded-[32px] bg-black/60 filter blur-[18px] backdrop-blur-[18px]",
 								)}
 								style={{ opacity: hidden || swallowed ? 0 : 1 }}
 							/>
