@@ -2,7 +2,8 @@ $ErrorActionPreference = "Stop"
 
 Push-Location (Join-Path $PSScriptRoot "..")
 try {
-	& bun run plugins:build
+	$bun = Join-Path (Get-Location) "node_modules\.bin\bun.cmd"
+	& $bun run plugins:build
 	if ($LASTEXITCODE -ne 0) { throw "Plugin package build failed" }
 
 	$assets = @(
