@@ -6,6 +6,7 @@ mod i18n;
 mod navopath;
 mod pip;
 mod portable;
+mod plugins;
 mod providers;
 mod screen;
 mod settings;
@@ -97,6 +98,11 @@ pub fn run() {
             settings::everything_query,
             navopath::navopath_mcp_request,
             vpn::vpn_request,
+            plugins::plugin_catalog,
+            plugins::plugin_download,
+            plugins::plugin_import,
+            plugins::plugin_load,
+            plugins::plugin_remove,
             updater::check_update,
             updater::install_update,
             i18n::set_locale,

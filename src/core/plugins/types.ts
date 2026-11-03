@@ -12,6 +12,11 @@ export interface PluginSettingField {
 }
 
 export interface PluginManifest {
+	sdkVersion?: number;
+	packageUrl?: string;
+	sha256?: string;
+	packageSize?: number;
+	guide?: PluginGuide;
 	id: string;
 	name: string;
 	titleKey?: MessageKey;
@@ -38,9 +43,29 @@ export interface PluginManifest {
 }
 
 export interface InstalledPlugin {
+	packageSha256?: string;
 	manifest: PluginManifest;
 	installedAt: number;
 	enabled: boolean;
 	customSettings: Record<string, unknown>;
 	source: "marketplace" | "local" | "dev";
+}
+
+export interface PluginGuide {
+	summary: string;
+	prerequisites?: string[];
+	steps: { title: string; desc: string; tip?: string; link?: { url: string; label: string } }[];
+	features?: string[];
+	faq?: { q: string; a: string }[];
+}
+
+export interface PluginPackage {
+	formatVersion: 1;
+	manifest: PluginManifest;
+	code: string;
+	css: string;
+}
+
+export interface LoadedPluginPackage extends Omit<PluginPackage, "formatVersion"> {
+	sha256: string;
 }

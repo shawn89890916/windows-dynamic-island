@@ -71,9 +71,12 @@ function savePomodoro() {
 	}
 }
 
-// Background timer ticker that runs continuously
-if (typeof window !== "undefined") {
-	window.setInterval(() => {
+// Owned by the installed package's Background component; disabling unloads it.
+export function startPomodoroBackground() {
+	let active = true;
+	const unlisteners: (() => void)[] = [];
+	pomodoroState = loadPomodoro();
+	const timer = window.setInterval(() => {
 		if (!pomodoroState.isRunning || !pomodoroState.targetEndTime) return;
 		const remaining = Math.max(0, Math.round((pomodoroState.targetEndTime - Date.now()) / 1000));
 		if (remaining <= 0) {
@@ -97,7 +100,7 @@ if (typeof window !== "undefined") {
 		}
 	}, 500);
 
-	window.addEventListener("storage", (e) => {
+	const onStorage = (e: StorageEvent) => {
 		if (e.key === "island_pomodoro_state" && e.newValue) {
 			try {
 				pomodoroState = JSON.parse(e.newValue);
@@ -106,25 +109,35 @@ if (typeof window !== "undefined") {
 				// ignore
 			}
 		}
-	});
+	};
+	window.addEventListener("storage", onStorage);
 
 	if (isTauri) {
-		listen<PomodoroStoreState>("pomodoro://update", (e) => {
+		void listen<PomodoroStoreState>("pomodoro://update", (e) => {
+			if (!active) return;
 			if (e.payload) {
 				pomodoroState = e.payload;
 				for (const cb of pomodoroListeners) cb();
 			}
+		}).then((stop) => {
+			if (active) unlisteners.push(stop);
+			else stop();
 		});
 
-		listen<Record<string, unknown>>("settings://changed", (e) => {
+		void listen<Record<string, unknown>>("settings://changed", (e) => {
+			if (!active) return;
 			if (e.payload?.["pomodoro.state"]) {
 				pomodoroState = e.payload["pomodoro.state"] as PomodoroStoreState;
 				for (const cb of pomodoroListeners) cb();
 			}
+		}).then((stop) => {
+			if (active) unlisteners.push(stop);
+			else stop();
 		});
 
 		command<Record<string, unknown>>("get_settings")
 			.then((settings) => {
+				if (!active) return;
 				if (settings?.["pomodoro.state"]) {
 					pomodoroState = settings["pomodoro.state"] as PomodoroStoreState;
 					for (const cb of pomodoroListeners) cb();
@@ -132,6 +145,12 @@ if (typeof window !== "undefined") {
 			})
 			.catch(() => {});
 	}
+	return () => {
+		active = false;
+		clearInterval(timer);
+		window.removeEventListener("storage", onStorage);
+		for (const stop of unlisteners) stop();
+	};
 }
 
 export function usePomodoroLive() {

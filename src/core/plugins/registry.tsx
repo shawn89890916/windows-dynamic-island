@@ -8,7 +8,6 @@ import {
 	PuzzleIcon,
 	SearchIcon,
 	ShieldCheckIcon,
-	SlidersIcon,
 	SparklesIcon,
 	StickyNoteIcon,
 	TimerIcon,
@@ -16,217 +15,95 @@ import {
 } from "lucide-react";
 import { type ReactNode, useSyncExternalStore } from "react";
 import navopathLogo from "../../assets/navopath.png";
+import { ObsidianIconSvg } from "../../assets/ObsidianIcon";
 import { command, isTauri } from "../bridge";
 import { type MessageKey, type Translate, useT } from "../i18n";
-import type { IslandModule, ModuleEntry, ModuleView } from "../types";
-import { MARKETPLACE_CATALOG } from "./catalog";
-import { usePomodoroLive } from "./pluginActivityStore";
-import type { InstalledPlugin, PluginManifest } from "./types";
-import { useVpnMonitor } from "./useVpn";
-import { AiHubWidget } from "./widgets/AiHubWidget";
-import { CryptoTickerWidget } from "./widgets/CryptoTickerWidget";
-import { EverythingWidget } from "./widgets/EverythingWidget";
-import { ImNotificationWidget, WeChatIcon } from "./widgets/ImNotificationWidget";
-import { NavoPathWidget } from "./widgets/NavoPathWidget";
-import { ObsidianIconSvg, ObsidianWidget } from "./widgets/ObsidianWidget";
-import { PomodoroWidget } from "./widgets/PomodoroWidget";
-import { QuickMemoWidget } from "./widgets/QuickMemoWidget";
-import { SteamFriendsWidget } from "./widgets/SteamFriendsWidget";
-import { VpnWidget } from "./widgets/VpnWidget";
-import { WeatherWidget } from "./widgets/WeatherWidget";
-import { WorkCountdownWidget } from "./widgets/WorkCountdownWidget";
+import type { IslandModule, ModuleEntry } from "../types";
+import { pluginActivities } from "./activity";
+import { ExternalPluginPanel, unloadPlugin } from "./runtime";
+import type { InstalledPlugin, LoadedPluginPackage, PluginManifest, PluginPackage } from "./types";
 
 const STORAGE_KEY = "island_installed_plugins";
-
-// Render matching icon
 export function renderPluginIcon(iconName: string, size = 14, color?: string): ReactNode {
 	const props = { size, ...(color ? { color } : {}) };
-	switch (iconName) {
-		case "Timer":
-			return <TimerIcon {...props} />;
-		case "CloudSun":
-			return <CloudSunIcon {...props} />;
-		case "Coffee":
-			return <CoffeeIcon {...props} />;
-		case "StickyNote":
-			return <StickyNoteIcon {...props} />;
-		case "TrendingUp":
-			return <TrendingUpIcon {...props} />;
-		case "Gamepad2":
-			return <Gamepad2Icon {...props} />;
-		case "MessageSquare":
-			return <MessageSquareIcon {...props} />;
-		case "Search":
-			return <SearchIcon {...props} />;
-		case "Sparkles":
-			return <SparklesIcon {...props} />;
-		case "ShieldCheck":
-			return <ShieldCheckIcon {...props} />;
-		case "Compass":
-			return <CompassIcon {...props} />;
-		case "Obsidian":
-			return <ObsidianIconSvg size={size} className={color ? "" : "text-purple-400"} />;
-		case "NavoPath":
-			return (
-				<img
-					src={navopathLogo}
-					alt="NavoPath"
-					style={{ width: size, height: size }}
-					className="shrink-0 object-contain"
-				/>
-			);
-		default:
-			return <PuzzleIcon {...props} />;
+	const icons = {
+		Timer: TimerIcon,
+		CloudSun: CloudSunIcon,
+		Coffee: CoffeeIcon,
+		StickyNote: StickyNoteIcon,
+		TrendingUp: TrendingUpIcon,
+		Gamepad2: Gamepad2Icon,
+		MessageSquare: MessageSquareIcon,
+		Search: SearchIcon,
+		ShieldCheck: ShieldCheckIcon,
+		Compass: CompassIcon,
+		Sparkles: SparklesIcon,
+	};
+	if (iconName === "Obsidian") return <ObsidianIconSvg size={size} className={color ? "" : "text-purple-400"} />;
+	if (iconName === "NavoPath")
+		return (
+			<img
+				src={navopathLogo}
+				alt="NavoPath"
+				style={{ width: size, height: size }}
+				className="shrink-0 object-contain"
+			/>
+		);
+	const Icon = icons[iconName as keyof typeof icons] || PuzzleIcon;
+	return <Icon {...props} />;
+}
+function initial(): InstalledPlugin[] {
+	try {
+		const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+		return Array.isArray(value) ? value.filter((p) => p?.manifest?.id) : [];
+	} catch {
+		return [];
 	}
 }
-
-function hydratePluginWithCatalog(item: InstalledPlugin): InstalledPlugin {
-	const catalogMatch = MARKETPLACE_CATALOG.find((m) => m.id === item.manifest.id);
-	if (catalogMatch) {
-		return {
-			...item,
-			manifest: { ...item.manifest, ...catalogMatch },
-		};
-	}
-	return item;
-}
-
-// In-memory state and event dispatch
-let installedPlugins: InstalledPlugin[] = loadInstalledPlugins();
+let installedPlugins = initial();
 const listeners = new Set<() => void>();
-
 function notify() {
 	for (const listener of listeners) listener();
 }
-
-function loadInstalledPlugins(): InstalledPlugin[] {
-	try {
-		const raw = localStorage.getItem(STORAGE_KEY);
-		if (raw) {
-			const list: InstalledPlugin[] = JSON.parse(raw);
-			return list.map(hydratePluginWithCatalog);
-		}
-	} catch {
-		// fallback
-	}
-	// Initial demo plugin installed: Pomodoro
-	const defaultPlugin = MARKETPLACE_CATALOG[0];
-	return [
-		{
-			manifest: defaultPlugin,
-			installedAt: Date.now(),
-			enabled: true,
-			customSettings: {},
-			source: "marketplace",
-		},
-	];
-}
-
-function saveInstalledPlugins() {
-	try {
+function accept(value: unknown) {
+	if (Array.isArray(value)) {
+		installedPlugins = value as InstalledPlugin[];
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(installedPlugins));
-	} catch (e) {
-		console.error("Failed to save installed plugins", e);
+		notify();
 	}
+}
+function save() {
+	localStorage.setItem(STORAGE_KEY, JSON.stringify(installedPlugins));
 	notify();
 	if (isTauri) {
-		command("set_setting", { key: "plugins.installed", value: installedPlugins }).catch(() => {});
-		emit("plugins://changed", installedPlugins).catch(() => {});
+		void command("set_setting", { key: "plugins.installed", value: installedPlugins }).catch((err) =>
+			console.error("Plugin settings could not be saved", err),
+		);
+		void emit("plugins://changed", installedPlugins);
 	}
 }
-
 if (typeof window !== "undefined") {
-	window.addEventListener("storage", (e) => {
-		if (e.key === STORAGE_KEY && e.newValue) {
+	window.addEventListener("storage", (event) => {
+		if (event.key === STORAGE_KEY && event.newValue) {
 			try {
-				const list: InstalledPlugin[] = JSON.parse(e.newValue);
-				installedPlugins = list.map(hydratePluginWithCatalog);
-				notify();
+				accept(JSON.parse(event.newValue));
 			} catch {
-				// ignore
+				/* Ignore malformed cross-window data. */
 			}
 		}
 	});
-
 	if (isTauri) {
-		listen<InstalledPlugin[]>("plugins://changed", (e) => {
-			if (e.payload && Array.isArray(e.payload)) {
-				installedPlugins = e.payload.map(hydratePluginWithCatalog);
-				notify();
-			}
-		});
-
-		listen<Record<string, unknown>>("settings://changed", (e) => {
-			if (Array.isArray(e.payload?.["plugins.installed"])) {
-				installedPlugins = (e.payload["plugins.installed"] as InstalledPlugin[]).map(hydratePluginWithCatalog);
-				notify();
-			}
-		});
-
-		command<Record<string, unknown>>("get_settings")
-			.then((settings) => {
-				if (Array.isArray(settings?.["plugins.installed"])) {
-					installedPlugins = (settings["plugins.installed"] as InstalledPlugin[]).map(hydratePluginWithCatalog);
-					notify();
-				}
-			})
+		void listen<InstalledPlugin[]>("plugins://changed", (event) => accept(event.payload));
+		void listen<Record<string, unknown>>("settings://changed", (event) => accept(event.payload?.["plugins.installed"]));
+		void command<Record<string, unknown>>("get_settings")
+			.then((s) => accept(s?.["plugins.installed"]))
 			.catch(() => {});
 	}
 }
-
-export function getInstalledPlugins(): InstalledPlugin[] {
+export function getInstalledPlugins() {
 	return installedPlugins;
 }
-
-export function installPlugin(manifest: PluginManifest, source: "marketplace" | "local" | "dev" = "marketplace") {
-	if (installedPlugins.some((p) => p.manifest.id === manifest.id)) {
-		return;
-	}
-	const initialSettings: Record<string, unknown> = {};
-	if (manifest.settings) {
-		for (const s of manifest.settings) {
-			initialSettings[s.key] = s.default;
-		}
-	}
-	installedPlugins = [
-		...installedPlugins,
-		{
-			manifest,
-			installedAt: Date.now(),
-			enabled: true,
-			customSettings: initialSettings,
-			source,
-		},
-	];
-	saveInstalledPlugins();
-}
-
-export function uninstallPlugin(id: string) {
-	installedPlugins = installedPlugins.filter((p) => p.manifest.id !== id);
-	saveInstalledPlugins();
-}
-
-export function togglePlugin(id: string, enabled?: boolean) {
-	installedPlugins = installedPlugins.map((p) => {
-		if (p.manifest.id === id) {
-			return { ...p, enabled: enabled ?? !p.enabled };
-		}
-		return p;
-	});
-	saveInstalledPlugins();
-}
-
-export function updatePluginSettings(id: string, settings: Record<string, unknown>) {
-	installedPlugins = installedPlugins.map((p) => {
-		if (p.manifest.id === id) {
-			return { ...p, customSettings: { ...p.customSettings, ...settings } };
-		}
-		return p;
-	});
-	saveInstalledPlugins();
-}
-
-export function useInstalledPlugins(): InstalledPlugin[] {
+export function useInstalledPlugins() {
 	return useSyncExternalStore(
 		(listener) => {
 			listeners.add(listener);
@@ -236,403 +113,142 @@ export function useInstalledPlugins(): InstalledPlugin[] {
 	);
 }
 
-function renderPluginWidget(plugin: InstalledPlugin): ReactNode {
-	switch (plugin.manifest.id) {
-		case "com.island.pomodoro":
-			return <PomodoroWidget settings={plugin.customSettings} />;
-		case "com.island.crypto-ticker":
-			return <CryptoTickerWidget settings={plugin.customSettings} />;
-		case "com.island.work-countdown":
-			return <WorkCountdownWidget settings={plugin.customSettings} />;
-		case "com.island.weather":
-			return <WeatherWidget settings={plugin.customSettings} />;
-		case "com.island.quick-memo":
-			return <QuickMemoWidget settings={plugin.customSettings} />;
-		case "com.island.steam-friends":
-			return <SteamFriendsWidget settings={plugin.customSettings} />;
-		case "com.island.navopath":
-			return <NavoPathWidget settings={plugin.customSettings} />;
-		case "com.island.everything":
-			return <EverythingWidget settings={plugin.customSettings} />;
-		case "com.island.obsidian":
-			return <ObsidianWidget settings={plugin.customSettings} />;
-		case "com.island.ai-hub":
-			return <AiHubWidget settings={plugin.customSettings} />;
-		case "com.island.vpn":
-			return <VpnWidget settings={plugin.customSettings} />;
-		case "com.island.im-notifications":
-			return <ImNotificationWidget settings={plugin.customSettings} />;
-		default:
-			return <GenericPluginWidget plugin={plugin} />;
-	}
+async function hash(content: string) {
+	return [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(content)))]
+		.map((b) => b.toString(16).padStart(2, "0"))
+		.join("");
 }
-
-function renderPluginCompact(
-	plugin: InstalledPlugin,
-	t: Translate,
-): { left: ReactNode; right: ReactNode; width?: number } {
-	const { manifest } = plugin;
-	const title = manifest.titleKey ? t(manifest.titleKey) : manifest.name;
-	switch (manifest.id) {
-		case "com.island.pomodoro":
-			return {
-				left: (
-					<div className="flex items-center gap-1.5 text-xs font-medium text-red-400">
-						<TimerIcon size={13} />
-						<span>{title} 25:00</span>
-					</div>
-				),
-				right: (
-					<span className="rounded bg-red-500/15 px-1.5 py-0.2 text-[10px] text-red-400">
-						{t("marketplace.widgets.pomodoro.running")}
-					</span>
-				),
-				width: 250,
-			};
-		case "com.island.crypto-ticker":
-			return {
-				left: (
-					<div className="flex items-center gap-1.5 text-xs font-medium text-text">
-						<TrendingUpIcon size={13} className="text-emerald-400" />
-						<span className="font-mono">BTC $88,420</span>
-					</div>
-				),
-				right: <span className="text-[11px] font-semibold text-emerald-400">+3.4% ↗</span>,
-				width: 260,
-			};
-		case "com.island.work-countdown":
-			return {
-				left: (
-					<div className="flex items-center gap-1.5 text-xs font-medium text-amber-300">
-						<CoffeeIcon size={13} />
-						<span>{title}</span>
-					</div>
-				),
-				right: <span className="text-[11px] text-emerald-400">{t("marketplace.widgets.workCountdown.chilling")}</span>,
-				width: 250,
-			};
-		case "com.island.weather":
-			return {
-				left: (
-					<div className="flex items-center gap-1.5 text-xs font-medium text-sky-400">
-						<CloudSunIcon size={13} />
-						<span>22°C</span>
-					</div>
-				),
-				right: <span className="text-[10px] text-emerald-400">AQI 32</span>,
-				width: 220,
-			};
-		case "com.island.quick-memo":
-			return {
-				left: (
-					<div className="flex items-center gap-1.5 text-xs font-medium text-amber-300">
-						<StickyNoteIcon size={13} />
-						<span>{title}</span>
-					</div>
-				),
-				right: <span className="text-[10px] text-text-faint">{t("marketplace.widgets.memo.pending", { n: 2 })}</span>,
-				width: 230,
-			};
-		case "com.island.steam-friends":
-			return {
-				left: (
-					<div className="flex items-center gap-1.5 text-xs font-medium text-purple-400">
-						<Gamepad2Icon size={13} />
-						<span>{title}</span>
-					</div>
-				),
-				right: (
-					<span className="text-[10px] text-emerald-400">{t("marketplace.widgets.steam.inGameCount", { n: 2 })}</span>
-				),
-				width: 240,
-			};
-		case "com.island.navopath":
-			return {
-				left: (
-					<div className="flex items-center gap-1.5 text-xs font-medium text-text">
-						<img src={navopathLogo} alt="NavoPath" className="size-3.5 shrink-0 object-contain" />
-						<span>{title}</span>
-					</div>
-				),
-				right: <span className="text-[10px] text-text-dim">{t("marketplace.widgets.navopath.open")}</span>,
-				width: 250,
-			};
-		case "com.island.everything":
-			return {
-				left: (
-					<div className="flex items-center gap-1.5 text-xs font-medium text-amber-400">
-						<SearchIcon size={13} />
-						<span>{title}</span>
-					</div>
-				),
-				right: (
-					<span className="rounded bg-amber-500/15 px-1.5 py-0.2 text-[10px] font-medium text-amber-400">
-						Spotlight
-					</span>
-				),
-				width: 250,
-			};
-		case "com.island.obsidian":
-			return {
-				left: (
-					<div className="flex items-center gap-1.5 text-xs font-medium text-purple-400">
-						<ObsidianIconSvg size={13} />
-						<span>{title}</span>
-					</div>
-				),
-				right: (
-					<span className="rounded bg-purple-500/15 px-1.5 py-0.2 text-[10px] font-medium text-purple-300">Vault</span>
-				),
-				width: 250,
-			};
-		case "com.island.ai-hub":
-			return {
-				left: (
-					<div className="flex items-center gap-1.5 text-xs font-medium text-indigo-400">
-						<SparklesIcon size={13} />
-						<span>{title}</span>
-					</div>
-				),
-				right: (
-					<span className="rounded bg-indigo-500/15 px-1.5 py-0.2 text-[10px] font-medium text-indigo-300">
-						4 Agents
-					</span>
-				),
-				width: 250,
-			};
-		case "com.island.vpn":
-			return {
-				left: (
-					<div className="flex items-center gap-1.5 text-xs font-medium text-cyan-400">
-						<ShieldCheckIcon size={13} />
-						<span>UniClash</span>
-					</div>
-				),
-				right: (
-					<span className="rounded bg-cyan-500/15 px-1.5 py-0.2 text-[10px] font-medium text-cyan-300">
-						127.0.0.1:8993
-					</span>
-				),
-				width: 250,
-			};
-		case "com.island.im-notifications":
-			return {
-				left: (
-					<div className="flex items-center gap-1.5 text-xs font-medium text-[#07C160]">
-						<WeChatIcon size={13} />
-						<span>{title}</span>
-					</div>
-				),
-				right: (
-					<span className="rounded bg-[#07C160]/15 px-1.5 py-0.2 text-[10px] font-medium text-[#07C160]">
-						微信 · QQ
-					</span>
-				),
-				width: 250,
-			};
-		default:
-			return {
-				left: (
-					<div className="flex items-center gap-1.5 text-xs font-medium">
-						{renderPluginIcon(manifest.icon, 13, manifest.accentColor)}
-						<span className="truncate">{title}</span>
-					</div>
-				),
-				right: <span className="text-[11px] text-white/50">{t("marketplace.widgets.generic.ready")}</span>,
-				width: 240,
-			};
-	}
+export function inspectPluginPackage(content: string): PluginPackage {
+	if (content.length > 8 * 1024 * 1024) throw Error("插件包超过大小限制");
+	const pkg = JSON.parse(content) as PluginPackage;
+	if (
+		pkg.formatVersion !== 1 ||
+		pkg.manifest?.sdkVersion !== 1 ||
+		!pkg.manifest?.id ||
+		!pkg.manifest?.version ||
+		!pkg.code
+	)
+		throw Error("需要包含可执行代码的 .island-plugin.json 插件包，仅有清单不能安装");
+	return pkg;
 }
-
-function GenericPluginWidget({ plugin }: { plugin: InstalledPlugin }) {
-	const t = useT();
-	const { manifest } = plugin;
-	return (
-		<div className="flex h-full flex-col justify-between px-3 py-1.5 select-none">
-			{/* Top: Icon, Name & Action */}
-			<div className="flex items-center justify-between border-b border-white/8 pb-2.5">
-				<div className="flex items-center gap-3 min-w-0">
-					<div
-						className="flex size-9.5 shrink-0 items-center justify-center rounded-2xl bg-white/10"
-						style={{ color: manifest.accentColor }}
-					>
-						{renderPluginIcon(manifest.icon, 20)}
-					</div>
-					<div className="flex min-w-0 flex-col">
-						<div className="flex items-center gap-2">
-							<span className="text-sm font-semibold text-text truncate">{manifest.name}</span>
-							<span className="rounded-full bg-white/10 px-2 py-0.2 text-[10.5px] text-text-faint shrink-0">
-								v{manifest.version}
-							</span>
-						</div>
-						<p className="mt-0.5 truncate text-[11px] text-text-faint max-w-xs">{manifest.description}</p>
-					</div>
-				</div>
-
-				<button
-					type="button"
-					onClick={(e) => {
-						e.stopPropagation();
-						try {
-							localStorage.setItem("settings_navigate", `/plugins/${manifest.id}`);
-							if (isTauri) {
-								emit("settings://navigate", `/plugins/${manifest.id}`);
-							}
-						} catch {}
-						command("open_settings");
-					}}
-					className="flex h-8.5 shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3.5 text-xs font-semibold text-text transition-all hover:bg-white/18 active:scale-95 whitespace-nowrap ml-3 cursor-pointer"
-				>
-					<SlidersIcon size={12} className="opacity-70" />
-					<span>{t("marketplace.widgets.generic.configure")}</span>
-				</button>
-			</div>
-
-			{/* Bottom: Status Banner & Metadata */}
-			<div className="flex items-center justify-between pt-2">
-				<div className="flex items-center gap-2">
-					<div className="flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
-						<span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-						<span>{t("marketplace.widgets.generic.ready")}</span>
-					</div>
-					{manifest.tags && manifest.tags.length > 0 && (
-						<div className="flex items-center gap-1">
-							{manifest.tags.slice(0, 3).map((tag) => (
-								<span key={tag} className="rounded-md bg-white/5 px-1.5 py-0.5 text-[10px] text-text-faint">
-									#{tag}
-								</span>
-							))}
-						</div>
-					)}
-				</div>
-
-				<span className="text-[11px] text-text-faint whitespace-nowrap">
-					{t("marketplace.widgets.generic.author", { author: manifest.author.name })} ·{" "}
-					{plugin.source === "marketplace"
-						? t("marketplace.widgets.generic.official")
-						: t("marketplace.widgets.generic.community")}
-				</span>
-			</div>
-		</div>
+function retainSettings(loaded: LoadedPluginPackage, source: InstalledPlugin["source"]) {
+	const old = installedPlugins.find((p) => p.manifest.id === loaded.manifest.id);
+	const defaults = Object.fromEntries((loaded.manifest.settings || []).map((s) => [s.key, s.default]));
+	const next: InstalledPlugin = {
+		manifest: loaded.manifest,
+		installedAt: old?.installedAt || Date.now(),
+		enabled: old?.enabled ?? true,
+		customSettings: { ...defaults, ...old?.customSettings },
+		source,
+		packageSha256: loaded.sha256,
+	};
+	unloadPlugin(next.manifest.id);
+	installedPlugins = [...installedPlugins.filter((p) => p.manifest.id !== next.manifest.id), next];
+	save();
+	return next;
+}
+export async function installPlugin(manifest: PluginManifest, source: InstalledPlugin["source"] = "marketplace") {
+	if (!manifest.packageUrl || !manifest.sha256) throw Error("插件目录中没有独立安装包，请刷新市场");
+	if (
+		!window.confirm(
+			`即将下载并运行“${manifest.name}”插件。插件代码会在灵动岛窗口中执行，可使用该窗口已有的系统接口与数据。请只安装你信任的发布者。继续吗？`,
+		)
+	)
+		throw Error("已取消安装");
+	let loaded: LoadedPluginPackage;
+	if (isTauri) loaded = await command<LoadedPluginPackage>("plugin_download", { descriptor: manifest });
+	else {
+		const response = await fetch(manifest.packageUrl, { signal: AbortSignal.timeout(30000) });
+		if (!response.ok) throw Error(`插件下载 HTTP ${response.status}`);
+		const content = await response.text();
+		const pkg = inspectPluginPackage(content);
+		const sha256 = await hash(content);
+		if (sha256 !== manifest.sha256 || pkg.manifest.id !== manifest.id || pkg.manifest.version !== manifest.version)
+			throw Error("插件包校验失败，原版本未更改");
+		loaded = { ...pkg, sha256 };
+		localStorage.setItem(`island_plugin_package_${manifest.id}`, JSON.stringify(loaded));
+	}
+	return retainSettings(loaded, source);
+}
+export async function installLocalPlugin(content: string) {
+	const pkg = inspectPluginPackage(content);
+	if (
+		!window.confirm(
+			`即将运行本地插件“${pkg.manifest.name}”。插件代码会在灵动岛窗口中执行，可使用该窗口已有的系统接口与数据。请只安装你信任的代码。继续吗？`,
+		)
+	)
+		throw Error("已取消安装");
+	const loaded = isTauri
+		? await command<LoadedPluginPackage>("plugin_import", { content })
+		: { ...pkg, sha256: await hash(content) };
+	if (!isTauri) localStorage.setItem(`island_plugin_package_${pkg.manifest.id}`, JSON.stringify(loaded));
+	return retainSettings(loaded, "local");
+}
+export async function uninstallPlugin(id: string) {
+	if (isTauri) await command("plugin_remove", { id });
+	else localStorage.removeItem(`island_plugin_package_${id}`);
+	unloadPlugin(id);
+	installedPlugins = installedPlugins.filter((p) => p.manifest.id !== id);
+	save();
+}
+export function togglePlugin(id: string, enabled?: boolean) {
+	installedPlugins = installedPlugins.map((p) => (p.manifest.id === id ? { ...p, enabled: enabled ?? !p.enabled } : p));
+	save();
+}
+export function updatePluginSettings(id: string, settings: Record<string, unknown>) {
+	installedPlugins = installedPlugins.map((p) =>
+		p.manifest.id === id ? { ...p, customSettings: { ...p.customSettings, ...settings } } : p,
 	);
+	save();
 }
 
-/**
- * Creates an `IslandModule` wrapper from an installed community plugin.
- */
-export function createPluginModuleEntry(
-	plugin: InstalledPlugin,
-	pomodoro: ReturnType<typeof usePomodoroLive>,
-	t: Translate,
-): ModuleEntry {
+export function createPluginModuleEntry(plugin: InstalledPlugin, t: Translate): ModuleEntry {
 	const { manifest } = plugin;
-	const icon = renderPluginIcon(manifest.icon, 14, manifest.accentColor);
-
-	let view: ModuleView;
-
-	if (manifest.id === "com.island.pomodoro") {
-		const isRunning = pomodoro.isRunning;
-		const isWork = pomodoro.mode === "work";
-		const accent = isWork ? "#f87171" : "#34d399";
-
-		view = {
-			active: isRunning,
-			priority: 85,
-			icon,
-			accent,
-			compact: {
-				left: (
-					<div className="flex items-center gap-1.5 text-xs font-semibold">
-						<span className={isRunning ? "animate-pulse" : ""}>{renderPluginIcon(manifest.icon, 14, accent)}</span>
-						<span className="text-text font-medium">
-							{isWork ? t("marketplace.widgets.pomodoro.focus") : t("marketplace.widgets.pomodoro.break")}
-						</span>
-					</div>
-				),
-				right: (
-					<div className="flex items-center gap-2">
-						<span className="font-mono text-xs font-bold text-text tabular-nums">{pomodoro.formattedTime}</span>
-						<div className="h-1.5 w-10 overflow-hidden rounded-full bg-white/10">
-							<div
-								className="h-full rounded-full transition-all duration-300"
-								style={{
-									width: `${pomodoro.progressPercent}%`,
-									backgroundColor: accent,
-								}}
-							/>
-						</div>
-					</div>
-				),
-				width: 250,
-			},
-			expanded: renderPluginWidget(plugin),
-			expandedSize: manifest.expandedSize ?? { width: 580, height: 180 },
-		};
-	} else {
-		view = {
-			active: false,
-			priority: 10,
-			icon,
-			accent: manifest.accentColor ?? "#818cf8",
-			compact: renderPluginCompact(plugin, t),
-			expanded: renderPluginWidget(plugin),
-			expandedSize: manifest.expandedSize ?? { width: 580, height: 180 },
-		};
-	}
-
+	const activity = pluginActivities.get()[manifest.id];
+	const title = manifest.titleKey ? t(manifest.titleKey) : manifest.name;
+	const view = {
+		active: Boolean(plugin.packageSha256 && activity?.active),
+		priority: Math.max(0, Math.min(100, activity?.priority ?? 10)),
+		icon: renderPluginIcon(manifest.icon, 14, manifest.accentColor),
+		accent: activity?.accent || manifest.accentColor || "#a9a49b",
+		compact: {
+			left: (
+				<span className="flex min-w-0 items-center gap-2 text-xs">
+					{renderPluginIcon(manifest.icon, 14)}
+					<span className="max-w-44 truncate">{activity?.left || title}</span>
+				</span>
+			),
+			right: (
+				<span className="text-[11px] text-text-dim tabular-nums">
+					{activity?.right || (!plugin.packageSha256 ? "待下载" : "已启用")}
+				</span>
+			),
+			width: 280,
+		},
+		expanded: <ExternalPluginPanel plugin={plugin} />,
+		expandedSize: manifest.expandedSize || { width: 580, height: 210 },
+	};
 	const module: IslandModule = {
 		id: manifest.id,
-		title: (manifest.titleKey ?? manifest.name) as MessageKey,
+		title: (manifest.titleKey || manifest.name) as MessageKey,
 		settingsIcon: renderPluginIcon(manifest.icon, 14),
 		enabledByDefault: true,
 		useView: () => view,
 	};
-
 	return { module, view };
 }
-
-/**
- * Returns dynamic module entries for all enabled plugins with ZERO dynamic hooks.
- * Stable hook count regardless of how many plugins are installed or deleted.
- */
-export function usePluginModuleEntries(): ModuleEntry[] {
+export function usePluginModuleEntries() {
 	const plugins = useInstalledPlugins();
-	const vpnPlugin = plugins.find((p) => p.enabled && p.manifest.id === "com.island.vpn");
-	const vpn = useVpnMonitor(vpnPlugin?.customSettings);
-	const pomodoro = usePomodoroLive();
+	pluginActivities.use();
 	const t = useT();
-
-	return plugins
-		.filter((p) => p.enabled)
-		.map((plugin) => {
-			const entry = createPluginModuleEntry(plugin, pomodoro, t);
-			if (plugin.manifest.id === "com.island.vpn") {
-				entry.view.compact = {
-					left: <span className="max-w-48 truncate text-xs">{vpn.snapshot?.proxies[vpn.group]?.now || "VPN"}</span>,
-					right: (
-						<span className="text-[11px] text-text-dim">
-							{vpn.busy ? "测速中…" : vpn.error ? "超时 / 异常" : "节点监控"}
-						</span>
-					),
-					width: 280,
-				};
-			}
-			return entry;
-		});
+	return plugins.filter((p) => p.enabled).map((p) => createPluginModuleEntry(p, t));
 }
-
 export function createPluginModule(plugin: InstalledPlugin): IslandModule {
-	const { manifest } = plugin;
-
 	return {
-		id: manifest.id,
-		title: (manifest.titleKey ?? manifest.name) as MessageKey,
-		settingsIcon: renderPluginIcon(manifest.icon, 14),
-		enabledByDefault: true,
-		useView(): ModuleView {
-			const t = useT();
-			const pomodoro = usePomodoroLive();
-			return createPluginModuleEntry(plugin, pomodoro, t).view;
+		id: plugin.manifest.id,
+		title: (plugin.manifest.titleKey || plugin.manifest.name) as MessageKey,
+		useView() {
+			return createPluginModuleEntry(plugin, useT()).view;
 		},
 	};
 }
