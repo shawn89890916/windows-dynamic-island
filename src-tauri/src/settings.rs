@@ -160,10 +160,10 @@ pub fn everything_query(query: String, port: Option<u16>, count: Option<usize>) 
         let url = format!("http://127.0.0.1:{port_num}/?search={encoded}&json=1&count={c}");
         match agent.get(&url).call() {
             Ok(mut resp) => {
-                if let Ok(body) = resp.body_mut().read_to_string() {
-                    if let Ok(val) = serde_json::from_str::<Value>(&body) {
-                        return Ok(val);
-                    }
+                if let Ok(body) = resp.body_mut().read_to_string()
+                    && let Ok(val) = serde_json::from_str::<Value>(&body)
+                {
+                    return Ok(val);
                 }
             }
             Err(e) => {

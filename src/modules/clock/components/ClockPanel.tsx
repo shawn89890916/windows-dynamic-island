@@ -5,14 +5,7 @@ import { command } from "../../../core/bridge";
 import { cn } from "../../../core/cn";
 import { useLocale, useT } from "../../../core/i18n";
 import { useIsland } from "../../../core/island";
-import {
-	completeNavoPathTask,
-	createNavoPathTask,
-	fetchNavoPathSummary,
-	fetchNavoPathTasks,
-	type NavoPathSummary,
-	type NavoPathTask,
-} from "../../../core/plugins/navopathMcp";
+import { useNavoPath } from "../../../core/plugins/useNavoPath";
 import { useSetting } from "../../../core/settings";
 import { useNow } from "../../ai-agents/common/format";
 import { DAY_MS, dayDots, eventsOn, sameDay, startOfDay } from "../events";
@@ -72,24 +65,12 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 	const navopathEnabled = useSetting(navopathSettings.enabled);
 	const endpoint = useSetting(navopathSettings.endpoint);
 	const token = useSetting(navopathSettings.token);
-	const [summary, setSummary] = useState<NavoPathSummary | null>(() => {
-		try {
-			const s = localStorage.getItem("island_navopath_summary");
-			return s ? JSON.parse(s) : null;
-		} catch {
-			return null;
-		}
-	});
-	const [tasks, setTasks] = useState<NavoPathTask[]>(() => {
-		try {
-			const s = localStorage.getItem("island_navopath_tasks");
-			return s ? JSON.parse(s) : [];
-		} catch {
-			return [];
-		}
-	});
+	const { summary, tasks, loading, error, adding, completingId, addTask, completeTask, loadData } = useNavoPath(
+		endpoint,
+		token,
+		navopathEnabled,
+	);
 	const [newTaskTitle, setNewTaskTitle] = useState("");
-	const [completingId, setCompletingId] = useState<string | null>(null);
 
 	const events = calendar?.events;
 	const calendars = calendar?.calendars;
@@ -99,29 +80,6 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 
 	const [activeTab, setActiveTab] = useState<"calendar" | "navopath">(() => (hasSources ? "calendar" : "navopath"));
 
-	// Fetch NavoPath data
-	useEffect(() => {
-		if (!navopathEnabled || !token) return;
-		let active = true;
-		Promise.all([
-			fetchNavoPathSummary(endpoint, token).catch(() => null),
-			fetchNavoPathTasks(endpoint, token, 10).catch(() => []),
-		]).then(([sum, taskList]) => {
-			if (!active) return;
-			if (sum) {
-				setSummary(sum);
-				localStorage.setItem("island_navopath_summary", JSON.stringify(sum));
-			}
-			if (taskList && Array.isArray(taskList) && taskList.length > 0) {
-				setTasks(taskList);
-				localStorage.setItem("island_navopath_tasks", JSON.stringify(taskList));
-			}
-		});
-		return () => {
-			active = false;
-		};
-	}, [navopathEnabled, endpoint, token]);
-
 	useEffect(() => {
 		return () => {
 			island.keepOpen(false, "calendar-navopath");
@@ -130,47 +88,12 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 
 	const handleCompleteTask = async (taskId: string, e: React.MouseEvent) => {
 		e.stopPropagation();
-		setCompletingId(taskId);
-		setTasks((prev) => prev.filter((item) => item.id !== taskId));
-		if (summary) {
-			setSummary({
-				...summary,
-				openTasks: Math.max(0, summary.openTasks - 1),
-				completedTasks: summary.completedTasks + 1,
-			});
-		}
-		try {
-			await completeNavoPathTask(endpoint, token, taskId);
-		} catch {
-			// keep optimistic
-		} finally {
-			setCompletingId(null);
-		}
+		await completeTask(taskId);
 	};
-
 	const handleCreateTask = async (e: React.FormEvent) => {
 		e.preventDefault();
 		const title = newTaskTitle.trim();
-		if (!title) return;
-		setNewTaskTitle("");
-		const tempTask: NavoPathTask = {
-			id: `temp-${Date.now()}`,
-			title,
-			priority: "normal",
-			workflowStatus: "open",
-		};
-		setTasks((prev) => [tempTask, ...prev]);
-		if (summary) {
-			setSummary({ ...summary, openTasks: summary.openTasks + 1 });
-		}
-		try {
-			const created = await createNavoPathTask(endpoint, token, title);
-			if (created?.id) {
-				setTasks((prev) => prev.map((t) => (t.id === tempTask.id ? created : t)));
-			}
-		} catch {
-			// keep optimistic temp
-		}
+		if (title && !adding && (await addTask(title))) setNewTaskTitle("");
 	};
 
 	const time = new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }).format(now);
@@ -324,6 +247,13 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 				{/* Center Content: NavoPath Tasks OR Calendar Events */}
 				{activeTab === "navopath" && navopathEnabled ? (
 					<div className="flex flex-col gap-1.5 my-1">
+						{error && (
+							<p role="alert">
+								<button type="button" onClick={() => void loadData()} className="text-[11px] text-danger">
+									{t("marketplace.widgets.navopath.syncError")}
+								</button>
+							</p>
+						)}
 						{!token ? (
 							<div className="flex items-center justify-between rounded-[8px] bg-white/4 px-2.5 py-1.5 text-[11px] text-text-faint">
 								<span>尚未配置 NavoPath 凭据</span>
@@ -336,10 +266,7 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 								</button>
 							</div>
 						) : focusTask ? (
-							<div
-								className="flex items-center justify-between gap-2 rounded-[9px] bg-amber-500/10 border border-amber-500/25 px-2.5 py-1.5 cursor-pointer hover:bg-amber-500/15 transition-colors"
-								onClick={(e) => handleCompleteTask(focusTask.id, e)}
-							>
+							<div className="flex items-center justify-between gap-2 rounded-[9px] bg-amber-500/10 border border-amber-500/25 px-2.5 py-1.5 cursor-pointer hover:bg-amber-500/15 transition-colors">
 								<div className="flex min-w-0 items-center gap-2">
 									<StarIcon size={13} className="text-amber-400 fill-amber-400 flex-none" />
 									<span className="truncate text-[12px] font-semibold text-text">{focusTask.title}</span>
@@ -351,6 +278,8 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 									<button
 										type="button"
 										className="rounded-full text-text-faint hover:text-amber-300 transition-colors"
+										disabled={adding || completingId !== null}
+										onClick={(e) => handleCompleteTask(focusTask.id, e)}
 										title={t("calendar.navopath.completed")}
 									>
 										{completingId === focusTask.id ? (
@@ -362,7 +291,13 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 								</div>
 							</div>
 						) : (
-							<div className="text-[11.5px] text-text-faint py-1">{t("calendar.navopath.noTasks")}</div>
+							<div className="text-[11.5px] text-text-faint py-1">
+								{loading
+									? t("marketplace.widgets.navopath.connecting")
+									: error
+										? t("marketplace.widgets.navopath.retryHint")
+										: t("calendar.navopath.noTasks")}
+							</div>
 						)}
 
 						{/* Secondary Tasks */}
@@ -370,12 +305,13 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 							<div
 								key={task.id}
 								className="flex items-center justify-between gap-2 rounded-[7px] bg-white/4 px-2 py-1 text-[11.5px] hover:bg-white/8 transition-colors cursor-pointer"
-								onClick={(e) => handleCompleteTask(task.id, e)}
 							>
 								<span className="truncate text-text-dim">{task.title}</span>
 								<button
 									type="button"
 									className="text-text-faint hover:text-text transition-colors flex-none"
+									disabled={adding || completingId !== null}
+									onClick={(e) => handleCompleteTask(task.id, e)}
 									title={t("calendar.navopath.completed")}
 								>
 									{completingId === task.id ? (
@@ -398,6 +334,8 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 							<input
 								type="text"
 								value={newTaskTitle}
+								maxLength={300}
+								disabled={adding}
 								onChange={(e) => setNewTaskTitle(e.target.value)}
 								onMouseDown={() => {
 									island.keepOpen(true, "calendar-navopath");

@@ -3,6 +3,7 @@ mod display;
 mod file_drop;
 mod hub;
 mod i18n;
+mod navopath;
 mod pip;
 mod portable;
 mod providers;
@@ -92,6 +93,7 @@ pub fn run() {
             settings::open_repo,
             settings::open_external,
             settings::everything_query,
+            navopath::navopath_mcp_request,
             updater::check_update,
             updater::install_update,
             i18n::set_locale,

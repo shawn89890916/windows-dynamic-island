@@ -226,7 +226,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		},
 		category: "productivity",
 		icon: "NavoPath",
-		accentColor: "#F97316",
+		accentColor: "#A9A49B",
 		tags: ["日程", "规划", "待办", "MCP", "AI"],
 		settings: [
 			{
@@ -239,10 +239,10 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 				key: "token",
 				label: "NavoPath MCP 凭证 (nvp_...)",
 				type: "password",
-				default: "nvp_13bded77b94e65938c7487640e6b94a15d29de62326c7085fb40c3409d6f252e",
+				default: "",
 			},
 		],
-		expandedSize: { width: 580, height: 185 },
+		expandedSize: { width: 580, height: 260 },
 	},
 	{
 		id: "com.island.everything",

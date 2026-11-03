@@ -348,16 +348,12 @@ function renderPluginCompact(
 		case "com.island.navopath":
 			return {
 				left: (
-					<div className="flex items-center gap-1.5 text-xs font-medium text-orange-400">
+					<div className="flex items-center gap-1.5 text-xs font-medium text-text">
 						<img src={navopathLogo} alt="NavoPath" className="size-3.5 shrink-0 object-contain" />
 						<span>{title}</span>
 					</div>
 				),
-				right: (
-					<span className="rounded bg-orange-500/15 px-1.5 py-0.2 text-[10px] font-medium text-orange-400">
-						MCP Live
-					</span>
-				),
+				right: <span className="text-[10px] text-text-dim">{t("marketplace.widgets.navopath.open")}</span>,
 				width: 250,
 			};
 		case "com.island.everything":

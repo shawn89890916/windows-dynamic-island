@@ -58,7 +58,7 @@ export const navopathSettings = {
 	token: {
 		key: "calendar.navopath.token",
 		label: "calendar.navopath.tokenLabel",
-		default: "nvp_13bded77b94e65938c7487640e6b94a15d29de62326c7085fb40c3409d6f252e",
+		default: "",
 	},
 } satisfies {
 	enabled: SettingDef<boolean>;

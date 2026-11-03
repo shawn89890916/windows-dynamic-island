@@ -451,9 +451,7 @@ export function PluginPage({
 				}
 			} else if (manifest.id === "com.island.navopath") {
 				const endpoint = String(formValues.mcpEndpoint || "https://navopath-mcp.shawn89890916.workers.dev/mcp");
-				const token = String(
-					formValues.token || "nvp_13bded77b94e65938c7487640e6b94a15d29de62326c7085fb40c3409d6f252e",
-				);
+				const token = String(formValues.token || "").trim();
 				const summary = await fetchNavoPathSummary(endpoint, token);
 				if (summary) {
 					setDiagResult({
