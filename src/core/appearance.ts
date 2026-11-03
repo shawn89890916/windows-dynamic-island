@@ -65,7 +65,7 @@ export function useAppearance(): Appearance {
 	const tabsPosition = readSetting(s, appearanceSettings.tabsPosition) === "top" ? "top" : "bottom";
 	const rawBlur = readSetting(s, appearanceSettings.blurEffect);
 	const blurEffect: BlurEffect =
-		rawBlur === "none" || rawBlur === "moderate" || rawBlur === "ambient" ? rawBlur : "subtle";
+		rawBlur === "subtle" || rawBlur === "moderate" || rawBlur === "ambient" ? rawBlur : "none";
 	return {
 		style,
 		tabsPosition,

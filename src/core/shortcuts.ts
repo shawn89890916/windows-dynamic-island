@@ -4,9 +4,11 @@
  * default, an empty string turns it off.
  */
 import { useProvider } from "./bridge";
+import { createStore } from "./island";
 import type { SettingDef } from "./settings";
 
 export const SHORTCUTS_PROVIDER = "shortcuts";
+export const moduleShortcutFocus = createStore<string | null>(null);
 
 export type ShortcutId = string;
 

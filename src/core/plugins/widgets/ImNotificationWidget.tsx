@@ -2,7 +2,7 @@ import { BellIcon, BellOffIcon, CheckCheckIcon, ExternalLinkIcon, SendIcon, Tras
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { command } from "../../../core/bridge";
-import { useT } from "../../../core/i18n";
+import { useLocale, useT } from "../../../core/i18n";
 import { useIsland } from "../../../core/island";
 import { dispatchQuickReply, type ImMessage, INITIAL_IM_MESSAGES, openQQ, openWeChat } from "../imClient";
 
@@ -42,6 +42,7 @@ export function QqIcon({ size = 16, className = "" }: { size?: number; className
 
 export function ImNotificationWidget({ settings }: { settings: Record<string, unknown> }) {
 	const t = useT();
+	const locale = useLocale();
 	const island = useIsland();
 
 	const [messages, setMessages] = useState<ImMessage[]>(INITIAL_IM_MESSAGES);
@@ -84,8 +85,8 @@ export function ImNotificationWidget({ settings }: { settings: Record<string, un
 
 	const formatAgo = (timestamp: number) => {
 		const diffMin = Math.max(1, Math.floor((Date.now() - timestamp) / 60_000));
-		if (diffMin < 60) return `${diffMin}m前`;
-		return `${Math.floor(diffMin / 60)}h前`;
+		const relative = new Intl.RelativeTimeFormat(locale, { numeric: "auto", style: "short" });
+		return diffMin < 60 ? relative.format(-diffMin, "minute") : relative.format(-Math.floor(diffMin / 60), "hour");
 	};
 
 	return (
@@ -204,7 +205,7 @@ export function ImNotificationWidget({ settings }: { settings: Record<string, un
 							}`}
 						>
 							<WeChatIcon size={11} />
-							<span>微信</span>
+							<span>{t("marketplace.widgets.pluginExtras.im.wechat")}</span>
 						</button>
 						<button
 							type="button"
@@ -236,7 +237,7 @@ export function ImNotificationWidget({ settings }: { settings: Record<string, un
 				<div className="flex flex-col gap-1 min-h-0 py-0.5">
 					{filteredMessages.length === 0 ? (
 						<div className="flex flex-col items-center justify-center py-2.5 gap-2">
-							<span className="text-xs text-text-faint">暂无未读消息 · 微信与 QQ 桌面客户端已就绪</span>
+							<span className="text-xs text-text-faint">{t("marketplace.widgets.pluginExtras.im.empty")}</span>
 							<div className="flex items-center gap-2">
 								<button
 									type="button"
@@ -244,7 +245,7 @@ export function ImNotificationWidget({ settings }: { settings: Record<string, un
 									className="flex items-center gap-1.5 rounded-full bg-[#07C160]/15 hover:bg-[#07C160]/25 text-[#07C160] px-3 py-1 text-[11px] font-semibold transition-colors"
 								>
 									<WeChatIcon size={12} />
-									<span>打开微信</span>
+									<span>{t("marketplace.widgets.pluginExtras.im.openWechat")}</span>
 								</button>
 								<button
 									type="button"
@@ -252,7 +253,7 @@ export function ImNotificationWidget({ settings }: { settings: Record<string, un
 									className="flex items-center gap-1.5 rounded-full bg-[#12B7F5]/15 hover:bg-[#12B7F5]/25 text-[#12B7F5] px-3 py-1 text-[11px] font-semibold transition-colors"
 								>
 									<QqIcon size={12} />
-									<span>打开 QQ</span>
+									<span>{t("marketplace.widgets.pluginExtras.im.openQQ")}</span>
 								</button>
 							</div>
 						</div>
@@ -312,7 +313,7 @@ export function ImNotificationWidget({ settings }: { settings: Record<string, un
 						}}
 					>
 						{targetApp === "wechat" ? <WeChatIcon size={11} /> : <QqIcon size={11} />}
-						<span>{targetApp === "wechat" ? "微信" : "QQ"}</span>
+						<span>{targetApp === "wechat" ? t("marketplace.widgets.pluginExtras.im.wechat") : "QQ"}</span>
 					</button>
 
 					<input

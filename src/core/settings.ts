@@ -9,6 +9,7 @@
 
 import { listen } from "@tauri-apps/api/event";
 import { useSyncExternalStore } from "react";
+import type { BlurEffect } from "./appearance";
 import { command, isTauri } from "./bridge";
 import type { MessageKey } from "./i18n";
 import type { IslandModule } from "./types";
@@ -277,8 +278,8 @@ export const appearanceSettings = {
 	} satisfies SettingDef<"top" | "bottom">,
 	blurEffect: {
 		key: "appearance.blurEffect",
-		label: "appearance.glow.label",
-		description: "appearance.glow.desc",
-		default: "subtle",
-	} as unknown as SettingDef<"none" | "subtle" | "moderate" | "ambient">,
+		label: "appearance.blur.label",
+		description: "appearance.blur.desc",
+		default: "none" as BlurEffect,
+	} satisfies SettingDef<BlurEffect>,
 };

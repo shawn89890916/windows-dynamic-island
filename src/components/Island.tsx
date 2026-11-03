@@ -8,6 +8,7 @@ import { type IslandApi, IslandContext } from "../core/island";
 import { useInstalledPlugins } from "../core/plugins/registry";
 import { PluginBackgrounds } from "../core/plugins/runtime";
 import { positionSettings, readSetting, useSettings } from "../core/settings";
+import { moduleShortcutFocus } from "../core/shortcuts";
 import { useHitRects } from "../core/useHitRects";
 import { useIslandController } from "../core/useIslandController";
 import { useIslandDrag } from "../core/useIslandDrag";
@@ -32,12 +33,12 @@ export function Island() {
 	const windows = look.style === "windows";
 	const v = variantOf(look);
 	const effectiveTop = v.top + topMargin;
-	useHitRects();
 	useSyncLocale();
 	useIslandFileDrop(ctl);
 
 	const bigSize = ctl.launcher ? launcherSize(ctl.entries.length) : focused?.view.expandedSize;
 	const g = geometry(v, look, mode, bigSize, primary);
+	useHitRects(look.blurEffect, windows, g.radius);
 	const big = mode === "expanded" || mode === "peek";
 	const hidden = mode === "hidden";
 	const swallowed = mode === "swallowed";
@@ -55,8 +56,13 @@ export function Island() {
 	});
 
 	// Global shortcut: the page opens (controller) and its input takes the keyboard.
-	useTauriEvent("island://ask", requestAskFocus);
-	useTauriEvent("island://find", requestFindFocus);
+	useTauriEvent<string>("island://toggle-module", (id) => {
+		const opened = ctl.toggleShortcut(id);
+		moduleShortcutFocus.set(opened ? id : null);
+		if (!opened) return;
+		if (id === "ask") requestAskFocus();
+		if (id === "find") requestFindFocus();
+	});
 
 	const api: IslandApi = useMemo(
 		() => ({ mode, tab: ctl.tab, expand: ctl.expand, collapse: ctl.collapse, keepOpen: ctl.keepOpen }),
@@ -88,6 +94,7 @@ export function Island() {
 							drag.dragging && "cursor-grabbing **:cursor-grabbing",
 						)}
 						{...(hidden || swallowed ? {} : { "data-hit": true })}
+						data-blur={look.blurEffect !== "none"}
 						{...ctl.domHover}
 						style={{ ...drag.style, marginTop: effectiveTop }}
 						onPointerDown={drag.onPointerDown}
@@ -111,21 +118,6 @@ export function Island() {
 							}
 						}}
 					>
-						{/* Apple-style Gaussian Blur diffused ambient depth beneath the island */}
-						{look.blurEffect !== "none" && (
-							<div
-								className={cn(
-									"pointer-events-none absolute -z-10 transition-all duration-300",
-									look.blurEffect === "subtle" &&
-										"-inset-0.5 rounded-[24px] bg-black/40 filter blur-[6px] backdrop-blur-[6px]",
-									look.blurEffect === "moderate" &&
-										"-inset-1.5 rounded-[28px] bg-black/50 filter blur-[12px] backdrop-blur-[12px]",
-									look.blurEffect === "ambient" &&
-										"-inset-2.5 rounded-[32px] bg-black/60 filter blur-[18px] backdrop-blur-[18px]",
-								)}
-								style={{ opacity: hidden || swallowed ? 0 : 1 }}
-							/>
-						)}
 						{/* Concave "ears" that blend the notch into the top edge of the screen. Only when attached to screen top */}
 						{!windows && effectiveTop === 0 && (
 							<>

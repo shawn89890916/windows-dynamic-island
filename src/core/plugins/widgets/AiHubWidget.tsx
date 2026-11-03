@@ -10,6 +10,7 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { command, openExternal } from "../../../core/bridge";
+import { useT } from "../../../core/i18n";
 import { useIsland } from "../../../core/island";
 import { ChatGptIcon } from "../../../modules/ai-agents/chatgpt/ChatGptIcon";
 import { useChatGpt } from "../../../modules/ai-agents/chatgpt/useChatGpt";
@@ -64,6 +65,7 @@ const AGENT_CONFIGS: Record<AgentId, AgentDef> = {
 };
 
 export function AiHubWidget({ settings }: { settings: Record<string, unknown> }) {
+	const t = useT();
 	const island = useIsland();
 
 	const initialAgent = (settings.defaultAgent as AgentId) || "claude";
@@ -100,10 +102,13 @@ export function AiHubWidget({ settings }: { settings: Record<string, unknown> })
 	const isWorking = activeSession?.status === "working";
 
 	const activeTaskText = !isAvailable
-		? "未检测到本地环境 / 尚未配置"
+		? t("marketplace.widgets.pluginExtras.aiHub.notConfigured")
 		: activeSession
-			? activeSession.activity || activeSession.prompt || activeSession.title || "正在处理任务"
-			: "就绪 · 暂无活跃会话";
+			? activeSession.activity ||
+				activeSession.prompt ||
+				activeSession.title ||
+				t("marketplace.widgets.pluginExtras.aiHub.working")
+			: t("marketplace.widgets.pluginExtras.aiHub.idle");
 
 	const tokensTotal = currentSnap?.tokensToday
 		? currentSnap.tokensToday.input +
@@ -188,7 +193,7 @@ export function AiHubWidget({ settings }: { settings: Record<string, unknown> })
 					onClick={(e) => handleLaunchApp(currentMeta, e)}
 					className="flex items-center gap-1 rounded-xl bg-white/6 border border-white/8 px-2.5 py-1 text-[11px] text-text-muted hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
 				>
-					<span className="text-[10.5px]">打开客户端</span>
+					<span className="text-[10.5px]">{t("marketplace.widgets.pluginExtras.aiHub.openClient")}</span>
 					<ExternalLinkIcon size={11} />
 				</button>
 			</div>
@@ -231,7 +236,9 @@ export function AiHubWidget({ settings }: { settings: Record<string, unknown> })
 							/>
 						</div>
 						<span className="font-mono text-[9.5px] text-text-faint tabular-nums shrink-0">
-							{limitPct !== null ? `额度消耗: ${limitPct}%` : "暂无限额统计"}
+							{limitPct !== null
+								? t("marketplace.widgets.pluginExtras.aiHub.quota", { n: limitPct })
+								: t("marketplace.widgets.pluginExtras.aiHub.noQuota")}
 						</span>
 					</div>
 				</div>
@@ -241,20 +248,24 @@ export function AiHubWidget({ settings }: { settings: Record<string, unknown> })
 					<div className="flex items-center justify-between text-[10.5px]">
 						<span className="text-text-faint flex items-center gap-1">
 							<Code2Icon size={12} />
-							今日消耗
+							{t("marketplace.widgets.pluginExtras.aiHub.tokensToday")}
 						</span>
 						<span className="font-mono text-text font-medium text-[11px] tabular-nums">{tokensText}</span>
 					</div>
 					<div className="flex items-center justify-between text-[10.5px]">
 						<span className="text-text-faint flex items-center gap-1">
 							<ActivityIcon size={12} />
-							运行状态
+							{t("marketplace.widgets.pluginExtras.aiHub.runStatus")}
 						</span>
 						<span
 							className="font-medium text-[10.5px]"
 							style={{ color: isWorking ? "#34D399" : isAvailable ? "#94A3B8" : "#E11D48" }}
 						>
-							{isWorking ? "工作执行中" : isAvailable ? "就绪" : "未连接"}
+							{isWorking
+								? t("marketplace.widgets.pluginExtras.aiHub.workingStatus")
+								: isAvailable
+									? t("marketplace.widgets.pluginExtras.aiHub.ready")
+									: t("marketplace.widgets.pluginExtras.aiHub.disconnected")}
 						</span>
 					</div>
 				</div>
@@ -278,7 +289,7 @@ export function AiHubWidget({ settings }: { settings: Record<string, unknown> })
 						island.keepOpen(true, "ai-hub");
 						command("focus_island");
 					}}
-					placeholder={`向 ${currentMeta.name} 发送指令并唤起...`}
+					placeholder={t("marketplace.widgets.pluginExtras.aiHub.prompt", { name: currentMeta.name })}
 					className="flex-1 min-w-0 bg-transparent text-xs text-text placeholder:text-text-faint focus:outline-none"
 				/>
 
@@ -291,7 +302,7 @@ export function AiHubWidget({ settings }: { settings: Record<string, unknown> })
 							className="text-[10px] font-medium text-emerald-400 shrink-0 flex items-center gap-1"
 						>
 							<CheckCircle2Icon size={11} />
-							<span>已唤起调度</span>
+							<span>{t("marketplace.widgets.pluginExtras.aiHub.dispatched")}</span>
 						</motion.span>
 					)}
 				</AnimatePresence>
@@ -303,7 +314,7 @@ export function AiHubWidget({ settings }: { settings: Record<string, unknown> })
 					style={{ backgroundColor: currentMeta.brandColor }}
 				>
 					<SendIcon size={11} />
-					<span>调度</span>
+					<span>{t("marketplace.widgets.pluginExtras.aiHub.dispatch")}</span>
 				</button>
 			</form>
 		</div>

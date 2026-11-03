@@ -441,6 +441,15 @@
         copiedAndOpened: "Copiado e Aberto",
         btnReply: "Enviar",
       },
+      pluginExtras: {
+        weather: { clear: "Céu limpo", cloudy: "Nublado", showers: "Pancadas de chuva", snow: "Neve", rain: "Chuva forte", storm: "Tempestades", cityNotFound: "Não foi possível encontrar {city}. Confira a grafia.", unavailable: "Não foi possível ler os dados meteorológicos.", needsTitle: "Clima em tempo real", needsDescription: "Defina uma cidade para ver condições atuais, temperatura e alertas.", cityLabel: "Cidade (ex.: Pequim, Tóquio, Londres)", loading: "Carregando clima de {city}…", retry: "Tentar novamente", observation: "AGORA" },
+        crypto: { unavailable: "O serviço de mercado retornou um erro. Confira os símbolos.", invalidData: "Não foi possível ler os dados do mercado.", needsTitle: "Cotações", needsDescription: "Adicione símbolos separados por vírgula para acompanhar preços em tempo real.", symbolsLabel: "Símbolos (ex.: BTC, ETH, SOL)", loading: "Carregando cotações de {symbols}…", retry: "Tentar novamente", high: "Máx.", low: "Mín." },
+        steam: { unavailable: "Não foi possível acessar a Steam Web API. Confira a chave e o ID.", friendFallback: "Amigo da Steam", needsTitle: "Atividade Steam", needsDescription: "Adicione uma chave da Steam Web API e o SteamID64 para ver amigos e jogos.", apiKeyLabel: "Chave da Steam Web API", keyLabel: "SteamID64 (ex.: 76561198…)", title: "Atividade Steam", playingCount: "{n} jogando", friendsOnline: "{n} amigos online", refresh: "Atualizar atividade", openSteam: "Abrir Steam", loading: "Sincronizando amigos da Steam…", empty: "Nenhum amigo está jogando", chat: "Iniciar conversa", playing: "Jogando {game}", online: "Online" },
+        everything: { filterAll: "Tudo", filterDocs: "Documentos", filterImages: "Imagens", filterMedia: "Mídia", filterArchives: "Arquivos", filterApps: "Apps", filterFolders: "Pastas", offline: "Offline", name: "Nome", path: "Caminho", size: "Tamanho", modified: "Modificado", serverOffline: "Servidor HTTP do Everything desativado", enableServerHint: "No Everything, abra Tools → Options → HTTP Server e ative o servidor HTTP (porta 8080).", readyHint: "Everything pronto. Digite para pesquisar.", syntaxHint: "Sintaxe: ext:md, *.pdf, folder\\file, *.png", folder: "Pasta", openFolder: "Mostrar no Explorer (Shift+Enter)", copyPath: "Copiar caminho completo", found: "{n} itens encontrados", total: "({n} no total)", copied: "Caminho copiado", shortcutHint: "Enter abre · Shift+Enter mostra a pasta" },
+        obsidian: { needsTitle: "Vault do Obsidian", needsDescription: "Defina o caminho ou nome do vault local para usar captura rápida, notas diárias e busca.", openFolder: "Abrir pasta do vault", checkingIndex: "Verificando índice de notas…", noNotes: "Nenhuma nota (índice do Everything desativado)", indexHint: "Use Nota diária, Abrir vault ou Captura rápida para começar.", tags: { inspiration: "#Inspiração", todo: "#Tarefas", journal: "#Diário", project: "#Projeto" } },
+        aiHub: { notConfigured: "Nenhum agente local encontrado ou configurado", working: "Processando uma tarefa", idle: "Pronto · Nenhuma sessão ativa", openClient: "Abrir cliente", quota: "Cota usada: {n}%", noQuota: "Sem dados de cota", tokensToday: "Tokens hoje", runStatus: "Status", workingStatus: "Em execução", ready: "Pronto", disconnected: "Desconectado", prompt: "Enviar uma instrução para {name}…", dispatched: "Instrução copiada · Cliente aberto", dispatch: "Enviar" },
+        im: { minutesAgo: "há {n} min", hoursAgo: "há {n} h", wechat: "WeChat", openWechat: "Abrir WeChat", openQQ: "Abrir QQ", empty: "Sem mensagens não lidas · WeChat e QQ prontos" },
+      },
     },
   },
 
@@ -799,11 +808,11 @@
     },
     blur: {
       label: "Desfoque do fundo",
-      desc: "Ajuste o desfoque gaussiano atrás da ilha.",
+      desc: "Ajuste a intensidade do desfoque nativo visível através da ilha.",
       none: "Desligado",
-      subtle: "Leve · 6 px",
-      moderate: "Suave · 12 px",
-      ambient: "Ambiente · 18 px",
+      subtle: "Leve",
+      moderate: "Médio",
+      ambient: "Intenso",
     },
     hide: {
       label: "Ocultar a ilha",

@@ -12,7 +12,7 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { command } from "../../../core/bridge";
-import { useT } from "../../../core/i18n";
+import { useLocale, useT } from "../../../core/i18n";
 import { useIsland } from "../../../core/island";
 import {
 	fetchRecentNotes,
@@ -37,6 +37,7 @@ type TabType = "capture" | "recent" | "search";
 export function ObsidianWidget({ settings }: { settings: Record<string, unknown> }) {
 	const plugins = useInstalledPlugins();
 	const t = useT();
+	const locale = useLocale();
 	const island = useIsland();
 
 	const vaultPath = String(settings.vaultPath || "").trim();
@@ -59,7 +60,9 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 	const [activeTab, setActiveTab] = useState<TabType>("capture");
 	const [recentNotes, setRecentNotes] = useState<ObsidianNote[]>([]);
 	const [captureText, setCaptureText] = useState("");
-	const [selectedTag, setSelectedTag] = useState<string>("#灵感");
+	const [selectedTag, setSelectedTag] = useState<string>(() =>
+		t("marketplace.widgets.pluginExtras.obsidian.tags.inspiration"),
+	);
 	const [capturedSuccess, setCapturedSuccess] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
 
@@ -96,12 +99,12 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 		return (
 			<NeedsConfigCard
 				pluginId="com.island.obsidian"
-				title="Obsidian 知识库"
-				description="未配置知识库仓库。请输入您的本地 Obsidian 仓库路径（或仓库名称），以打通闪念速记、每日日记与笔记快速检索。"
+				title={t("marketplace.widgets.pluginExtras.obsidian.needsTitle")}
+				description={t("marketplace.widgets.pluginExtras.obsidian.needsDescription")}
 				icon={<ObsidianIconSvg size={18} />}
 				accentColor="#8B5CF6"
 				externalUrl="obsidian://"
-				externalLabel="打开 Obsidian"
+				externalLabel={t("marketplace.widgets.obsidian.openApp")}
 				settingsDefs={
 					getInstalledPlugins().find((p) => p.manifest.id === "com.island.obsidian")?.manifest.settings ?? []
 				}
@@ -129,9 +132,14 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 		searchObsidian(vaultName, searchQuery.trim(), vaultPath);
 	};
 
-	const todayStr = `${new Date().getMonth() + 1}月${new Date().getDate()}日`;
+	const todayStr = new Intl.DateTimeFormat(locale, { month: "numeric", day: "numeric" }).format(new Date());
 
-	const PRESET_TAGS = ["#灵感", "#待办", "#随笔", "#项目"];
+	const PRESET_TAGS = [
+		t("marketplace.widgets.pluginExtras.obsidian.tags.inspiration"),
+		t("marketplace.widgets.pluginExtras.obsidian.tags.todo"),
+		t("marketplace.widgets.pluginExtras.obsidian.tags.journal"),
+		t("marketplace.widgets.pluginExtras.obsidian.tags.project"),
+	];
 
 	return (
 		<div className="flex h-full items-stretch gap-3 select-none px-1 py-0.5">
@@ -201,7 +209,7 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 								type="button"
 								whileHover={{ scale: 1.06 }}
 								whileTap={{ scale: 0.92 }}
-								title="打开本地仓库文件夹"
+								title={t("marketplace.widgets.pluginExtras.obsidian.openFolder")}
 								onClick={() => openInFolder(vaultPath)}
 								className="flex size-7.5 shrink-0 items-center justify-center rounded-xl bg-white/4 border border-white/6 text-text-faint hover:text-white hover:bg-white/8 transition-colors cursor-pointer"
 							>
@@ -214,7 +222,10 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 				{/* Micro Footer Status */}
 				<div className="flex items-center justify-between text-[10px] text-text-faint border-t border-white/5 pt-1">
 					<span role={connectionError ? "alert" : "status"}>
-						{connectionError || (indexReady ? "笔记索引可用" : "正在检查索引…")}
+						{connectionError ||
+							(indexReady
+								? t("marketplace.widgets.obsidian.statusConnected")
+								: t("marketplace.widgets.pluginExtras.obsidian.checkingIndex"))}
 					</span>
 				</div>
 			</div>
@@ -372,9 +383,11 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 									))
 								) : (
 									<div className="flex flex-col items-center justify-center py-2 text-center text-text-faint">
-										<p className="text-[11px] text-text-dim">暂无笔记列表（Everything 索引服务未开启）</p>
+										<p className="text-[11px] text-text-dim">
+											{t("marketplace.widgets.pluginExtras.obsidian.noNotes")}
+										</p>
 										<p className="text-[10px] text-text-faint mt-0.5">
-											可点击左侧【今日日记】、【打开知识库】或上方【闪念速记】直接联动
+											{t("marketplace.widgets.pluginExtras.obsidian.indexHint")}
 										</p>
 									</div>
 								)}

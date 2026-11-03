@@ -8,8 +8,8 @@ import {
 	ThermometerIcon,
 	WindIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { useT } from "../../../core/i18n";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { type Translate, useLocale, useT } from "../../../core/i18n";
 import { NeedsConfigCard } from "./NeedsConfigCard";
 
 interface LiveWeatherData {
@@ -23,17 +23,30 @@ interface LiveWeatherData {
 	daily: { day: string; temp: string; icon: "sun" | "cloud-sun" | "cloud-rain" }[];
 }
 
-function getWeatherCondition(code: number): { text: string; icon: "sun" | "cloud-sun" | "cloud-rain" } {
-	if (code === 0) return { text: "晴朗", icon: "sun" };
-	if (code <= 3) return { text: "多云", icon: "cloud-sun" };
-	if (code <= 67) return { text: "阵雨", icon: "cloud-rain" };
-	if (code <= 77) return { text: "降雪", icon: "cloud-rain" };
-	if (code <= 82) return { text: "大雨", icon: "cloud-rain" };
-	return { text: "雷阵雨", icon: "cloud-rain" };
+function getWeatherCondition(code: number, t: Translate): { text: string; icon: "sun" | "cloud-sun" | "cloud-rain" } {
+	const key: "clear" | "cloudy" | "showers" | "snow" | "rain" | "storm" =
+		code === 0
+			? "clear"
+			: code <= 3
+				? "cloudy"
+				: code <= 67
+					? "showers"
+					: code <= 77
+						? "snow"
+						: code <= 82
+							? "rain"
+							: "storm";
+	return {
+		text: t(`marketplace.widgets.pluginExtras.weather.${key}`),
+		icon: code === 0 ? "sun" : code <= 3 ? "cloud-sun" : "cloud-rain",
+	};
 }
 
 export function WeatherWidget({ settings }: { settings: Record<string, unknown> }) {
 	const t = useT();
+	const locale = useLocale();
+	const translate = useRef(t);
+	translate.current = t;
 	const isConfigured = Boolean(settings.configured && settings.city);
 	const city = String(settings.city || "").trim();
 
@@ -48,11 +61,11 @@ export function WeatherWidget({ settings }: { settings: Record<string, unknown> 
 		try {
 			// 1. Geocode city name to lat/lon
 			const geoRes = await fetch(
-				`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=zh`,
+				`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=${locale.split("-")[0]}`,
 			);
 			const geoJson = await geoRes.json();
 			if (!geoJson.results || geoJson.results.length === 0) {
-				throw new Error(`未找到城市 "${city}"，请检查城市拼写`);
+				throw new Error(translate.current("marketplace.widgets.pluginExtras.weather.cityNotFound", { city }));
 			}
 			const loc = geoJson.results[0];
 			const lat = loc.latitude;
@@ -64,16 +77,22 @@ export function WeatherWidget({ settings }: { settings: Record<string, unknown> 
 				`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`,
 			);
 			const wJson = await weatherRes.json();
-			if (!wJson.current) throw new Error("无法读取实时天气数据");
+			if (!wJson.current) throw new Error(translate.current("marketplace.widgets.pluginExtras.weather.unavailable"));
 
 			const cur = wJson.current;
-			const cond = getWeatherCondition(cur.weather_code);
+			const cond = getWeatherCondition(cur.weather_code, translate.current);
 
 			const dailyForecast = (wJson.daily?.time || []).slice(0, 3).map((_dayStr: string, idx: number) => {
-				const dayLabel = idx === 0 ? "今天" : idx === 1 ? "明天" : "后天";
+				const dayLabel = translate.current(
+					idx === 0
+						? "marketplace.widgets.weather.today"
+						: idx === 1
+							? "marketplace.widgets.weather.tomorrow"
+							: "marketplace.widgets.weather.dayAfter",
+				);
 				const maxT = Math.round(wJson.daily.temperature_2m_max[idx]);
 				const minT = Math.round(wJson.daily.temperature_2m_min[idx]);
-				const dayCond = getWeatherCondition(wJson.daily.weather_code[idx]);
+				const dayCond = getWeatherCondition(wJson.daily.weather_code[idx], translate.current);
 				return {
 					day: dayLabel,
 					temp: `${maxT}°/${minT}°`,
@@ -96,7 +115,7 @@ export function WeatherWidget({ settings }: { settings: Record<string, unknown> 
 		} finally {
 			setLoading(false);
 		}
-	}, [city]);
+	}, [city, locale]);
 
 	useEffect(() => {
 		if (isConfigured) {
@@ -108,14 +127,14 @@ export function WeatherWidget({ settings }: { settings: Record<string, unknown> 
 		return (
 			<NeedsConfigCard
 				pluginId="com.island.weather"
-				title="实时天气"
-				description="未配置城市。请在下方输入城市名称并保存，即可直连气象服务获取真实实时天气与预警。"
+				title={t("marketplace.widgets.pluginExtras.weather.needsTitle")}
+				description={t("marketplace.widgets.pluginExtras.weather.needsDescription")}
 				icon={<CloudSunIcon size={18} />}
 				accentColor="#00B0FF"
 				settingsDefs={[
 					{
 						key: "city",
-						label: "所在城市 (例如：Beijing / Shanghai / Tokyo / London)",
+						label: t("marketplace.widgets.pluginExtras.weather.cityLabel"),
 						type: "text",
 						default: "Beijing",
 					},
@@ -129,7 +148,7 @@ export function WeatherWidget({ settings }: { settings: Record<string, unknown> 
 		return (
 			<div className="flex h-full items-center justify-center gap-2 text-xs text-text-faint">
 				<RefreshCwIcon size={14} className="animate-spin text-sky-400" />
-				<span>正在连接获取 {city} 真实气象数据...</span>
+				<span>{t("marketplace.widgets.pluginExtras.weather.loading", { city })}</span>
 			</div>
 		);
 	}
@@ -147,7 +166,7 @@ export function WeatherWidget({ settings }: { settings: Record<string, unknown> 
 					className="flex items-center gap-1 rounded-lg bg-white/8 px-2.5 py-1 text-[11px] text-text hover:bg-white/16"
 				>
 					<RefreshCwIcon size={11} />
-					<span>重试</span>
+					<span>{t("marketplace.widgets.pluginExtras.weather.retry")}</span>
 				</button>
 			</div>
 		);
@@ -172,7 +191,7 @@ export function WeatherWidget({ settings }: { settings: Record<string, unknown> 
 					<div className="flex items-center gap-1.5">
 						<span className="text-[13px] font-semibold text-text truncate">{data.cityName}</span>
 						<span className="rounded-full bg-emerald-500/18 px-1.5 py-0.2 text-[9.5px] font-medium text-emerald-400 shrink-0 whitespace-nowrap">
-							实时观测
+							{t("marketplace.widgets.pluginExtras.weather.observation")}
 						</span>
 					</div>
 					<div className="mt-0.5 flex items-baseline">

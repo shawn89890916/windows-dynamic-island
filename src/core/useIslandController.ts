@@ -40,6 +40,7 @@ export function useIslandController(modules: IslandModule[]) {
 	const forcedId = entries.find((e) => e.view.forceExpanded)?.module.id ?? null;
 	const attentionId = forcedId ?? entries.find((e) => e.view.attention)?.module.id ?? null;
 	const tabMemory = useTabMemory(attentionId);
+	const shortcutModule = useRef<string | null>(null);
 	const { peekId, peek, endPeek } = usePeek(entries);
 	const hover = useIslandHover({
 		expandOnHover: readSetting(settings, generalSettings.expandOnHover),
@@ -49,6 +50,7 @@ export function useIslandController(modules: IslandModule[]) {
 
 	const { primary, secondary } = useBusiest(entries);
 	const forceExpanded = forcedId !== null;
+	const enabled = useCallback((id: string) => entries.some((e) => e.module.id === id), [entries]);
 	const mode = islandMode({
 		swallowed: settings[ISLAND_HIDDEN_KEY] === true,
 		hidden: fullscreen && readSetting(settings, generalSettings.hideInFullscreen),
@@ -80,25 +82,40 @@ export function useIslandController(modules: IslandModule[]) {
 
 	const expand = useCallback(
 		(moduleId?: string) => {
+			shortcutModule.current = null;
+			hover.keepOpen(false, "shortcut");
 			if (moduleId) tabMemory.openOn(moduleId);
 			endPeek();
 			hover.expand();
 		},
-		[tabMemory.openOn, endPeek, hover.expand],
+		[tabMemory.openOn, endPeek, hover.expand, hover.keepOpen],
 	);
 
 	const collapse = useCallback(() => {
+		shortcutModule.current = null;
 		endPeek();
 		hover.collapse();
 	}, [endPeek, hover.collapse]);
 
+	const toggleShortcut = useCallback(
+		(id: string) => {
+			if (!enabled(id)) return false;
+			if (shortcutModule.current === id) {
+				collapse();
+				return false;
+			}
+			shortcutModule.current = id;
+			hover.keepOpen(true, "shortcut");
+			tabMemory.openOn(id);
+			endPeek();
+			hover.expand();
+			return true;
+		},
+		[collapse, hover.keepOpen, hover.expand, tabMemory.openOn, endPeek, enabled],
+	);
+
 	// The pinned video went back to the island: show the player for a moment.
 	useTauriEvent("pip://return", () => peek("music"));
-	// Global shortcuts (`core/shortcuts.ts`) open "Ask Claude" and "Find on screen".
-	const enabled = (id: string) => entries.some((e) => e.module.id === id);
-	useTauriEvent("island://ask", () => enabled("ask") && expand("ask"));
-	useTauriEvent("island://find", () => enabled("find") && expand("find"));
-	useTauriEvent<string>("island://open-module", (id) => enabled(id) && expand(id));
 	useTauriEvent<boolean>("island://hover", hover.onPointer);
 
 	const onWheel = useWheelTabs(
@@ -119,6 +136,7 @@ export function useIslandController(modules: IslandModule[]) {
 		tab: focusedId,
 		setTab: selectTab,
 		expand,
+		toggleShortcut,
 		peek,
 		collapse,
 		keepOpen: hover.keepOpen,

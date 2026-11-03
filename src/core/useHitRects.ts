@@ -8,7 +8,7 @@ const PAD = 6;
  * interactive. Every element marked with `data-hit` counts; the rects follow
  * animations because they are re-measured every few frames.
  */
-export function useHitRects() {
+export function useHitRects(blurEffect: string, roundedTop: boolean, radius: number) {
 	useEffect(() => {
 		if (!isTauri) return;
 		let frame = 0;
@@ -27,13 +27,19 @@ export function useHitRects() {
 					height: Math.round(r.height + PAD * 2),
 				};
 			});
-			const key = JSON.stringify(rects);
+			const shell = document.querySelector<HTMLElement>('[data-blur="true"][data-hit]');
+			const bounds = shell?.getBoundingClientRect();
+			const blurRect = bounds
+				? { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height, roundedTop, radius }
+				: null;
+			const key = JSON.stringify([rects, blurRect, blurEffect]);
 			if (key !== last) {
 				last = key;
 				command("set_hit_rects", { rects });
+				command("set_blur_rect", { rect: blurRect, effect: blurEffect });
 			}
 		};
 		raf = requestAnimationFrame(tick);
 		return () => cancelAnimationFrame(raf);
-	}, []);
+	}, [blurEffect, roundedTop, radius]);
 }

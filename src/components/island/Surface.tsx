@@ -27,7 +27,16 @@ export function Surface({
 	return (
 		<motion.div
 			className={cn(
-				"absolute inset-0 overflow-hidden bg-black shadow-[0_16px_40px_-10px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.08)] transition-shadow duration-400 ease-[ease]",
+				cn(
+					"absolute inset-0 overflow-hidden shadow-[0_16px_40px_-10px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.08)] transition-shadow duration-400 ease-[ease]",
+					look.blurEffect === "none"
+						? "bg-black"
+						: look.blurEffect === "subtle"
+							? "bg-black/85"
+							: look.blurEffect === "moderate"
+								? "bg-black/72"
+								: "bg-black/60",
+				),
 				big &&
 					"shadow-[0_28px_80px_-12px_rgba(0,0,0,0.95),0_10px_32px_-4px_rgba(0,0,0,0.6),inset_0_1px_1px_0_rgba(255,255,255,0.14),0_0_0_1px_rgba(255,255,255,0.1)]",
 			)}

@@ -21,19 +21,20 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { command, openExternal, openInFolder } from "../../../core/bridge";
 import { useT } from "../../../core/i18n";
 import { useIsland } from "../../../core/island";
+import { moduleShortcutFocus } from "../../../core/shortcuts";
 import { type EverythingItem, formatEverythingDate, formatFileSize, queryEverything } from "../everythingClient";
 
 type FilterType = "all" | "doc" | "pic" | "media" | "zip" | "app" | "folder";
 
-const FILTERS: { id: FilterType; label: string; prefix: string }[] = [
-	{ id: "all", label: "全部", prefix: "" },
-	{ id: "doc", label: "文档", prefix: "ext:doc;docx;txt;md;pdf;xlsx;pptx" },
-	{ id: "pic", label: "图片", prefix: "ext:jpg;jpeg;png;gif;webp;svg;ico;bmp" },
-	{ id: "media", label: "音视频", prefix: "ext:mp4;mkv;avi;mov;mp3;flac;wav;m4a" },
-	{ id: "zip", label: "压缩包", prefix: "ext:zip;rar;7z;tar;gz;iso" },
-	{ id: "app", label: "程序", prefix: "ext:exe;msi;bat;cmd;ps1;lnk" },
-	{ id: "folder", label: "文件夹", prefix: "folder:" },
-];
+const FILTERS = [
+	{ id: "all", label: "filterAll", prefix: "" },
+	{ id: "doc", label: "filterDocs", prefix: "ext:doc;docx;txt;md;pdf;xlsx;pptx" },
+	{ id: "pic", label: "filterImages", prefix: "ext:jpg;jpeg;png;gif;webp;svg;ico;bmp" },
+	{ id: "media", label: "filterMedia", prefix: "ext:mp4;mkv;avi;mov;mp3;flac;wav;m4a" },
+	{ id: "zip", label: "filterArchives", prefix: "ext:zip;rar;7z;tar;gz;iso" },
+	{ id: "app", label: "filterApps", prefix: "ext:exe;msi;bat;cmd;ps1;lnk" },
+	{ id: "folder", label: "filterFolders", prefix: "folder:" },
+] as const;
 
 type SortKey = "date_modified" | "name" | "size" | "path";
 
@@ -124,7 +125,15 @@ export function EverythingWidget({ settings }: { settings: Record<string, unknow
 	const t = useT();
 	const island = useIsland();
 	const inputRef = useRef<HTMLInputElement>(null);
+	const shortcutFocus = moduleShortcutFocus.use();
 	const listRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		if (shortcutFocus !== "com.island.everything") return;
+		moduleShortcutFocus.set(null);
+		void command("focus_island");
+		window.setTimeout(() => inputRef.current?.focus(), 30);
+	}, [shortcutFocus]);
 
 	const port = Number(settings.httpPort || 8080);
 	const [query, setQuery] = useState("");
@@ -312,7 +321,9 @@ export function EverythingWidget({ settings }: { settings: Record<string, unknow
 					}`}
 				>
 					<span className={`size-1.5 rounded-full ${isConnected ? "bg-emerald-400 animate-pulse" : "bg-amber-400"}`} />
-					<span className="font-mono">{isConnected ? `HTTP :${port}` : "离线"}</span>
+					<span className="font-mono">
+						{isConnected ? `HTTP :${port}` : t("marketplace.widgets.pluginExtras.everything.offline")}
+					</span>
 					<HelpCircleIcon size={11} className="opacity-70" />
 				</motion.button>
 			</div>
@@ -332,7 +343,7 @@ export function EverythingWidget({ settings }: { settings: Record<string, unknow
 									: "bg-white/4 text-text-faint border-transparent hover:bg-white/8 hover:text-text"
 							}`}
 						>
-							{f.label}
+							{t(`marketplace.widgets.pluginExtras.everything.${f.label}`)}
 						</button>
 					);
 				})}
@@ -359,7 +370,7 @@ export function EverythingWidget({ settings }: { settings: Record<string, unknow
 					onClick={() => toggleSort("name")}
 					className="col-span-5 flex items-center gap-1 text-left hover:text-text cursor-pointer"
 				>
-					<span>名称</span>
+					<span>{t("marketplace.widgets.pluginExtras.everything.name")}</span>
 					{sortKey === "name" && <ArrowDownUpIcon size={10} className="text-amber-400" />}
 				</button>
 				<button
@@ -367,7 +378,7 @@ export function EverythingWidget({ settings }: { settings: Record<string, unknow
 					onClick={() => toggleSort("path")}
 					className="col-span-4 flex items-center gap-1 text-left hover:text-text cursor-pointer"
 				>
-					<span>路径</span>
+					<span>{t("marketplace.widgets.pluginExtras.everything.path")}</span>
 					{sortKey === "path" && <ArrowDownUpIcon size={10} className="text-amber-400" />}
 				</button>
 				<button
@@ -375,14 +386,14 @@ export function EverythingWidget({ settings }: { settings: Record<string, unknow
 					onClick={() => toggleSort("size")}
 					className="col-span-1 text-right hover:text-text cursor-pointer"
 				>
-					<span>大小</span>
+					<span>{t("marketplace.widgets.pluginExtras.everything.size")}</span>
 				</button>
 				<button
 					type="button"
 					onClick={() => toggleSort("date_modified")}
 					className="col-span-2 text-right hover:text-text cursor-pointer"
 				>
-					<span>修改时间</span>
+					<span>{t("marketplace.widgets.pluginExtras.everything.modified")}</span>
 				</button>
 			</div>
 
@@ -396,17 +407,23 @@ export function EverythingWidget({ settings }: { settings: Record<string, unknow
 					<div className="flex flex-col items-center justify-center py-6 text-center text-xs text-text-faint">
 						{!isConnected ? (
 							<div className="flex flex-col items-center gap-1 max-w-md">
-								<span className="text-amber-300 font-medium">Everything 本地 HTTP 服务未开启</span>
+								<span className="text-amber-300 font-medium">
+									{t("marketplace.widgets.pluginExtras.everything.serverOffline")}
+								</span>
 								<span className="text-[11px] text-text-dim">
-									请在 Everything 中打开：【工具】→【选项】→【HTTP 服务器】→ 勾选【启用 HTTP 服务器】（端口 8080）。
+									{t("marketplace.widgets.pluginExtras.everything.enableServerHint")}
 								</span>
 							</div>
 						) : (
 							<div className="flex flex-col items-center gap-1">
 								<SearchIcon size={20} className="text-text-faint/40 mb-1" />
-								<span>{query ? "未检索到匹配的文件或文件夹" : "Everything 已就绪，输入关键字即时秒级检索"}</span>
+								<span>
+									{query
+										? t("marketplace.widgets.everything.noResults")
+										: t("marketplace.widgets.pluginExtras.everything.readyHint")}
+								</span>
 								<span className="text-[10px] text-text-faint font-mono">
-									支持搜索语法：ext:md、*.pdf、folder\file、*.png 等
+									{t("marketplace.widgets.pluginExtras.everything.syntaxHint")}
 								</span>
 							</div>
 						)}
@@ -449,7 +466,7 @@ export function EverythingWidget({ settings }: { settings: Record<string, unknow
 
 								{/* Col 3: Size (1 col) */}
 								<div className="col-span-1 text-right font-mono text-[10px] text-text-faint whitespace-nowrap">
-									{isFolder ? "文件夹" : formatFileSize(item.size)}
+									{isFolder ? t("marketplace.widgets.pluginExtras.everything.folder") : formatFileSize(item.size)}
 								</div>
 
 								{/* Col 4: Modified Time + Action Buttons (2 cols) */}
@@ -460,7 +477,7 @@ export function EverythingWidget({ settings }: { settings: Record<string, unknow
 									<div className="hidden group-hover:flex items-center gap-1 shrink-0">
 										<button
 											type="button"
-											title="打开文件 (Enter)"
+											title={t("marketplace.widgets.everything.openFile")}
 											onClick={(e) => openItem(item, e)}
 											className="rounded-md p-1 text-text-faint hover:text-amber-300 hover:bg-white/10 transition-colors"
 										>
@@ -468,7 +485,7 @@ export function EverythingWidget({ settings }: { settings: Record<string, unknow
 										</button>
 										<button
 											type="button"
-											title="在资源管理器中定位 (Shift+Enter)"
+											title={t("marketplace.widgets.pluginExtras.everything.openFolder")}
 											onClick={(e) => openFolder(item, e)}
 											className="rounded-md p-1 text-text-faint hover:text-amber-300 hover:bg-white/10 transition-colors"
 										>
@@ -476,7 +493,7 @@ export function EverythingWidget({ settings }: { settings: Record<string, unknow
 										</button>
 										<button
 											type="button"
-											title="复制完整路径"
+											title={t("marketplace.widgets.pluginExtras.everything.copyPath")}
 											onClick={(e) => copyItemPath(item, e)}
 											className="rounded-md p-1 text-text-faint hover:text-amber-300 hover:bg-white/10 transition-colors"
 										>
@@ -498,13 +515,20 @@ export function EverythingWidget({ settings }: { settings: Record<string, unknow
 			<div className="flex items-center justify-between text-[10px] text-text-faint pt-1 border-t border-white/8 font-mono">
 				<div className="flex items-center gap-2">
 					<span>
-						已找到 {items.length} 个对象
-						{totalResults > 0 && ` (总计 ${totalResults.toLocaleString()} 个)`}
+						{t("marketplace.widgets.pluginExtras.everything.found", { n: items.length })}
+						{totalResults > 0 &&
+							` ${t("marketplace.widgets.pluginExtras.everything.total", { n: totalResults.toLocaleString() })}`}
 					</span>
-					{copiedPath && <span className="text-emerald-400 font-sans">✓ 路径已复制到剪贴板</span>}
+					{copiedPath && (
+						<span className="text-emerald-400 font-sans">
+							✓ {t("marketplace.widgets.pluginExtras.everything.copied")}
+						</span>
+					)}
 				</div>
 				<div className="flex items-center gap-3">
-					<span className="hidden sm:inline opacity-70">回车打开 · Shift+回车定位文件夹</span>
+					<span className="hidden sm:inline opacity-70">
+						{t("marketplace.widgets.pluginExtras.everything.shortcutHint")}
+					</span>
 					<span className="text-amber-400/80">Everything</span>
 				</div>
 			</div>

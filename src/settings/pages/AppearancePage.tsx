@@ -123,8 +123,13 @@ export function AppearancePage({ values }: { values: Record<string, unknown> }) 
 						))}
 				</Block>
 
-				<Row label={t("appearance.thickness.label")} disabled={!rim.length}>
+				<Row
+					label={t("appearance.thickness.label")}
+					disabled={!rim.length}
+					className="flex-wrap gap-x-4 gap-y-2 [&>span:first-child]:flex-[1_1_16rem]"
+				>
 					<Segmented
+						className="max-w-full flex-wrap"
 						options={THICKNESSES.map((n) => ({ value: n, label: t(`appearance.thickness.${n}`) }))}
 						value={thickness}
 						disabled={!rim.length}
@@ -137,8 +142,10 @@ export function AppearancePage({ values }: { values: Record<string, unknown> }) 
 				<Row
 					label={t("appearance.tabsPosition.label")}
 					desc={windows ? t("appearance.tabsPosition.desc") : t("appearance.windowsOnly")}
+					className="flex-wrap gap-x-4 gap-y-2 [&>span:first-child]:flex-[1_1_16rem]"
 				>
 					<Segmented
+						className="max-w-full flex-wrap"
 						options={[
 							{ value: "top", label: t("appearance.tabsPosition.top") },
 							{ value: "bottom", label: t("appearance.tabsPosition.bottom") },
@@ -154,6 +161,7 @@ export function AppearancePage({ values }: { values: Record<string, unknown> }) 
 				<Block>
 					<Row label={t("appearance.blur.label")} desc={t("appearance.blur.desc")} />
 					<Segmented
+						className="max-w-full flex-wrap"
 						options={[
 							{ value: "none", label: t("appearance.blur.none") },
 							{ value: "subtle", label: t("appearance.blur.subtle") },

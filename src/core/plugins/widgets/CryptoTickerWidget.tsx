@@ -1,5 +1,6 @@
 import { AlertTriangleIcon, ArrowDownRightIcon, ArrowUpRightIcon, RefreshCwIcon, TrendingUpIcon } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useT } from "../../../core/i18n";
 import { NeedsConfigCard } from "./NeedsConfigCard";
 
 interface LiveCryptoItem {
@@ -31,6 +32,9 @@ const COLOR_MAP: Record<string, { color: string; glyph: string }> = {
 };
 
 export function CryptoTickerWidget({ settings }: { settings: Record<string, unknown> }) {
+	const t = useT();
+	const translate = useRef(t);
+	translate.current = t;
 	const isConfigured = Boolean(settings.configured && settings.symbols);
 	const symbolsRaw = String(settings.symbols || "").trim();
 
@@ -53,11 +57,11 @@ export function CryptoTickerWidget({ settings }: { settings: Record<string, unkn
 			// Query Binance live 24hr ticker API
 			const pairs = symbolList.map((s) => `"${s}USDT"`).join(",");
 			const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=[${pairs}]`);
-			if (!res.ok) throw new Error("行情服务器响应异常，请检查代币代码");
+			if (!res.ok) throw new Error(translate.current("marketplace.widgets.pluginExtras.crypto.unavailable"));
 			const rawList = (await res.json()) as BinanceTicker[];
 
 			if (!Array.isArray(rawList)) {
-				throw new Error("无法读取行情数据");
+				throw new Error(translate.current("marketplace.widgets.pluginExtras.crypto.invalidData"));
 			}
 
 			const parsed: LiveCryptoItem[] = rawList.map((item) => {
@@ -103,14 +107,14 @@ export function CryptoTickerWidget({ settings }: { settings: Record<string, unkn
 		return (
 			<NeedsConfigCard
 				pluginId="com.island.crypto-ticker"
-				title="行情监控"
-				description="未配置自选监控标的。请输入关注的代码（逗号分隔），直连行情接口实时看盘。"
+				title={t("marketplace.widgets.pluginExtras.crypto.needsTitle")}
+				description={t("marketplace.widgets.pluginExtras.crypto.needsDescription")}
 				icon={<TrendingUpIcon size={18} />}
 				accentColor="#66BB6A"
 				settingsDefs={[
 					{
 						key: "symbols",
-						label: "自选代币/交易对（如 BTC, ETH, SOL）",
+						label: t("marketplace.widgets.pluginExtras.crypto.symbolsLabel"),
 						type: "text",
 						default: "BTC, ETH",
 					},
@@ -124,7 +128,7 @@ export function CryptoTickerWidget({ settings }: { settings: Record<string, unkn
 		return (
 			<div className="flex h-full items-center justify-center gap-2 text-xs text-text-faint">
 				<RefreshCwIcon size={14} className="animate-spin text-emerald-400" />
-				<span>正在连接获取 {symbolsRaw} 实时行情...</span>
+				<span>{t("marketplace.widgets.pluginExtras.crypto.loading", { symbols: symbolsRaw })}</span>
 			</div>
 		);
 	}
@@ -142,7 +146,7 @@ export function CryptoTickerWidget({ settings }: { settings: Record<string, unkn
 					className="flex items-center gap-1 rounded-lg bg-white/8 px-2.5 py-1 text-[11px] text-text hover:bg-white/16"
 				>
 					<RefreshCwIcon size={11} />
-					<span>重试</span>
+					<span>{t("marketplace.widgets.pluginExtras.crypto.retry")}</span>
 				</button>
 			</div>
 		);
@@ -179,8 +183,12 @@ export function CryptoTickerWidget({ settings }: { settings: Record<string, unkn
 						{current.price}
 					</div>
 					<div className="flex items-center gap-2 text-[10px] text-text-faint font-mono">
-						<span>高: {current.high24h}</span>
-						<span>低: {current.low24h}</span>
+						<span>
+							{t("marketplace.widgets.pluginExtras.crypto.high")}: {current.high24h}
+						</span>
+						<span>
+							{t("marketplace.widgets.pluginExtras.crypto.low")}: {current.low24h}
+						</span>
 					</div>
 				</div>
 			</div>

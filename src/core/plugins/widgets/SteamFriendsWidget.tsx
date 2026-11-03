@@ -1,7 +1,8 @@
 import { CircleIcon, ExternalLinkIcon, Gamepad2Icon, MessageSquareIcon, RefreshCwIcon } from "lucide-react";
 import { motion } from "motion/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { openExternal } from "../../../core/bridge";
+import { useT } from "../../../core/i18n";
 import { NeedsConfigCard } from "./NeedsConfigCard";
 
 interface SteamFriend {
@@ -19,6 +20,9 @@ interface RawPlayer {
 }
 
 export function SteamFriendsWidget({ settings }: { settings: Record<string, unknown> }) {
+	const t = useT();
+	const translate = useRef(t);
+	translate.current = t;
 	const isConfigured = Boolean(settings.configured && settings.steamApiKey && settings.steamId64);
 	const apiKey = String(settings.steamApiKey || "").trim();
 	const steamId = String(settings.steamId64 || "").trim();
@@ -37,7 +41,7 @@ export function SteamFriendsWidget({ settings }: { settings: Record<string, unkn
 			const friendListRes = await fetch(
 				`https://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key=${apiKey}&steamid=${steamId}&relationship=friend`,
 			);
-			if (!friendListRes.ok) throw new Error("无法连接 Steam Web API，请检查 Key 与 ID");
+			if (!friendListRes.ok) throw new Error(translate.current("marketplace.widgets.pluginExtras.steam.unavailable"));
 			const friendJson = await friendListRes.json();
 			const rawFriends = (friendJson.friendslist?.friends || []) as { steamid: string }[];
 			if (!rawFriends.length) {
@@ -58,7 +62,7 @@ export function SteamFriendsWidget({ settings }: { settings: Record<string, unkn
 			const parsed: SteamFriend[] = players
 				.map((p) => ({
 					id: p.steamid,
-					name: p.personaname || "Steam 好友",
+					name: p.personaname || translate.current("marketplace.widgets.pluginExtras.steam.friendFallback"),
 					game: p.gameextrainfo,
 					status: (p.gameextrainfo ? "in-game" : p.personastate > 0 ? "online" : "away") as SteamFriend["status"],
 				}))
@@ -82,22 +86,22 @@ export function SteamFriendsWidget({ settings }: { settings: Record<string, unkn
 		return (
 			<NeedsConfigCard
 				pluginId="com.island.steam-friends"
-				title="Steam 动态"
-				description="未配置 Steam 凭证。请输入 Steam Web API Key 与 17 位 SteamID64，以同步好友在玩与在线动态。"
+				title={t("marketplace.widgets.pluginExtras.steam.needsTitle")}
+				description={t("marketplace.widgets.pluginExtras.steam.needsDescription")}
 				icon={<Gamepad2Icon size={18} />}
 				accentColor="#AB47BC"
 				externalUrl="https://steamcommunity.com/dev/apikey"
-				externalLabel="获取 API Key"
+				externalLabel={t("marketplace.ui.configureGuide")}
 				settingsDefs={[
 					{
 						key: "steamApiKey",
-						label: "Steam Web API Key",
+						label: t("marketplace.widgets.pluginExtras.steam.apiKeyLabel"),
 						type: "password",
 						default: "",
 					},
 					{
 						key: "steamId64",
-						label: "SteamID64 (例如 76561198...)",
+						label: t("marketplace.widgets.pluginExtras.steam.keyLabel"),
 						type: "text",
 						default: "",
 					},
@@ -119,12 +123,16 @@ export function SteamFriendsWidget({ settings }: { settings: Record<string, unkn
 					</div>
 					<div className="min-w-0">
 						<div className="flex items-center gap-2 flex-wrap">
-							<span className="text-[13px] font-semibold text-text whitespace-nowrap">Steam 动态</span>
+							<span className="text-[13px] font-semibold text-text whitespace-nowrap">
+								{t("marketplace.widgets.pluginExtras.steam.title")}
+							</span>
 							<span className="rounded-full bg-emerald-500/18 px-2 py-0.2 text-[10px] font-medium text-emerald-400 whitespace-nowrap">
-								{playingFriends.length} 人在玩
+								{t("marketplace.widgets.pluginExtras.steam.playingCount", { n: playingFriends.length })}
 							</span>
 						</div>
-						<p className="text-[11px] text-text-faint whitespace-nowrap">共 {friends.length} 位在线好友</p>
+						<p className="text-[11px] text-text-faint whitespace-nowrap">
+							{t("marketplace.widgets.pluginExtras.steam.friendsOnline", { n: friends.length })}
+						</p>
 					</div>
 				</div>
 
@@ -134,7 +142,7 @@ export function SteamFriendsWidget({ settings }: { settings: Record<string, unkn
 						onClick={fetchSteamFriends}
 						disabled={loading}
 						className="flex size-7.5 items-center justify-center rounded-full bg-white/6 text-text-faint hover:bg-white/12 hover:text-text transition-colors"
-						title="刷新好友动态"
+						title={t("marketplace.widgets.pluginExtras.steam.refresh")}
 					>
 						<RefreshCwIcon size={12} className={loading ? "animate-spin text-purple-400" : ""} />
 					</button>
@@ -149,7 +157,7 @@ export function SteamFriendsWidget({ settings }: { settings: Record<string, unkn
 						}}
 						className="flex h-7.5 shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3 text-xs font-semibold text-text transition-colors hover:bg-white/18"
 					>
-						<span>打开 Steam</span>
+						<span>{t("marketplace.widgets.pluginExtras.steam.openSteam")}</span>
 						<ExternalLinkIcon size={11} className="opacity-60" />
 					</motion.button>
 				</div>
@@ -158,7 +166,11 @@ export function SteamFriendsWidget({ settings }: { settings: Record<string, unkn
 			{/* Friends Cards or Real Empty State */}
 			{friends.length === 0 ? (
 				<div className="flex items-center justify-center py-4 text-xs text-text-faint">
-					{loading ? "正在同步 Steam 好友..." : error ? error : "暂无好友在玩游戏"}
+					{loading
+						? t("marketplace.widgets.pluginExtras.steam.loading")
+						: error
+							? error
+							: t("marketplace.widgets.pluginExtras.steam.empty")}
 				</div>
 			) : (
 				<div className="grid grid-cols-2 gap-2 max-h-[105px] overflow-y-auto pr-0.5">
@@ -185,7 +197,7 @@ export function SteamFriendsWidget({ settings }: { settings: Record<string, unkn
 
 								<button
 									type="button"
-									title="发起聊天"
+									title={t("marketplace.widgets.pluginExtras.steam.chat")}
 									onClick={(e) => {
 										e.stopPropagation();
 										openExternal(`steam://friends/message/${f.id}`);
@@ -198,7 +210,9 @@ export function SteamFriendsWidget({ settings }: { settings: Record<string, unkn
 
 							<div className="mt-1 flex items-center">
 								<span className="truncate rounded px-1.5 py-0.2 text-[10px] font-medium bg-emerald-500/12 text-emerald-400">
-									{f.game ? `正在玩 ${f.game}` : "在线"}
+									{f.game
+										? t("marketplace.widgets.pluginExtras.steam.playing", { game: f.game })
+										: t("marketplace.widgets.pluginExtras.steam.online")}
 								</span>
 							</div>
 						</div>

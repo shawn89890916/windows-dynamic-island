@@ -49,7 +49,6 @@ struct RegisteredShortcut {
 static REGISTERED: Mutex<Vec<RegisteredShortcut>> = Mutex::new(Vec::new());
 
 pub enum ShortcutTarget {
-	Event(&'static str),
 	Module(String),
 }
 
@@ -57,8 +56,7 @@ pub fn event_for(shortcut: &Shortcut) -> Option<ShortcutTarget> {
 	let registered = REGISTERED.lock().unwrap();
 	let id = &registered.iter().find(|entry| &entry.shortcut == shortcut)?.id;
 	match id.as_str() {
-		"ask" => Some(ShortcutTarget::Event("island://ask")),
-		"find" => Some(ShortcutTarget::Event("island://find")),
+		"ask" | "find" => Some(ShortcutTarget::Module(id.clone())),
 		_ => id.strip_prefix("module:").map(|module_id| ShortcutTarget::Module(module_id.to_string())),
 	}
 }

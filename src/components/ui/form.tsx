@@ -79,14 +79,16 @@ export function Segmented<T extends string | number>({
 	value,
 	onChange,
 	disabled,
+	className,
 }: {
 	options: { value: T; label: string }[];
 	value: T;
 	onChange: (value: T) => void;
 	disabled?: boolean;
+	className?: string;
 }) {
 	return (
-		<div className={segmented().base()}>
+		<div className={segmented().base({ class: className })}>
 			{options.map((o) => (
 				<button
 					type="button"

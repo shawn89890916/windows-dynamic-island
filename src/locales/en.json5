@@ -460,6 +460,15 @@
         copiedAndOpened: "Copied & Launched",
         btnReply: "Send",
       },
+      pluginExtras: {
+        weather: { clear: "Clear", cloudy: "Cloudy", showers: "Showers", snow: "Snow", rain: "Heavy rain", storm: "Thunderstorms", cityNotFound: "Could not find {city}. Check the spelling.", unavailable: "Could not read weather data.", needsTitle: "Live Weather", needsDescription: "Set a city to see current conditions, temperature, and alerts.", cityLabel: "City (e.g. Beijing, Tokyo, London)", loading: "Loading weather for {city}…", retry: "Retry", observation: "LIVE" },
+        crypto: { unavailable: "The market service returned an error. Check the symbols.", invalidData: "Could not read market data.", needsTitle: "Market Ticker", needsDescription: "Add comma-separated symbols to follow live market prices.", symbolsLabel: "Symbols (e.g. BTC, ETH, SOL)", loading: "Loading quotes for {symbols}…", retry: "Retry", high: "High", low: "Low" },
+        steam: { unavailable: "Could not reach the Steam Web API. Check the API key and ID.", friendFallback: "Steam friend", needsTitle: "Steam Activity", needsDescription: "Add a Steam Web API key and SteamID64 to see friends and their games.", apiKeyLabel: "Steam Web API key", keyLabel: "SteamID64 (e.g. 76561198…)", title: "Steam Activity", playingCount: "{n} playing", friendsOnline: "{n} friends online", refresh: "Refresh activity", openSteam: "Open Steam", loading: "Syncing Steam friends…", empty: "No friends are playing a game", chat: "Start chat", playing: "Playing {game}", online: "Online" },
+        everything: { filterAll: "All", filterDocs: "Documents", filterImages: "Images", filterMedia: "Media", filterArchives: "Archives", filterApps: "Apps", filterFolders: "Folders", offline: "Offline", name: "Name", path: "Path", size: "Size", modified: "Modified", serverOffline: "Everything HTTP server is off", enableServerHint: "In Everything, open Tools → Options → HTTP Server and enable the HTTP server (port 8080).", readyHint: "Everything is ready. Type to search instantly.", syntaxHint: "Search syntax: ext:md, *.pdf, folder\\file, *.png", folder: "Folder", openFolder: "Show in Explorer (Shift+Enter)", copyPath: "Copy full path", found: "Found {n} items", total: "({n} total)", copied: "Path copied", shortcutHint: "Enter opens · Shift+Enter shows the folder" },
+        obsidian: { needsTitle: "Obsidian Vault", needsDescription: "Set your local vault path or name to use quick capture, daily notes, and search.", openFolder: "Open vault folder", checkingIndex: "Checking note index…", noNotes: "No notes found (Everything index is off)", indexHint: "Use Daily Note, Open Vault, or Quick Capture to get started.", tags: { inspiration: "#Inspiration", todo: "#ToDo", journal: "#Journal", project: "#Project" } },
+        aiHub: { notConfigured: "No local agent found or configured", working: "Working on a task", idle: "Ready · No active session", openClient: "Open client", quota: "Quota used: {n}%", noQuota: "No quota data", tokensToday: "Tokens today", runStatus: "Status", workingStatus: "Working", ready: "Ready", disconnected: "Disconnected", prompt: "Send a prompt to {name}…", dispatched: "Prompt copied · Client opened", dispatch: "Send" },
+        im: { minutesAgo: "{n}m ago", hoursAgo: "{n}h ago", wechat: "WeChat", openWechat: "Open WeChat", openQQ: "Open QQ", empty: "No unread messages · WeChat and QQ are ready" },
+      },
     },
   },
 
@@ -839,11 +848,11 @@
     },
     blur: {
       label: "Background blur",
-      desc: "Adjust the Gaussian blur behind the island.",
+      desc: "Adjust how strongly the island shows the native desktop blur.",
       none: "Off",
-      subtle: "Subtle · 6 px",
-      moderate: "Soft · 12 px",
-      ambient: "Ambient · 18 px",
+      subtle: "Light",
+      moderate: "Medium",
+      ambient: "Strong",
     },
     hide: {
       label: "Hide the island",

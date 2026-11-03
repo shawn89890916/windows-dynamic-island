@@ -456,6 +456,15 @@
         copiedAndOpened: "已复制并唤起",
         btnReply: "发送",
       },
+      pluginExtras: {
+        weather: { clear: "晴朗", cloudy: "多云", showers: "阵雨", snow: "降雪", rain: "大雨", storm: "雷阵雨", cityNotFound: "找不到城市 {city}，请检查拼写。", unavailable: "无法读取天气数据。", needsTitle: "实时天气", needsDescription: "设置城市后即可查看实时天气、温度与预警。", cityLabel: "城市（例如：北京、东京、伦敦）", loading: "正在获取 {city} 的天气…", retry: "重试", observation: "实时" },
+        crypto: { unavailable: "行情服务响应异常，请检查代码。", invalidData: "无法读取行情数据。", needsTitle: "行情监控", needsDescription: "输入逗号分隔的代码，即可追踪实时行情。", symbolsLabel: "代码（例如 BTC、ETH、SOL）", loading: "正在获取 {symbols} 行情…", retry: "重试", high: "高", low: "低" },
+        steam: { unavailable: "无法连接 Steam Web API，请检查 API Key 和 ID。", friendFallback: "Steam 好友", needsTitle: "Steam 动态", needsDescription: "填写 Steam Web API Key 与 SteamID64，即可查看好友及游戏动态。", apiKeyLabel: "Steam Web API 密钥", keyLabel: "SteamID64（例如 76561198…）", title: "Steam 动态", playingCount: "{n} 人在玩", friendsOnline: "{n} 位好友在线", refresh: "刷新动态", openSteam: "打开 Steam", loading: "正在同步 Steam 好友…", empty: "暂无好友正在玩游戏", chat: "发起聊天", playing: "正在玩 {game}", online: "在线" },
+        everything: { filterAll: "全部", filterDocs: "文档", filterImages: "图片", filterMedia: "音视频", filterArchives: "压缩包", filterApps: "程序", filterFolders: "文件夹", offline: "离线", name: "名称", path: "路径", size: "大小", modified: "修改时间", serverOffline: "Everything HTTP 服务未开启", enableServerHint: "在 Everything 中打开“工具 → 选项 → HTTP 服务器”，勾选启用 HTTP 服务器（端口 8080）。", readyHint: "Everything 已就绪，输入关键字即可搜索。", syntaxHint: "搜索语法：ext:md、*.pdf、folder\\file、*.png", folder: "文件夹", openFolder: "在资源管理器中定位（Shift+回车）", copyPath: "复制完整路径", found: "已找到 {n} 个对象", total: "（共 {n} 个）", copied: "路径已复制", shortcutHint: "回车打开 · Shift+回车定位文件夹" },
+        obsidian: { needsTitle: "Obsidian 知识库", needsDescription: "填写本地知识库路径或名称，即可使用闪念速记、每日日记和检索。", openFolder: "打开知识库文件夹", checkingIndex: "正在检查笔记索引…", noNotes: "暂无笔记（Everything 索引服务未开启）", indexHint: "可使用今日日记、打开知识库或闪念速记开始。", tags: { inspiration: "#灵感", todo: "#待办", journal: "#随笔", project: "#项目" } },
+        aiHub: { notConfigured: "未检测到本地环境或尚未配置", working: "正在处理任务", idle: "就绪 · 暂无活跃会话", openClient: "打开客户端", quota: "额度消耗：{n}%", noQuota: "暂无额度统计", tokensToday: "今日消耗", runStatus: "运行状态", workingStatus: "工作执行中", ready: "就绪", disconnected: "未连接", prompt: "向 {name} 发送指令并唤起…", dispatched: "已复制指令并唤起客户端", dispatch: "调度" },
+        im: { minutesAgo: "{n} 分钟前", hoursAgo: "{n} 小时前", wechat: "微信", openWechat: "打开微信", openQQ: "打开 QQ", empty: "暂无未读消息 · 微信与 QQ 桌面客户端已就绪" },
+      },
     },
   },
 
@@ -835,11 +844,11 @@
     },
     blur: {
       label: "背景高斯模糊",
-      desc: "调整灵动岛后方的高斯模糊效果。",
+      desc: "调整灵动岛显示桌面原生模糊效果的强度。",
       none: "关闭",
-      subtle: "微弱 · 6 px",
-      moderate: "柔和 · 12 px",
-      ambient: "氛围 · 18 px",
+      subtle: "微弱",
+      moderate: "中等",
+      ambient: "强烈",
     },
     hide: {
       label: "隐藏灵动岛",

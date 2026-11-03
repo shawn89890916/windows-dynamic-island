@@ -1,4 +1,5 @@
 mod autostart;
+mod blur;
 mod display;
 mod file_drop;
 mod hub;
@@ -44,7 +45,6 @@ pub fn run() {
                         && let Some(target) = providers::shortcuts::event_for(shortcut)
                     {
                         match target {
-                            providers::shortcuts::ShortcutTarget::Event(event) => open_page(app, event),
                             providers::shortcuts::ShortcutTarget::Module(id) => open_module(app, &id),
                         }
                     }
@@ -57,6 +57,7 @@ pub fn run() {
         .setup(|app| {
             let handle = app.handle().clone();
             app.manage(settings::Settings::load(&handle));
+            blur::setup(&handle)?;
 
             let hub = Arc::new(Hub::new(handle.clone()));
             let providers = providers::registry();
@@ -99,6 +100,7 @@ pub fn run() {
             settings::open_external,
             settings::open_in_folder,
             settings::everything_query,
+            blur::set_blur_rect,
             navopath::navopath_mcp_request,
             vpn::vpn_request,
             plugins::plugin_catalog,
@@ -119,18 +121,6 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-/// Brings the island forward on a page that takes the keyboard (`event` tells which).
-fn open_page(app: &AppHandle, event: &str) {
-    if tray::is_hidden(app) {
-        return;
-    }
-    if let Some(win) = app.get_webview_window(window::ISLAND_LABEL) {
-        window::allow_activation();
-        let _ = win.set_focus();
-    }
-    let _ = app.emit(event, ());
-}
-
 fn open_module(app: &AppHandle, id: &str) {
 	if tray::is_hidden(app) {
 		return;
@@ -139,5 +129,5 @@ fn open_module(app: &AppHandle, id: &str) {
 		window::allow_activation();
 		let _ = win.set_focus();
 	}
-	let _ = app.emit("island://open-module", id);
+	let _ = app.emit("island://toggle-module", id);
 }
