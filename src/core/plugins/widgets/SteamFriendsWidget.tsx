@@ -1,6 +1,7 @@
 import { CircleIcon, ExternalLinkIcon, Gamepad2Icon, MessageSquareIcon, RefreshCwIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
+import { openExternal } from "../../../core/bridge";
 import { NeedsConfigCard } from "./NeedsConfigCard";
 
 interface SteamFriend {
@@ -144,7 +145,7 @@ export function SteamFriendsWidget({ settings }: { settings: Record<string, unkn
 						whileTap={{ scale: 0.92 }}
 						onClick={(e) => {
 							e.stopPropagation();
-							window.open("steam://open/friends", "_blank");
+							openExternal("steam://open/friends");
 						}}
 						className="flex h-7.5 shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3 text-xs font-semibold text-text transition-colors hover:bg-white/18"
 					>
@@ -187,7 +188,7 @@ export function SteamFriendsWidget({ settings }: { settings: Record<string, unkn
 									title="发起聊天"
 									onClick={(e) => {
 										e.stopPropagation();
-										window.open(`steam://friends/message/${f.id}`, "_blank");
+										openExternal(`steam://friends/message/${f.id}`);
 									}}
 									className="rounded-full p-1 text-text-faint hover:text-text"
 								>

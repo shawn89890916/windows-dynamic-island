@@ -1,3 +1,4 @@
+import { openExternal } from "../../../core/bridge";
 import type { AgentDefinition } from "../common/types";
 import { ChatGptIcon } from "./ChatGptIcon";
 import { useChatGpt } from "./useChatGpt";
@@ -10,16 +11,9 @@ export const chatgptAgent: AgentDefinition = {
 	useAgent: useChatGpt,
 	usageUrl: "https://chatgpt.com",
 	openSession: () => {
-		window.open("chatgpt://", "_blank");
+		openExternal("chatgpt://");
 	},
 	launchApp: () => {
-		if (typeof window !== "undefined") {
-			const a = document.createElement("a");
-			a.href = "chatgpt://";
-			a.target = "_blank";
-			document.body.appendChild(a);
-			a.click();
-			document.body.removeChild(a);
-		}
+		openExternal("chatgpt://");
 	},
 };

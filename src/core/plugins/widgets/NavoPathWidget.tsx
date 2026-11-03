@@ -2,7 +2,7 @@ import { CheckCircle2Icon, CheckIcon, CircleIcon, ExternalLinkIcon, PlusIcon, Re
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import navopathLogo from "../../../assets/navopath.png";
-import { command } from "../../../core/bridge";
+import { command, openExternal } from "../../../core/bridge";
 import { useT } from "../../../core/i18n";
 import { useIsland } from "../../../core/island";
 import {
@@ -215,7 +215,7 @@ export function NavoPathWidget({ settings }: { settings: Record<string, unknown>
 						transition={{ type: "spring", stiffness: 500, damping: 25 }}
 						onClick={(e) => {
 							e.stopPropagation();
-							window.open("navopath://", "_blank");
+							openExternal("navopath://");
 						}}
 						className="flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3 text-xs font-semibold text-text transition-colors hover:bg-white/18 active:scale-95 whitespace-nowrap"
 					>

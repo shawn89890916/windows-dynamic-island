@@ -91,6 +91,7 @@ pub fn run() {
             settings::set_autostart,
             settings::open_repo,
             settings::open_external,
+            settings::everything_query,
             updater::check_update,
             updater::install_update,
             i18n::set_locale,

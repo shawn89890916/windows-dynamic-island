@@ -1,6 +1,7 @@
 /**
  * WeChat & QQ desktop notifications and launcher client for Windows Dynamic Island.
  */
+import { openExternal } from "../bridge";
 
 export interface ImMessage {
 	id: string;
@@ -16,27 +17,11 @@ export interface ImMessage {
 export const INITIAL_IM_MESSAGES: ImMessage[] = [];
 
 export function openWeChat() {
-	if (typeof window !== "undefined") {
-		const a = document.createElement("a");
-		a.href = "weixin://";
-		a.target = "_blank";
-		a.rel = "noopener noreferrer";
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-	}
+	openExternal("weixin://");
 }
 
 export function openQQ() {
-	if (typeof window !== "undefined") {
-		const a = document.createElement("a");
-		a.href = "tencent://";
-		a.target = "_blank";
-		a.rel = "noopener noreferrer";
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-	}
+	openExternal("tencent://");
 }
 
 export function dispatchQuickReply(app: "wechat" | "qq", text: string) {

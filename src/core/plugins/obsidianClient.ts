@@ -8,6 +8,8 @@
  * - Daily Note (cxy更新日志 / Daily notes) direct access
  */
 
+import { openExternal } from "../bridge";
+
 export interface ObsidianNote {
 	name: string;
 	path: string;
@@ -19,15 +21,7 @@ export interface ObsidianNote {
 export const FALLBACK_VAULT_NOTES: ObsidianNote[] = [];
 
 export function openProtocolUrl(url: string) {
-	if (typeof window !== "undefined") {
-		const a = document.createElement("a");
-		a.href = url;
-		a.target = "_blank";
-		a.rel = "noopener noreferrer";
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-	}
+	openExternal(url);
 }
 
 export function openObsidianVault(vaultName = "Obsidian Vault") {

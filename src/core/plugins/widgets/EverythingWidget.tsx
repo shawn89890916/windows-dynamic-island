@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { command } from "../../../core/bridge";
+import { command, openExternal } from "../../../core/bridge";
 import { useT } from "../../../core/i18n";
 import { useIsland } from "../../../core/island";
 import { type EverythingItem, formatFileSize, queryEverything } from "../everythingClient";
@@ -91,7 +91,7 @@ export function EverythingWidget({ settings }: { settings: Record<string, unknow
 	const openItem = (item: EverythingItem, e?: React.MouseEvent) => {
 		e?.stopPropagation();
 		const targetUrl = item.path.includes(":") ? `file:///${item.path.replace(/\\/g, "/")}` : item.path;
-		window.open(targetUrl, "_blank");
+		openExternal(targetUrl);
 	};
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

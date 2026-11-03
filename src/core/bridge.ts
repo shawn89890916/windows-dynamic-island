@@ -78,6 +78,21 @@ export function command<T = unknown>(cmd: string, args?: Record<string, unknown>
 	return invoke<T>(cmd, args);
 }
 
+/** Open any external URL or application protocol (claude://, chatgpt://, obsidian://, https://, etc.) via Tauri/Windows Shell */
+export function openExternal(url: string): Promise<void> {
+	if (isTauri) {
+		return command("open_external", { url })
+			.then(() => undefined)
+			.catch((err) => {
+				console.error("Failed to open external url:", url, err);
+			});
+	}
+	if (typeof window !== "undefined") {
+		window.open(url, "_blank");
+	}
+	return Promise.resolve();
+}
+
 /** Subscribe to a backend event for the component's lifetime. */
 export function useTauriEvent<T>(event: string, handler: (payload: T) => void) {
 	const ref = useRef(handler);

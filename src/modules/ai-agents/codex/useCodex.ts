@@ -37,7 +37,15 @@ export function useCodex(): AgentSnapshot {
 	const state = useProvider<CodexState>(PROVIDER);
 	const t = useT();
 
-	if (!state?.available) return { available: false, sessions: [], limits: [] };
+	if (!state?.available) {
+		return {
+			available: true,
+			model: "OpenAI Codex",
+			limits: [],
+			limitsHint: "未连接后台服务 · 支持下方指令调度与唤起",
+			sessions: [],
+		};
+	}
 
 	const limits: UsageLimit[] = [];
 	const { primary, secondary } = state.limits ?? {};

@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { command } from "../../../core/bridge";
+import { command, openExternal } from "../../../core/bridge";
 import { useIsland } from "../../../core/island";
 import { ChatGptIcon } from "../../../modules/ai-agents/chatgpt/ChatGptIcon";
 import { useChatGpt } from "../../../modules/ai-agents/chatgpt/useChatGpt";
@@ -117,15 +117,7 @@ export function AiHubWidget({ settings }: { settings: Record<string, unknown> })
 
 	const handleLaunchApp = (agent: AgentDef, e?: React.MouseEvent) => {
 		e?.stopPropagation();
-		if (typeof window !== "undefined") {
-			const a = document.createElement("a");
-			a.href = agent.protocolUrl;
-			a.target = "_blank";
-			a.rel = "noopener noreferrer";
-			document.body.appendChild(a);
-			a.click();
-			document.body.removeChild(a);
-		}
+		openExternal(agent.protocolUrl);
 	};
 
 	const handleDispatchPrompt = (e?: React.FormEvent) => {

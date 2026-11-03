@@ -6,6 +6,7 @@
 
 use std::path::PathBuf;
 use std::sync::Mutex;
+use std::time::Duration;
 
 use serde_json::{Map, Value};
 use tauri::{AppHandle, Emitter, Manager, State, WebviewUrl, WebviewWindowBuilder};
@@ -121,14 +122,57 @@ pub fn open_repo() {
     open_url(REPO_URL);
 }
 
-/// Open a web page in the default browser (island links, e.g. usage pages).
+/// Open a web page or application URI protocol in the default handler (claude://, chatgpt://, obsidian://, etc.).
 #[tauri::command]
 pub fn open_external(url: String) -> Result<(), String> {
-    if !url.starts_with("https://") {
-        return Err("only https links".into());
+    let lower = url.trim().to_lowercase();
+    if lower.starts_with("javascript:") || lower.starts_with("vbscript:") || lower.starts_with("data:") {
+        return Err("disallowed protocol".into());
     }
     open_url(&url);
     Ok(())
+}
+
+/// Query local Everything HTTP Search engine directly from backend (bypasses browser CORS & mixed content).
+#[tauri::command]
+pub fn everything_query(query: String, port: Option<u16>, count: Option<usize>) -> Result<Value, String> {
+    let p = port.unwrap_or(8080);
+    let c = count.unwrap_or(10);
+    let q = query.trim();
+    if q.is_empty() {
+        return Ok(serde_json::json!({
+            "totalResults": 0,
+            "results": []
+        }));
+    }
+
+    let encoded: String = url::form_urlencoded::byte_serialize(q.as_bytes()).collect();
+    let agent: ureq::Agent = ureq::Agent::config_builder()
+        .http_status_as_error(false)
+        .timeout_global(Some(Duration::from_millis(2000)))
+        .build()
+        .into();
+
+    let ports = if p == 8080 { vec![8080, 80] } else { vec![p, 8080, 80] };
+    let mut last_err = String::new();
+
+    for port_num in ports {
+        let url = format!("http://127.0.0.1:{port_num}/?search={encoded}&json=1&count={c}");
+        match agent.get(&url).call() {
+            Ok(mut resp) => {
+                if let Ok(body) = resp.body_mut().read_to_string() {
+                    if let Ok(val) = serde_json::from_str::<Value>(&body) {
+                        return Ok(val);
+                    }
+                }
+            }
+            Err(e) => {
+                last_err = e.to_string();
+            }
+        }
+    }
+
+    Err(if last_err.is_empty() { "Everything HTTP connection failed".into() } else { last_err })
 }
 
 /// Open a URL in the default browser.

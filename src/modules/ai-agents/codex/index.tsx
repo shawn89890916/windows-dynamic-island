@@ -1,7 +1,7 @@
 /**
  * OpenAI Codex agent. Backend: `src-tauri/src/providers/codex/`.
  */
-import { providerAction } from "../../../core/bridge";
+import { openExternal, providerAction } from "../../../core/bridge";
 import type { AgentDefinition } from "../common/types";
 import { CodexIcon } from "./CodexIcon";
 import { CodexSettings } from "./CodexSettings";
@@ -18,9 +18,7 @@ export const codexAgent: AgentDefinition = {
 		if (session.cwd) providerAction("codex", "openProject", session.cwd);
 	},
 	launchApp: () => {
-		if (typeof window !== "undefined") {
-			window.open("https://chatgpt.com/codex", "_blank");
-		}
+		openExternal("https://chatgpt.com/codex");
 	},
 	SettingsSection: CodexSettings,
 };

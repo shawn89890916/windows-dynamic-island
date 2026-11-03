@@ -2,6 +2,7 @@
  * Everything Search Client
  * Connects to Voidtools Everything embedded HTTP Server (http://127.0.0.1:8080).
  */
+import { command, isTauri } from "../bridge";
 
 export interface EverythingItem {
 	type: "file" | "folder";
@@ -26,6 +27,25 @@ export async function queryEverything(
 		return { ok: true, total: 0, items: [] };
 	}
 
+	if (isTauri) {
+		try {
+			const res = await command<EverythingResponse>("everything_query", {
+				query: trimmed,
+				port,
+				count,
+			});
+			if (res) {
+				return {
+					ok: true,
+					total: res.totalResults ?? res.results?.length ?? 0,
+					items: res.results ?? [],
+				};
+			}
+		} catch (err) {
+			console.warn("everything_query backend command failed, attempting direct HTTP fallback:", err);
+		}
+	}
+
 	const tryPorts = [port];
 	if (port !== 80 && !tryPorts.includes(80)) tryPorts.push(80);
 	if (port !== 8080 && !tryPorts.includes(8080)) tryPorts.push(8080);
@@ -36,7 +56,7 @@ export async function queryEverything(
 		const url = `http://127.0.0.1:${p}/?search=${encodeURIComponent(trimmed)}&json=1&count=${count}`;
 		try {
 			const controller = new AbortController();
-			const timeout = setTimeout(() => controller.abort(), 1000);
+			const timeout = setTimeout(() => controller.abort(), 1200);
 			const res = await fetch(url, { signal: controller.signal });
 			clearTimeout(timeout);
 

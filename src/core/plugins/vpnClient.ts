@@ -50,10 +50,9 @@ export async function pingProxy(
 	}
 }
 
+import { openExternal } from "../bridge";
+
 export function launchVpnApp(clientPath = "D:\\UniClash\\uniclash.exe") {
-	if (typeof window !== "undefined") {
-		// Try custom URI or fallback
-		const target = `file:///${clientPath.replace(/\\/g, "/")}`;
-		window.open(target, "_blank");
-	}
+	const target = clientPath.includes(":") ? `file:///${clientPath.replace(/\\/g, "/")}` : clientPath;
+	openExternal(target);
 }
