@@ -1,5 +1,5 @@
-import { afterEach, expect, test } from "bun:test";
-import { createVpnMonitor } from "./useVpn";
+import { afterEach, expect, setSystemTime, test } from "bun:test";
+import { createVpnMonitor, vpnMonitorFor } from "./useVpn";
 import { failoverNode, fastestNodes, groupNodes, selectedGroup, type VpnSnapshot, vpnConfig } from "./vpnClient";
 
 const snapshot: VpnSnapshot = {
@@ -15,6 +15,52 @@ const snapshot: VpnSnapshot = {
 const originalFetch = globalThis.fetch;
 afterEach(() => {
 	globalThis.fetch = originalFetch;
+	setSystemTime();
+});
+
+test("候选配置和后台重挂载保留测速结果及倒计时，手动刷新仍然测速", async () => {
+	let probes = 0;
+	globalThis.fetch = (async (url: URL | RequestInfo) => {
+		const path = new URL(String(url)).pathname;
+		if (path.endsWith("/delay")) probes++;
+		return Response.json(
+			path === "/configs" ? { mode: "rule" } : path.endsWith("/delay") ? { delay: 30 } : { proxies: snapshot.proxies },
+		);
+	}) as typeof fetch;
+	const config = vpnConfig({ controllerUrl: "http://127.0.0.1:19090" });
+	const monitor = vpnMonitorFor(config);
+	try {
+		monitor.start();
+		await monitor.refresh();
+		expect(probes).toBe(3);
+		const { nodes, nextAt, updatedAt } = monitor.store.get();
+		for (const fallbackNodes of [["B"], ["B", "C"], ["C"], []]) {
+			monitor.stop();
+			const next = { ...config, fallbackNodes, autoSwitch: true, topCount: 2 };
+			const resumed = vpnMonitorFor(next);
+			expect(resumed).toBe(monitor);
+			resumed.configure(next);
+			resumed.start();
+			resumed.start();
+			await new Promise((resolve) => setTimeout(resolve, 0));
+			expect(probes).toBe(3);
+			expect(resumed.config.fallbackNodes).toEqual(fallbackNodes);
+			expect(resumed.store.get().nodes).toBe(nodes);
+			expect(resumed.store.get().updatedAt).toBe(updatedAt);
+			expect(resumed.store.get().nextAt).toBe(nextAt);
+		}
+		await monitor.refresh();
+		expect(probes).toBe(6);
+		monitor.stop();
+		setSystemTime(monitor.store.get().nextAt + 1);
+		monitor.start();
+		await monitor.refresh();
+		expect(probes).toBe(9);
+	} finally {
+		monitor.stop();
+	}
+	expect(vpnMonitorFor({ ...config, group: "Other" })).not.toBe(monitor);
+	expect(vpnMonitorFor({ ...config, secret: "changed" })).not.toBe(monitor);
 });
 test("settings are bounded and candidates are explicit", () => {
 	const config = vpnConfig({ testInterval: 1, timeoutMs: 999999, fallbackNodes: "B,B，C" });

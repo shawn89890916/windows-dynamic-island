@@ -356,7 +356,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		name: "VPN 代理监控",
 		titleKey: "marketplace.plugins.vpn.name",
 		descKey: "marketplace.plugins.vpn.desc",
-		version: "1.0.1",
+		version: "1.0.2",
 		description: "连接本机 Clash 控制器，实时显示测速结果，按延迟排序查看全部或最快节点，并支持指定候选节点故障切换。",
 		author: {
 			name: "UniClash",

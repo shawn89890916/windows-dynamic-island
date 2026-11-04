@@ -830,7 +830,7 @@
       "name": "VPN 代理监控",
       "titleKey": "marketplace.plugins.vpn.name",
       "descKey": "marketplace.plugins.vpn.desc",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "description": "连接本机 Clash 控制器，实时显示测速结果，按延迟排序查看全部或最快节点，并支持指定候选节点故障切换。",
       "author": {
         "name": "UniClash",
@@ -945,8 +945,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.vpn.island-plugin.json",
-      "sha256": "b487ee877d0ce481157eca6f7eccbe49c1852e2cbd9ac2e751887504f1c9c496",
-      "packageSize": 55628
+      "sha256": "4f0d7eed68e19dc32b5fcedd4e23622b1281b32e9275b04c4e3de1eeced48b26",
+      "packageSize": 55840
     },
     {
       "id": "com.island.im-notifications",
