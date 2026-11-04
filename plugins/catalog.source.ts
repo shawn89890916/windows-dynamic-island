@@ -326,7 +326,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		name: "Obsidian 知识库",
 		titleKey: "marketplace.plugins.obsidian.name",
 		descKey: "marketplace.plugins.obsidian.desc",
-		version: "1.0.2",
+		version: "1.0.3",
 		description: "沉浸式个人知识库直连，支持每日日记打卡、灵动闪念速记、最近笔记快速跳转与库内全局检索。",
 		author: {
 			name: "Obsidian",
@@ -365,6 +365,14 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 				descriptionKey: "marketplace.pluginSettings.obsidian.captureNameFormatDesc",
 				type: "text",
 				default: "YYYY-MM-DD",
+			},
+			{
+				key: "captureFolder",
+				label: "保存到",
+				labelKey: "marketplace.pluginSettings.obsidian.captureFolder",
+				descriptionKey: "marketplace.pluginSettings.obsidian.captureFolderDesc",
+				type: "text",
+				default: "",
 			},
 			{
 				key: "openAfterSave",
@@ -413,7 +421,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		name: "VPN 代理监控",
 		titleKey: "marketplace.plugins.vpn.name",
 		descKey: "marketplace.plugins.vpn.desc",
-		version: "1.0.2",
+		version: "1.0.3",
 		description: "连接本机 Clash 控制器，实时显示测速结果，按延迟排序查看全部或最快节点，并支持指定候选节点故障切换。",
 		author: {
 			name: "UniClash",

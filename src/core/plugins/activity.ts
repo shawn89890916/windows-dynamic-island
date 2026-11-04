@@ -10,6 +10,16 @@ export interface PluginActivity {
 }
 export const pluginActivities = createStore<Record<string, PluginActivity>>({});
 export function setPluginActivity(id: string, value: PluginActivity | null) {
+	const previous = pluginActivities.get()[id];
+	if (!value && !previous) return;
+	if (
+		value &&
+		previous &&
+		(["active", "priority", "left", "right", "progress", "accent"] as const).every((key) =>
+			Object.is(previous[key], value[key]),
+		)
+	)
+		return;
 	pluginActivities.set((s) => {
 		const next = { ...s };
 		if (value) next[id] = value;

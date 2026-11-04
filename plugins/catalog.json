@@ -805,7 +805,7 @@
       "name": "Obsidian 知识库",
       "titleKey": "marketplace.plugins.obsidian.name",
       "descKey": "marketplace.plugins.obsidian.desc",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "description": "沉浸式个人知识库直连，支持每日日记打卡、灵动闪念速记、最近笔记快速跳转与库内全局检索。",
       "author": {
         "name": "Obsidian",
@@ -850,6 +850,14 @@
           "descriptionKey": "marketplace.pluginSettings.obsidian.captureNameFormatDesc",
           "type": "text",
           "default": "YYYY-MM-DD"
+        },
+        {
+          "key": "captureFolder",
+          "label": "保存到",
+          "labelKey": "marketplace.pluginSettings.obsidian.captureFolder",
+          "descriptionKey": "marketplace.pluginSettings.obsidian.captureFolderDesc",
+          "type": "text",
+          "default": ""
         },
         {
           "key": "openAfterSave",
@@ -901,9 +909,9 @@
         "在灵动岛窗口执行代码",
         "使用宿主提供的界面与系统接口"
       ],
-      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.obsidian-1.0.2.island-plugin.json",
-      "sha256": "053b147587c84139cde64ea20c4c01da47c0c0bad747671948e22a6fe8427ee9",
-      "packageSize": 65416
+      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.obsidian-1.0.3.island-plugin.json",
+      "sha256": "d5a8155c55a6ffd2f0b769577f9b3490da50e311bd1d39933c7134aa5dc27f37",
+      "packageSize": 65609
     },
     {
       "id": "com.island.ai-hub",
@@ -990,7 +998,7 @@
       "name": "VPN 代理监控",
       "titleKey": "marketplace.plugins.vpn.name",
       "descKey": "marketplace.plugins.vpn.desc",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "description": "连接本机 Clash 控制器，实时显示测速结果，按延迟排序查看全部或最快节点，并支持指定候选节点故障切换。",
       "author": {
         "name": "UniClash",
@@ -1114,9 +1122,9 @@
         "在灵动岛窗口执行代码",
         "使用宿主提供的界面与系统接口"
       ],
-      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.vpn-1.0.2.island-plugin.json",
-      "sha256": "fc9793d52a809eeb341d9432e2f1804bedb28e3c7223588e1046b1e8195ee479",
-      "packageSize": 56434
+      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.vpn-1.0.3.island-plugin.json",
+      "sha256": "0a9e24a53acc347cdf0ccc95cf7f9769b7ca5aec0630d0aa3d696b1e986c5375",
+      "packageSize": 56442
     },
     {
       "id": "com.island.im-notifications",

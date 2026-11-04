@@ -63,7 +63,7 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 	const [recentNotes, setRecentNotes] = useState<ObsidianNote[]>([]);
 	const [captureText, setCaptureText] = useState("");
 	const [captureError, setCaptureError] = useState(false);
-	const [captureFolder, setCaptureFolder] = useState(String(settings.captureFolder ?? ""));
+	const captureFolder = String(settings.captureFolder ?? "");
 	const [selectedTag, setSelectedTag] = useState<string>(() =>
 		t("marketplace.widgets.pluginExtras.obsidian.tags.inspiration"),
 	);
@@ -160,11 +160,11 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 		t("marketplace.widgets.pluginExtras.obsidian.tags.project"),
 	];
 	const captureFolders = Array.from(
-		new Set([
-			captureFolder,
-			dailyFolder,
-			...recentNotes.map((note) => (note.folder === "根目录" ? "" : note.folder)),
-		].filter(Boolean)),
+		new Set(
+			[captureFolder, dailyFolder, ...recentNotes.map((note) => (note.folder === "根目录" ? "" : note.folder))].filter(
+				Boolean,
+			),
+		),
 	).sort((a, b) => a.localeCompare(b, locale));
 
 	return (
@@ -370,7 +370,6 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 											value={captureFolder}
 											onChange={(event) => {
 												const value = event.target.value;
-												setCaptureFolder(value);
 												updatePluginSettings("com.island.obsidian", { captureFolder: value });
 											}}
 											className="max-w-48 cursor-pointer bg-transparent text-text-faint outline-none"

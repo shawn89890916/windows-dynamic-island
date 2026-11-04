@@ -191,7 +191,7 @@ export async function installPlugin(manifest: PluginManifest, source: InstalledP
 }
 export async function updatePlugin(manifest: PluginManifest) {
 	const installed = installedPlugins.find((plugin) => plugin.manifest.id === manifest.id);
-	if (!installed || installed.source !== "marketplace") throw Error("此插件不能通过市场更新");
+	if (installed?.source !== "marketplace") throw Error("此插件不能通过市场更新");
 	return retainSettings(await downloadPluginPackage(manifest), installed.source);
 }
 export async function installLocalPlugin(content: string) {

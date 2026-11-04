@@ -285,6 +285,8 @@
         dailyDateFormat: "每日日记日期格式（YYYY、MM、DD）",
         dailyFolder: "每日日记存储目录",
         captureNameFormat: "速记命名格式",
+        captureFolder: "保存到",
+        captureFolderDesc: "知识库内的相对目录，留空使用知识库根目录。",
         captureNameFormatDesc: "可用 YYYY、MM、DD、HH、mm、ss 表示日期和时间。默认：YYYY-MM-DD。",
         openAfterSave: "保存后打开 Obsidian",
       },

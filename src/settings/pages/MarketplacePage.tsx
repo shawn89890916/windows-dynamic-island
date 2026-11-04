@@ -18,10 +18,10 @@ import { openExternal } from "../../core/bridge";
 import { useT } from "../../core/i18n";
 import { useCatalog } from "../../core/plugins/catalog";
 import {
+	getInstalledPlugins,
+	getPluginUpdates,
 	installLocalPlugin,
 	installPlugin,
-	getPluginUpdates,
-	getInstalledPlugins,
 	pluginText,
 	renderPluginIcon,
 	togglePlugin,
@@ -322,8 +322,8 @@ export function MarketplacePage() {
 												type="button"
 												disabled={importLoading}
 												onClick={() =>
-												void (updateAvailable ? updateFromCatalog(available) : installFromCatalog(available))
-											}
+													void (updateAvailable ? updateFromCatalog(available) : installFromCatalog(available))
+												}
 												className="flex h-7 items-center gap-1 rounded-lg bg-accent/15 px-2.5 text-[11px] font-medium text-accent hover:bg-accent/25 disabled:opacity-50"
 											>
 												<RefreshCwIcon size={12} />

@@ -205,6 +205,8 @@ export type MessageKey =
 	| "marketplace.pluginSettings.obsidian.dailyDateFormat"
 	| "marketplace.pluginSettings.obsidian.dailyFolder"
 	| "marketplace.pluginSettings.obsidian.captureNameFormat"
+	| "marketplace.pluginSettings.obsidian.captureFolder"
+	| "marketplace.pluginSettings.obsidian.captureFolderDesc"
 	| "marketplace.pluginSettings.obsidian.captureNameFormatDesc"
 	| "marketplace.pluginSettings.obsidian.openAfterSave"
 	| "marketplace.pluginSettings.aiHub.defaultAgent"

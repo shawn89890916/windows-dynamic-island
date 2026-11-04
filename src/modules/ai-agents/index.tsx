@@ -121,26 +121,21 @@ export const aiAgentsModule: IslandModule = {
 /** Brief provider gaps during a Codex rollout rewrite should not hide the island. */
 function useStickyHot(hot?: AgentSessionRef) {
 	const lastHot = useRef<AgentSessionRef | undefined>(hot);
-	const timer = useRef<number | undefined>(undefined);
-	const [retained, setRetained] = useState<AgentSessionRef | undefined>(hot);
-	const signature = hot
-		? `${hot.agent.id}:${hot.session.id}:${hot.session.status}:${hot.session.lastEventAt}:${hot.session.finishedAt ?? ""}`
-		: "";
+	const [retaining, setRetaining] = useState(Boolean(hot));
+	const hasHot = Boolean(hot);
 	if (hot) lastHot.current = hot;
 
 	useEffect(() => {
-		window.clearTimeout(timer.current);
-		if (hot) {
-			lastHot.current = hot;
-			setRetained(hot);
-		} else if (lastHot.current) {
-			timer.current = window.setTimeout(() => {
-				lastHot.current = undefined;
-				setRetained(undefined);
-			}, SESSION_GAP_GRACE_MS);
+		if (hasHot) {
+			setRetaining(true);
+			return;
 		}
-		return () => window.clearTimeout(timer.current);
-	}, [signature]);
+		const timer = window.setTimeout(() => {
+			lastHot.current = undefined;
+			setRetaining(false);
+		}, SESSION_GAP_GRACE_MS);
+		return () => window.clearTimeout(timer);
+	}, [hasHot]);
 
-	return hot ?? retained;
+	return hot ?? (retaining ? lastHot.current : undefined);
 }
