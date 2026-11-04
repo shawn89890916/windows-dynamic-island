@@ -1,4 +1,5 @@
 import { SparklesIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 /**
  * AI Agents module — shows what coding agents are doing.
  *
@@ -27,6 +28,7 @@ const agents: AgentDefinition[] = [claudeAgent, codexAgent, geminiAgent];
 
 /** How long a finished turn keeps the island's attention. */
 const DONE_VISIBLE_MS = 8_000;
+const SESSION_GAP_GRACE_MS = 2_500;
 const RECENT_MS = 30 * 60_000;
 /** Height of the 7-day usage row. */
 const USAGE_CHART = 74;
@@ -76,7 +78,7 @@ export const aiAgentsModule: IslandModule = {
 			s.status === "limitsReset" ||
 			(s.status === "done" && now - (s.finishedAt ?? 0) < DONE_VISIBLE_MS);
 
-		const hot = sessions.find(isHot);
+		const hot = useStickyHot(sessions.find(isHot));
 		const busyCount = sessions.filter((s) => s.session.status === "working" || s.session.status === "waiting").length;
 		const recent = sessions
 			.filter((s) => s.session.status !== "idle" || now - s.session.lastEventAt < RECENT_MS)
@@ -115,3 +117,30 @@ export const aiAgentsModule: IslandModule = {
 		};
 	},
 };
+
+/** Brief provider gaps during a Codex rollout rewrite should not hide the island. */
+function useStickyHot(hot?: AgentSessionRef) {
+	const lastHot = useRef<AgentSessionRef | undefined>(hot);
+	const timer = useRef<number | undefined>(undefined);
+	const [retained, setRetained] = useState<AgentSessionRef | undefined>(hot);
+	const signature = hot
+		? `${hot.agent.id}:${hot.session.id}:${hot.session.status}:${hot.session.lastEventAt}:${hot.session.finishedAt ?? ""}`
+		: "";
+	if (hot) lastHot.current = hot;
+
+	useEffect(() => {
+		window.clearTimeout(timer.current);
+		if (hot) {
+			lastHot.current = hot;
+			setRetained(hot);
+		} else if (lastHot.current) {
+			timer.current = window.setTimeout(() => {
+				lastHot.current = undefined;
+				setRetained(undefined);
+			}, SESSION_GAP_GRACE_MS);
+		}
+		return () => window.clearTimeout(timer.current);
+	}, [signature]);
+
+	return hot ?? retained;
+}

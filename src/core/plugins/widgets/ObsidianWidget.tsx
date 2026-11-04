@@ -49,6 +49,7 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 	const isConfigured = Boolean(vaultPath || rawVaultName);
 	const dailyFolder = String(settings.dailyFolder ?? "");
 	const dailyDateFormat = String(settings.dailyDateFormat || "YYYY-MM-DD");
+	const captureNameFormat = String(settings.captureNameFormat || "YYYY-MM-DD");
 	const openAfterSave = Boolean(settings.openAfterSave);
 	const httpPort = Number(
 		plugins.find((p) => p.manifest.id === "com.island.everything")?.customSettings.httpPort ||
@@ -61,6 +62,7 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 	const [activeTab, setActiveTab] = useState<TabType>("capture");
 	const [recentNotes, setRecentNotes] = useState<ObsidianNote[]>([]);
 	const [captureText, setCaptureText] = useState("");
+	const [captureError, setCaptureError] = useState(false);
 	const [captureFolder, setCaptureFolder] = useState(String(settings.captureFolder ?? ""));
 	const [selectedTag, setSelectedTag] = useState<string>(() =>
 		t("marketplace.widgets.pluginExtras.obsidian.tags.inspiration"),
@@ -118,7 +120,13 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 	const handleCapture = (e?: React.FormEvent) => {
 		e?.preventDefault();
 		if (!captureText.trim()) return;
-		const captureName = quickCaptureName(new Date());
+		let captureName: string;
+		try {
+			captureName = quickCaptureName(new Date(), captureNameFormat);
+		} catch {
+			setCaptureError(true);
+			return;
+		}
 
 		const ok = quickCaptureToObsidian(
 			vaultName,
@@ -130,6 +138,7 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 			openAfterSave,
 		);
 		if (ok) {
+			setCaptureError(false);
 			setCapturedSuccess(true);
 			setCaptureText("");
 			setTimeout(() => setCapturedSuccess(false), 2200);
@@ -386,6 +395,11 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 										</motion.span>
 									)}
 								</div>
+								{captureError && (
+									<p className="px-1 text-[10px] text-red-300">
+										{t("marketplace.widgets.obsidian.invalidCaptureNameFormat")}
+									</p>
+								)}
 							</motion.form>
 						)}
 

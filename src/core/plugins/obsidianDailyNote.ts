@@ -18,11 +18,25 @@ export function dailyNoteName(date: Date, format = "YYYY-MM-DD") {
 	return name.replace(/\\/g, "/");
 }
 
-/** Quick-capture files use a stable prefix and a local date/time stamp. */
-export function quickCaptureName(date: Date) {
-	const datePart = dailyNoteName(date, "YYYY-MM-DD");
-	const time = [date.getHours(), date.getMinutes(), date.getSeconds()]
-		.map((part) => String(part).padStart(2, "0"))
-		.join("-");
-	return `灵动速记-${datePart}-${time}`;
+/** Quick-capture filenames support date and time tokens plus vault-relative folders. */
+export function quickCaptureName(date: Date, format = "YYYY-MM-DD") {
+	const pattern = format.trim() || "YYYY-MM-DD";
+	const tokens: Record<string, string> = {
+		YYYY: String(date.getFullYear()),
+		MM: String(date.getMonth() + 1).padStart(2, "0"),
+		DD: String(date.getDate()).padStart(2, "0"),
+		HH: String(date.getHours()).padStart(2, "0"),
+		mm: String(date.getMinutes()).padStart(2, "0"),
+		ss: String(date.getSeconds()).padStart(2, "0"),
+	};
+	const name = pattern.replace(/YYYY|MM|DD|HH|mm|ss/g, (token) => tokens[token]);
+	if (
+		/[<>:"|?*]/.test(name) ||
+		Array.from(name).some((char) => char.charCodeAt(0) < 32) ||
+		/(^|[\\/])\.{1,2}([\\/]|$)/.test(name) ||
+		/^[\\/]/.test(name) ||
+		/[\\/]$/.test(name)
+	)
+		throw Error("速记命名格式包含不支持的路径或文件名字符");
+	return name.replace(/\\/g, "/");
 }

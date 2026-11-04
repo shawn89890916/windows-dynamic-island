@@ -20,10 +20,13 @@ import { useCatalog } from "../../core/plugins/catalog";
 import {
 	installLocalPlugin,
 	installPlugin,
+	getPluginUpdates,
+	getInstalledPlugins,
 	pluginText,
 	renderPluginIcon,
 	togglePlugin,
 	uninstallPlugin,
+	updatePlugin,
 	useInstalledPlugins,
 } from "../../core/plugins/registry";
 import type { PluginCategory, PluginManifest } from "../../core/plugins/types";
@@ -55,9 +58,12 @@ export function MarketplacePage() {
 	const [importLoading, setImportLoading] = useState(false);
 	const [importError, setImportError] = useState<string | null>(null);
 	const [importSuccess, setImportSuccess] = useState<string | null>(null);
+	const [updatingAll, setUpdatingAll] = useState(false);
+	const [updateSummary, setUpdateSummary] = useState<{ updated: number; failed: number } | null>(null);
 
 	const installed = useInstalledPlugins();
 	const { catalog, error: catalogError, loading: catalogLoading, refresh } = useCatalog();
+	const updatesAvailable = getPluginUpdates(installed, catalog);
 	useEffect(() => {
 		void refresh();
 	}, [refresh]);
@@ -73,6 +79,38 @@ export function MarketplacePage() {
 		} finally {
 			setImportLoading(false);
 		}
+	};
+
+	const updateFromCatalog = async (manifest: PluginManifest) => {
+		setImportError(null);
+		setImportLoading(true);
+		try {
+			await updatePlugin(manifest);
+			setImportSuccess(t("marketplace.ui.pluginUpdated", { name: pluginText(t, manifest.titleKey, manifest.name) }));
+		} catch (err) {
+			setImportError(err instanceof Error ? err.message : String(err));
+		} finally {
+			setImportLoading(false);
+		}
+	};
+
+	const updateAll = async () => {
+		const pending = getPluginUpdates(getInstalledPlugins(), catalog);
+		if (!pending.length) return;
+		setUpdatingAll(true);
+		setUpdateSummary(null);
+		setImportError(null);
+		let updated = 0;
+		for (const item of pending) {
+			try {
+				await updatePlugin(item.manifest);
+				updated += 1;
+			} catch {
+				// Continue so one broken package does not block the remaining updates.
+			}
+		}
+		setUpdateSummary({ updated, failed: pending.length - updated });
+		setUpdatingAll(false);
 	};
 
 	const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -154,6 +192,19 @@ export function MarketplacePage() {
 					<Code2Icon size={14} />
 					<span>{t("marketplace.ui.importTab")}</span>
 				</TabButton>
+				{tab === "installed" && updatesAvailable.length > 0 && (
+					<button
+						type="button"
+						disabled={updatingAll}
+						onClick={() => void updateAll()}
+						className="ml-auto flex items-center gap-1.5 rounded-lg bg-accent/15 px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/25 disabled:opacity-50"
+					>
+						<RefreshCwIcon size={12} className={updatingAll ? "animate-spin" : ""} />
+						{t(updatingAll ? "marketplace.ui.updatingAll" : "marketplace.ui.updateAll", {
+							count: updatesAvailable.length,
+						})}
+					</button>
+				)}
 			</div>
 
 			{/* Tab 1: Explore */}
@@ -218,6 +269,12 @@ export function MarketplacePage() {
 			{/* Tab 2: Installed */}
 			{tab === "installed" && (
 				<div className="flex flex-col gap-3">
+					{updateSummary && (
+						<p className={`text-xs ${updateSummary.failed ? "text-amber-200" : "text-emerald-300"}`}>
+							{t("marketplace.ui.updatesComplete", updateSummary)}
+						</p>
+					)}
+					{importError && <p className="text-xs text-red-300">{importError}</p>}
 					{installed.map((item) => (
 						<Card key={item.manifest.id} className="p-3.5 overflow-hidden transition-all hover:border-white/12">
 							<div className="flex items-center justify-between gap-3 min-w-0">
@@ -264,7 +321,9 @@ export function MarketplacePage() {
 											<button
 												type="button"
 												disabled={importLoading}
-												onClick={() => void installFromCatalog(available)}
+												onClick={() =>
+												void (updateAvailable ? updateFromCatalog(available) : installFromCatalog(available))
+											}
 												className="flex h-7 items-center gap-1 rounded-lg bg-accent/15 px-2.5 text-[11px] font-medium text-accent hover:bg-accent/25 disabled:opacity-50"
 											>
 												<RefreshCwIcon size={12} />
@@ -472,7 +531,9 @@ function PluginCard({
 							>
 								{title}
 							</h4>
-							<span className="block truncate text-[11px] text-text-faint">by {plugin.author.name}</span>
+							<span className="block truncate text-[11px] text-text-faint">
+								{t("marketplace.widgets.generic.author", { author: plugin.author.name })}
+							</span>
 						</div>
 					</div>
 					<span className="flex-none rounded bg-white/6 px-1.5 py-0.2 text-[10px] text-text-faint">

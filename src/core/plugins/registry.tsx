@@ -119,6 +119,16 @@ export function useInstalledPlugins() {
 	);
 }
 
+export function getPluginUpdates(installed: InstalledPlugin[], catalog: PluginManifest[]) {
+	const available = new Map(catalog.map((manifest) => [manifest.id, manifest]));
+	return installed.flatMap((plugin) => {
+		if (plugin.source !== "marketplace") return [];
+		const manifest = available.get(plugin.manifest.id);
+		if (!manifest?.packageUrl || !manifest.sha256 || manifest.sha256 === plugin.packageSha256) return [];
+		return [{ plugin, manifest }];
+	});
+}
+
 async function hash(content: string) {
 	return [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(content)))]
 		.map((b) => b.toString(16).padStart(2, "0"))
@@ -153,14 +163,8 @@ function retainSettings(loaded: LoadedPluginPackage, source: InstalledPlugin["so
 	save();
 	return next;
 }
-export async function installPlugin(manifest: PluginManifest, source: InstalledPlugin["source"] = "marketplace") {
+async function downloadPluginPackage(manifest: PluginManifest): Promise<LoadedPluginPackage> {
 	if (!manifest.packageUrl || !manifest.sha256) throw Error("插件目录中没有独立安装包，请刷新市场");
-	if (
-		!window.confirm(
-			`即将下载并运行“${manifest.name}”插件。插件代码会在灵动岛窗口中执行，可使用该窗口已有的系统接口与数据。请只安装你信任的发布者。继续吗？`,
-		)
-	)
-		throw Error("已取消安装");
 	let loaded: LoadedPluginPackage;
 	if (isTauri) loaded = await command<LoadedPluginPackage>("plugin_download", { descriptor: manifest });
 	else {
@@ -174,7 +178,21 @@ export async function installPlugin(manifest: PluginManifest, source: InstalledP
 		loaded = { ...pkg, sha256 };
 		localStorage.setItem(`island_plugin_package_${manifest.id}`, JSON.stringify(loaded));
 	}
-	return retainSettings(loaded, source);
+	return loaded;
+}
+export async function installPlugin(manifest: PluginManifest, source: InstalledPlugin["source"] = "marketplace") {
+	if (
+		!window.confirm(
+			`即将下载并运行“${manifest.name}”插件。插件代码会在灵动岛窗口中执行，可使用该窗口已有的系统接口与数据。请只安装你信任的发布者。继续吗？`,
+		)
+	)
+		throw Error("已取消安装");
+	return retainSettings(await downloadPluginPackage(manifest), source);
+}
+export async function updatePlugin(manifest: PluginManifest) {
+	const installed = installedPlugins.find((plugin) => plugin.manifest.id === manifest.id);
+	if (!installed || installed.source !== "marketplace") throw Error("此插件不能通过市场更新");
+	return retainSettings(await downloadPluginPackage(manifest), installed.source);
 }
 export async function installLocalPlugin(content: string) {
 	const pkg = inspectPluginPackage(content);

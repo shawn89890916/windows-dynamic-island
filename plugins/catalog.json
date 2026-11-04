@@ -59,18 +59,21 @@
         {
           "key": "workDuration",
           "label": "专注时长 (分钟)",
+          "labelKey": "marketplace.pluginSettings.pomodoro.workDuration",
           "type": "number",
           "default": 25
         },
         {
           "key": "breakDuration",
           "label": "休息时长 (分钟)",
+          "labelKey": "marketplace.pluginSettings.pomodoro.breakDuration",
           "type": "number",
           "default": 5
         },
         {
           "key": "autoStartBreak",
           "label": "专注结束后自动开始休息",
+          "labelKey": "marketplace.pluginSettings.pomodoro.autoStartBreak",
           "type": "boolean",
           "default": true
         }
@@ -107,8 +110,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.pomodoro.island-plugin.json",
-      "sha256": "5e892cbfb05f9c8dcdc552d2c08bcf1f35086b95959c8040a69483fd298ca644",
-      "packageSize": 45963
+      "sha256": "480773d3dee10fdd98c900796a900dc9630d8c0f72efb49c6232a3980e433ccb",
+      "packageSize": 46152
     },
     {
       "id": "com.island.weather",
@@ -134,20 +137,24 @@
         {
           "key": "city",
           "label": "城市名称 (例如：Beijing / Shanghai / Tokyo)",
+          "labelKey": "marketplace.pluginSettings.weather.city",
           "type": "text",
           "default": "Beijing"
         },
         {
           "key": "unit",
           "label": "温标单位",
+          "labelKey": "marketplace.pluginSettings.weather.unit",
           "type": "select",
           "options": [
             {
               "label": "摄氏度 (°C)",
+              "labelKey": "marketplace.pluginSettings.weather.celsius",
               "value": "celsius"
             },
             {
               "label": "华氏度 (°F)",
+              "labelKey": "marketplace.pluginSettings.weather.fahrenheit",
               "value": "fahrenheit"
             }
           ],
@@ -156,6 +163,7 @@
         {
           "key": "alertRain",
           "label": "降雨降雪恶劣天气主动提醒",
+          "labelKey": "marketplace.pluginSettings.weather.alertRain",
           "type": "boolean",
           "default": true
         }
@@ -191,8 +199,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.weather.island-plugin.json",
-      "sha256": "644dd84e2590899899a05971aca9899ae9d80e7403029976981b0bfaffe267b6",
-      "packageSize": 49144
+      "sha256": "5189c70f7c116604f9f7c281840284b33903eeb1a213f410a4febac93e331fa8",
+      "packageSize": 49459
     },
     {
       "id": "com.island.work-countdown",
@@ -218,18 +226,21 @@
         {
           "key": "offWorkTime",
           "label": "下班时间 (HH:mm)",
+          "labelKey": "marketplace.pluginSettings.workCountdown.offWorkTime",
           "type": "text",
           "default": "18:00"
         },
         {
           "key": "workStartTime",
           "label": "上班时间 (HH:mm)",
+          "labelKey": "marketplace.pluginSettings.workCountdown.workStartTime",
           "type": "text",
           "default": "09:00"
         },
         {
           "key": "weekendCountdown",
           "label": "周五下午展示周末倒计时",
+          "labelKey": "marketplace.pluginSettings.workCountdown.weekendCountdown",
           "type": "boolean",
           "default": true
         }
@@ -262,8 +273,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.work-countdown.island-plugin.json",
-      "sha256": "4d29c06291ef700397630b11855095017620b163097349cbf985fa06ca4600ce",
-      "packageSize": 39799
+      "sha256": "6483847391ca9c1f871dca60528a8dfebcf5f22b437df03d44073ce110ed82c7",
+      "packageSize": 40004
     },
     {
       "id": "com.island.quick-memo",
@@ -289,20 +300,24 @@
         {
           "key": "autoClearDone",
           "label": "自动清理已勾选的待办项",
+          "labelKey": "marketplace.pluginSettings.memo.autoClearDone",
           "type": "boolean",
           "default": false
         },
         {
           "key": "fontSize",
           "label": "便签字体大小",
+          "labelKey": "marketplace.pluginSettings.memo.fontSize",
           "type": "select",
           "options": [
             {
               "label": "标准 (13px)",
+              "labelKey": "marketplace.pluginSettings.memo.normal",
               "value": "normal"
             },
             {
               "label": "大号 (15px)",
+              "labelKey": "marketplace.pluginSettings.memo.large",
               "value": "large"
             }
           ],
@@ -337,8 +352,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.quick-memo.island-plugin.json",
-      "sha256": "21214046696baf03aa76c2d5e77d36f7caad26bed8196968e2cc834af6cb36ea",
-      "packageSize": 40045
+      "sha256": "94a43e014b537f7a823564c2d0e9cc029a8f61746a09d46e086522937c279dd0",
+      "packageSize": 40261
     },
     {
       "id": "com.island.crypto-ticker",
@@ -364,12 +379,14 @@
         {
           "key": "symbols",
           "label": "监控代码（逗号分隔，如 BTC, ETH, AAPL）",
+          "labelKey": "marketplace.pluginSettings.crypto.symbols",
           "type": "text",
           "default": "BTC, ETH"
         },
         {
           "key": "refreshInterval",
           "label": "刷新频率 (秒)",
+          "labelKey": "marketplace.pluginSettings.crypto.refreshInterval",
           "type": "number",
           "default": 30
         }
@@ -406,8 +423,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.crypto-ticker.island-plugin.json",
-      "sha256": "3a39160a662ce8516d4ea0dad6ae787510e97077f0d5f3a836616cf8feefa9d0",
-      "packageSize": 46325
+      "sha256": "e8f2394661b1dbf63d5fef52fd5a9ea41805798e1593bd6869a209a7a80f3234",
+      "packageSize": 46479
     },
     {
       "id": "com.island.steam-friends",
@@ -433,12 +450,14 @@
         {
           "key": "steamApiKey",
           "label": "Steam Web API Key",
+          "labelKey": "marketplace.pluginSettings.steam.apiKey",
           "type": "password",
           "default": ""
         },
         {
           "key": "steamId64",
           "label": "SteamID64",
+          "labelKey": "marketplace.pluginSettings.steam.steamId64",
           "type": "text",
           "default": ""
         }
@@ -487,8 +506,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.steam-friends.island-plugin.json",
-      "sha256": "25c73823bb7adaefcef5a4f36c179e8a6e1d64fd2f1252a97d8a9ffa952afb46",
-      "packageSize": 47060
+      "sha256": "dbacf99b3b0819a6d9ccb3021eb7d00aa46ade40c6c8ca6d39fe3aa4f038e8b7",
+      "packageSize": 47205
     },
     {
       "id": "com.island.music-story",
@@ -634,12 +653,14 @@
         {
           "key": "mcpEndpoint",
           "label": "MCP Streamable HTTP 服务端点",
+          "labelKey": "marketplace.pluginSettings.navopath.endpoint",
           "type": "text",
           "default": "https://navopath-mcp.shawn89890916.workers.dev/mcp"
         },
         {
           "key": "token",
           "label": "NavoPath MCP 凭证 (nvp_...)",
+          "labelKey": "marketplace.pluginSettings.navopath.token",
           "type": "password",
           "default": ""
         }
@@ -690,8 +711,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.navopath.island-plugin.json",
-      "sha256": "37a904e54c0e4afc888d1ce8a2b700108e4d762596bb8d05e86b7239309ea21f",
-      "packageSize": 51562
+      "sha256": "0493341ebed654fb2069d11a9ebc20bfd35c48344d0bbc8b3f75cc16c023e2e3",
+      "packageSize": 51711
     },
     {
       "id": "com.island.everything",
@@ -718,6 +739,7 @@
         {
           "key": "httpPort",
           "label": "Everything HTTP 服务端口",
+          "labelKey": "marketplace.pluginSettings.everything.httpPort",
           "type": "number",
           "default": 8080
         }
@@ -775,15 +797,15 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.everything.island-plugin.json",
-      "sha256": "b4ded41ccd01b6878f10c9e7263e0efa808dfe99398032bf9992d2a4415953bc",
-      "packageSize": 58247
+      "sha256": "f9687211d54f8e0da6b481cb337622bad2e4a593e20ea6174e709ba1c74fd9a2",
+      "packageSize": 58307
     },
     {
       "id": "com.island.obsidian",
       "name": "Obsidian 知识库",
       "titleKey": "marketplace.plugins.obsidian.name",
       "descKey": "marketplace.plugins.obsidian.desc",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "description": "沉浸式个人知识库直连，支持每日日记打卡、灵动闪念速记、最近笔记快速跳转与库内全局检索。",
       "author": {
         "name": "Obsidian",
@@ -803,25 +825,36 @@
         {
           "key": "vaultPath",
           "label": "Obsidian 仓库绝对路径 (推荐)",
+          "labelKey": "marketplace.pluginSettings.obsidian.vaultPath",
           "type": "text",
           "default": ""
         },
         {
           "key": "dailyDateFormat",
           "label": "日记命名格式（YYYY 年 / MM 月 / DD 日）",
+          "labelKey": "marketplace.pluginSettings.obsidian.dailyDateFormat",
           "type": "text",
           "default": "YYYY-MM-DD"
         },
         {
           "key": "dailyFolder",
           "label": "每日日记存储目录",
+          "labelKey": "marketplace.pluginSettings.obsidian.dailyFolder",
           "type": "text",
           "default": ""
         },
         {
+          "key": "captureNameFormat",
+          "label": "速记命名格式",
+          "labelKey": "marketplace.pluginSettings.obsidian.captureNameFormat",
+          "descriptionKey": "marketplace.pluginSettings.obsidian.captureNameFormatDesc",
+          "type": "text",
+          "default": "YYYY-MM-DD"
+        },
+        {
           "key": "openAfterSave",
           "label": "保存后打开 Obsidian",
-          "labelKey": "marketplace.plugins.obsidian.openAfterSave",
+          "labelKey": "marketplace.pluginSettings.obsidian.openAfterSave",
           "type": "boolean",
           "default": false
         }
@@ -868,9 +901,9 @@
         "在灵动岛窗口执行代码",
         "使用宿主提供的界面与系统接口"
       ],
-      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.obsidian-1.0.1.island-plugin.json",
-      "sha256": "a0dc1df6e4938e71bfc2e2d713434437a54dad94ebf3c69ecc81743863e98550",
-      "packageSize": 64195
+      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.obsidian-1.0.2.island-plugin.json",
+      "sha256": "053b147587c84139cde64ea20c4c01da47c0c0bad747671948e22a6fe8427ee9",
+      "packageSize": 65416
     },
     {
       "id": "com.island.ai-hub",
@@ -898,6 +931,7 @@
         {
           "key": "defaultAgent",
           "label": "默认聚焦智能体",
+          "labelKey": "marketplace.pluginSettings.aiHub.defaultAgent",
           "type": "select",
           "options": [
             {
@@ -948,8 +982,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.ai-hub.island-plugin.json",
-      "sha256": "a74f02fe375b5ae7fa766ebd26e7371893ae0c12dba2875efdc11b690887f407",
-      "packageSize": 47319
+      "sha256": "acdcc884adc948368e0ef06934c48551fcc9def9120323106a89d3c9986f56b9",
+      "packageSize": 47378
     },
     {
       "id": "com.island.vpn",
@@ -977,60 +1011,70 @@
         {
           "key": "controllerUrl",
           "label": "External Controller 地址（请与混合代理端口区分）",
+          "labelKey": "marketplace.pluginSettings.vpn.controllerUrl",
           "type": "text",
           "default": "http://127.0.0.1:9090"
         },
         {
           "key": "controllerSecret",
           "label": "控制器 Secret（客户端启用密钥时填写）",
+          "labelKey": "marketplace.pluginSettings.vpn.controllerSecret",
           "type": "password",
           "default": ""
         },
         {
           "key": "proxyGroup",
           "label": "手动策略组名称（留空自动选择）",
+          "labelKey": "marketplace.pluginSettings.vpn.proxyGroup",
           "type": "text",
           "default": ""
         },
         {
           "key": "testInterval",
           "label": "测速间隔（秒，15–3600，完成本轮后计时）",
+          "labelKey": "marketplace.pluginSettings.vpn.testInterval",
           "type": "number",
           "default": 60
         },
         {
           "key": "timeoutMs",
           "label": "单节点超时（毫秒，1000–15000）",
+          "labelKey": "marketplace.pluginSettings.vpn.timeoutMs",
           "type": "number",
           "default": 4000
         },
         {
           "key": "topCount",
           "label": "显示最快节点数（1–10）",
+          "labelKey": "marketplace.pluginSettings.vpn.topCount",
           "type": "number",
           "default": 5
         },
         {
           "key": "testUrl",
           "label": "测速网址",
+          "labelKey": "marketplace.pluginSettings.vpn.testUrl",
           "type": "text",
           "default": "https://www.gstatic.com/generate_204"
         },
         {
           "key": "autoSwitch",
           "label": "当前节点不可用时自动切换",
+          "labelKey": "marketplace.pluginSettings.vpn.autoSwitch",
           "type": "boolean",
           "default": false
         },
         {
           "key": "fallbackNodes",
           "label": "候选节点完整名称（逗号分隔，也可在节点列表勾选）",
+          "labelKey": "marketplace.pluginSettings.vpn.fallbackNodes",
           "type": "text",
           "default": ""
         },
         {
           "key": "clientPath",
           "label": "客户端启动路径",
+          "labelKey": "marketplace.pluginSettings.vpn.clientPath",
           "type": "text",
           "default": "D:\\UniClash\\uniclash.exe"
         }
@@ -1071,8 +1115,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.vpn-1.0.2.island-plugin.json",
-      "sha256": "4f0d7eed68e19dc32b5fcedd4e23622b1281b32e9275b04c4e3de1eeced48b26",
-      "packageSize": 55840
+      "sha256": "fc9793d52a809eeb341d9432e2f1804bedb28e3c7223588e1046b1e8195ee479",
+      "packageSize": 56434
     },
     {
       "id": "com.island.im-notifications",
@@ -1100,14 +1144,17 @@
         {
           "key": "defaultApp",
           "label": "默认回复目标",
+          "labelKey": "marketplace.pluginSettings.im.defaultApp",
           "type": "select",
           "options": [
             {
               "label": "微信 (WeChat)",
+              "labelKey": "marketplace.pluginSettings.im.wechat",
               "value": "wechat"
             },
             {
               "label": "腾讯 QQ",
+              "labelKey": "marketplace.pluginSettings.im.qq",
               "value": "qq"
             }
           ],
@@ -1142,8 +1189,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.im-notifications.island-plugin.json",
-      "sha256": "5621f19533bbb471f6348b91fecc01081d0d054099931d9bf2a36b58129db91a",
-      "packageSize": 50111
+      "sha256": "e44e529ac63478ec40d535099ffd3400648b098c270501e870b8102f20046a84",
+      "packageSize": 50261
     }
   ]
 }

@@ -9,7 +9,7 @@ export interface PluginSettingField {
 	description?: string;
 	descriptionKey?: MessageKey;
 	type: "text" | "number" | "boolean" | "select" | "password";
-	options?: { label: string; value: string }[];
+	options?: { label: string; labelKey?: MessageKey; value: string }[];
 	default: unknown;
 }
 

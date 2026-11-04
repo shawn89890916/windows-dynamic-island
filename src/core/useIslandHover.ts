@@ -85,7 +85,10 @@ export function useIslandHover({ expandOnHover, onOpen, onClose }: Options) {
 		resizedAt.current = Date.now();
 	}, []);
 
-	const expand = useCallback(() => transition(true, true), [transition]);
+	const expand = useCallback(() => {
+		resizedAt.current = Date.now();
+		transition(true, true);
+	}, [transition]);
 	const collapse = useCallback(() => {
 		holds.current.clear();
 		transition(false, true);

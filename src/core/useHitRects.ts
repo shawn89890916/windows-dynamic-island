@@ -6,18 +6,16 @@ const PAD = 6;
 /**
  * Keeps the backend informed about which parts of the transparent window are
  * interactive. Every element marked with `data-hit` counts; the rects follow
- * animations because they are re-measured every few frames.
+ * animations because they are re-measured on each animation frame.
  */
 export function useHitRects(blurEffect: string, roundedTop: boolean, radius: number) {
 	useEffect(() => {
 		if (!isTauri) return;
-		let frame = 0;
 		let raf = 0;
 		let last = "";
 
 		const tick = () => {
 			raf = requestAnimationFrame(tick);
-			if (frame++ % 3 !== 0) return;
 			const rects = Array.from(document.querySelectorAll<HTMLElement>("[data-hit]")).map((el) => {
 				const r = el.getBoundingClientRect();
 				return {

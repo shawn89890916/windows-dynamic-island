@@ -27,6 +27,7 @@ import {
 	renderPluginIcon,
 	togglePlugin,
 	uninstallPlugin,
+	updatePlugin,
 	updatePluginSettings,
 	useInstalledPlugins,
 } from "../../core/plugins/registry";
@@ -70,6 +71,8 @@ export function PluginPage({
 	const [confirmUninstall, setConfirmUninstall] = useState(false);
 	const [installing, setInstalling] = useState(false);
 	const [installError, setInstallError] = useState<string | null>(null);
+	const [updating, setUpdating] = useState(false);
+	const [updateError, setUpdateError] = useState<string | null>(null);
 
 	// Diagnostic testing states
 	const [diagLoading, setDiagLoading] = useState(false);
@@ -90,9 +93,13 @@ export function PluginPage({
 		return <Navigate to="/marketplace" replace />;
 	}
 
-	const title = pluginText(t, manifest.titleKey, manifest.name);
-	const desc = pluginText(t, manifest.descKey, manifest.description);
-	const guide = manifest.guide || catalogItem?.guide;
+	const settingsManifest = catalogItem || manifest;
+	const title = pluginText(t, settingsManifest.titleKey, settingsManifest.name);
+	const desc = pluginText(t, settingsManifest.descKey, settingsManifest.description);
+	const guide = settingsManifest.guide || catalogItem?.guide;
+	const updateAvailable = Boolean(
+		plugin?.source === "marketplace" && catalogItem?.sha256 && plugin.packageSha256 !== catalogItem.sha256,
+	);
 
 	const handleSettingChange = (key: string, value: unknown) => {
 		const updated = { ...formValues, [key]: value };
@@ -105,9 +112,9 @@ export function PluginPage({
 	};
 
 	const handleResetDefaults = () => {
-		if (!manifest.settings) return;
+		if (!settingsManifest.settings) return;
 		const defaults: Record<string, unknown> = {};
-		for (const s of manifest.settings) {
+		for (const s of settingsManifest.settings) {
 			defaults[s.key] = s.default;
 		}
 		setFormValues(defaults);
@@ -115,6 +122,19 @@ export function PluginPage({
 			updatePluginSettings(plugin.manifest.id, defaults);
 			setSaveNotification(true);
 			setTimeout(() => setSaveNotification(false), 2000);
+		}
+	};
+
+	const updateCurrentPlugin = async () => {
+		if (!catalogItem) return;
+		setUpdating(true);
+		setUpdateError(null);
+		try {
+			await updatePlugin(catalogItem);
+		} catch (error) {
+			setUpdateError(error instanceof Error ? error.message : String(error));
+		} finally {
+			setUpdating(false);
 		}
 	};
 
@@ -172,8 +192,19 @@ export function PluginPage({
 					<div className="flex flex-wrap items-center gap-2">
 						<h1 className="text-xl font-bold tracking-tight text-text">{title}</h1>
 						<span className="rounded-full bg-white/8 px-2 py-0.5 text-[11px] font-medium text-text-dim">
-							v{manifest.version}
+							v{plugin?.manifest.version ?? manifest.version}
 						</span>
+						{updateAvailable && (
+							<button
+								type="button"
+								disabled={updating}
+								onClick={() => void updateCurrentPlugin()}
+								className="flex h-6 items-center gap-1 rounded-lg bg-accent/15 px-2.5 text-[11px] font-medium text-accent hover:bg-accent/25 disabled:opacity-50"
+							>
+								<RefreshCwIcon size={11} className={updating ? "animate-spin" : ""} />
+								{t(updating ? "marketplace.ui.updatingPlugin" : "marketplace.ui.update")}
+							</button>
+						)}
 						<span className="rounded-full bg-white/5 px-2 py-0.5 text-[11px] font-medium text-text-faint">
 							{t(plugin?.source === "local" ? "marketplace.ui.sourceLocalPlugin" : "marketplace.ui.sourceOfficial")}
 						</span>
@@ -209,6 +240,7 @@ export function PluginPage({
 						)}
 					</div>
 				</div>
+				{updateError && <p className="mt-2 text-xs text-red-300">{updateError}</p>}
 			</div>
 
 			{/* If not installed, provide prompt & install button */}
@@ -275,7 +307,7 @@ export function PluginPage({
 					</Card>
 
 					{/* Card 2: Parameters & Settings Form */}
-					{manifest.settings && manifest.settings.length > 0 && (
+					{settingsManifest.settings && settingsManifest.settings.length > 0 && (
 						<div className="flex flex-col gap-1.5">
 							<div className="flex items-center justify-between px-1">
 								<h2 className="text-xs font-bold tracking-wider text-text-faint uppercase">
@@ -292,7 +324,7 @@ export function PluginPage({
 							</div>
 
 							<Card>
-								{manifest.settings.map((field) => (
+								{settingsManifest.settings.map((field) => (
 									<SettingRow
 										key={field.key}
 										field={field}
@@ -575,7 +607,7 @@ function SettingRow({
 				<Select value={String(value ?? "")} onChange={(e) => onChange(e.target.value)}>
 					{field.options?.map((opt) => (
 						<option key={opt.value} value={opt.value}>
-							{opt.label}
+							{opt.labelKey ? t(opt.labelKey) : opt.label}
 						</option>
 					))}
 				</Select>
