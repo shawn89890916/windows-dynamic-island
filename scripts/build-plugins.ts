@@ -110,6 +110,7 @@ const entries: Record<string, string> = {
 	"com.island.ai-hub": "AiHubWidget",
 	"com.island.vpn": "VpnWidget",
 	"com.island.im-notifications": "ImNotificationWidget",
+	"com.island.desktop-glass": "DesktopGlassWidget",
 };
 const diagnosticNames: Record<string, string> = {
 	"com.island.navopath": "diagnoseNavoPath",
@@ -134,7 +135,7 @@ for (const source of MARKETPLACE_CATALOG) {
 		background = `import {useVpnMonitor} from '../../src/core/plugins/useVpn';import {useT} from '../../src/core/i18n';function Background({settings}){const value=useVpnMonitor(settings);const t=useT();React.useEffect(()=>{sdk.setPluginActivity('${source.id}',{left:value.snapshot?.proxies[value.group]?.now||'VPN',right:t(value.busy?'marketplace.widgets.vpn.testing':value.error?'marketplace.widgets.vpn.statusError':'marketplace.widgets.vpn.statusMonitoring')});},[value,t]);return null;}`;
 	if (source.id === "com.island.pomodoro")
 		background = `import {usePomodoroLive,startPomodoroBackground} from '../../src/core/plugins/pluginActivityStore';function Background({settings}){const value=usePomodoroLive();React.useEffect(()=>startPomodoroBackground(),[]);React.useEffect(()=>value.setDurations(Number(settings.workDuration??25),Number(settings.breakDuration??5)),[settings.workDuration,settings.breakDuration,value.setDurations]);React.useEffect(()=>{sdk.setPluginActivity('${source.id}',{active:value.isRunning,priority:85,left:value.mode==='work'?'专注':'休息',right:value.formattedTime,progress:value.progressPercent});},[value.isRunning,value.mode,value.formattedTime,value.progressPercent]);return null;}`;
-	const entry = `import * as React from 'react';import {${widget}} from '../../src/core/plugins/widgets/${widget}';${diagnose ? `import {${diagnose}} from '../diagnostics';` : ""}const sdk=globalThis.__ISLAND_PLUGIN_SDK__;${background}sdk.registerPlugin(${JSON.stringify(source.id)},${JSON.stringify(manifest.version)},{Panel:${widget}${background ? ",Background" : ""}${diagnose ? `,diagnose:${diagnose}` : ""}});`;
+	const entry = `import * as React from 'react';import {${widget}${source.id === "com.island.desktop-glass" ? ",DesktopGlassBackground" : ""}} from '../../src/core/plugins/widgets/${widget}';${diagnose ? `import {${diagnose}} from '../diagnostics';` : ""}const sdk=globalThis.__ISLAND_PLUGIN_SDK__;${background}sdk.registerPlugin(${JSON.stringify(source.id)},${JSON.stringify(manifest.version)},{Panel:${widget}${source.id === "com.island.desktop-glass" ? ",Background:DesktopGlassBackground" : background ? ",Background" : ""}${diagnose ? `,diagnose:${diagnose}` : ""}});`;
 	const entryPath = join(generated, `${source.id}.tsx`);
 	await writeFile(entryPath, entry);
 	const result = await Bun.build({

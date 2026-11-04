@@ -257,6 +257,10 @@
         name: "VPN & Proxy HUD",
         desc: "Live network acceleration and proxy monitor connected directly to UniClash / Clash core.",
       },
+      desktopGlass: {
+        name: "Desktop Glass",
+        desc: "Optional desktop backdrop blur for the island, managed as an independent plugin.",
+      },
       im: {
         name: "WeChat & QQ Hub",
         desc: "WeChat and QQ desktop message aggregator with dual-online status, unread preview, and flash reply.",
@@ -269,6 +273,10 @@
         author: "By {author}",
         official: "Official Market",
         community: "Community Extension",
+      },
+      desktopGlass: {
+        title: "Desktop backdrop",
+        desc: "Choose the background effect used behind the island.",
       },
       pomodoro: {
         focus: "Deep Focus",

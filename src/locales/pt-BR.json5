@@ -238,6 +238,10 @@
         name: "Monitor de VPN e Proxy",
         desc: "Monitoramento em tempo real de aceleração de rede e proxy conectado ao núcleo UniClash / Clash.",
       },
+      desktopGlass: {
+        name: "Efeito de vidro",
+        desc: "Desfoque opcional do plano de fundo atrás da ilha, gerenciado como plugin independente.",
+      },
       im: {
         name: "Central WeChat e QQ",
         desc: "Agregador de mensagens para WeChat e QQ com status duplo online e resposta rápida.",
@@ -250,6 +254,10 @@
         author: "Por {author}",
         official: "Loja Oficial",
         community: "Extensão da Comunidade",
+      },
+      desktopGlass: {
+        title: "Plano de fundo da área de trabalho",
+        desc: "Escolha o efeito de plano de fundo usado atrás da ilha.",
       },
       pomodoro: {
         focus: "Foco Total",

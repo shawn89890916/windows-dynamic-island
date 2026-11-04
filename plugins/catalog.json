@@ -1,8 +1,40 @@
 {
   "formatVersion": 1,
   "sdkVersion": 1,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "plugins": [
+    {
+      "id": "com.island.desktop-glass",
+      "name": "桌面毛玻璃",
+      "titleKey": "marketplace.plugins.desktopGlass.name",
+      "descKey": "marketplace.plugins.desktopGlass.desc",
+      "version": "1.0.0",
+      "description": "为灵动岛启用可选的桌面背景模糊效果，可独立安装、更新或卸载。",
+      "author": {
+        "name": "Shawn Chen",
+        "url": "https://github.com/shawn89890916"
+      },
+      "category": "tools",
+      "icon": "Sparkles",
+      "accentColor": "#A78BFA",
+      "tags": [
+        "毛玻璃",
+        "背景模糊",
+        "外观"
+      ],
+      "expandedSize": {
+        "width": 580,
+        "height": 185
+      },
+      "sdkVersion": 1,
+      "permissions": [
+        "在灵动岛窗口执行代码",
+        "使用宿主提供的界面与系统接口"
+      ],
+      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.desktop-glass.island-plugin.json",
+      "sha256": "559af89b7f28f68c969c6f63212f39433d0fe86dc7b450f049a7d66f5b6d7fae",
+      "packageSize": 28568
+    },
     {
       "id": "com.island.pomodoro",
       "name": "番茄钟",
@@ -159,8 +191,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.weather.island-plugin.json",
-      "sha256": "9e333d09fa65c8fcc34e694dcef5fe5d57835bada76d4cfc155f669d9436d0c1",
-      "packageSize": 48820
+      "sha256": "4fbd9b32d5259ccfc2effb0d9499710127767d1c32fe4908df376c51162f3aa0",
+      "packageSize": 49130
     },
     {
       "id": "com.island.work-countdown",
@@ -374,8 +406,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.crypto-ticker.island-plugin.json",
-      "sha256": "81e5ce00b18e5406598f94ae252cc6af1f296f17f2ccbf61adc98de3550c37b8",
-      "packageSize": 45815
+      "sha256": "b5e9702afa3b5295396f0dd4092ace226e15b3d4c1f0b67ed93753977d62a04a",
+      "packageSize": 46311
     },
     {
       "id": "com.island.steam-friends",
@@ -455,8 +487,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.steam-friends.island-plugin.json",
-      "sha256": "1efa5ea5c4ad5b5662dbd885029aaf0b511403906bd28a625a91968e2a37df6d",
-      "packageSize": 46291
+      "sha256": "35036d4ef1d859747a0e4c31f16c0a3c5d5139830998c12f1f1e490427e266d2",
+      "packageSize": 47046
     },
     {
       "id": "com.island.navopath",
@@ -539,8 +571,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.navopath.island-plugin.json",
-      "sha256": "a7d2fc267d42b00f7dc64317b62b06991f26def473f74eed0a035cc03b1b89fe",
-      "packageSize": 51486
+      "sha256": "8ae5507073ef87edc8184fac1cb4b634d25386a014b6ba39e2f2442115e81a16",
+      "packageSize": 51527
     },
     {
       "id": "com.island.everything",
@@ -624,8 +656,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.everything.island-plugin.json",
-      "sha256": "4f7ac710181c0e9782befa3c0d92a01694ed484260b8b966ffd61e5e69c1ea49",
-      "packageSize": 57591
+      "sha256": "b4ded41ccd01b6878f10c9e7263e0efa808dfe99398032bf9992d2a4415953bc",
+      "packageSize": 58247
     },
     {
       "id": "com.island.obsidian",
@@ -711,8 +743,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.obsidian.island-plugin.json",
-      "sha256": "755814058e5a6b32fb10a71f4fdcb10010fbd8d784603fd294e05d0898775ce5",
-      "packageSize": 62653
+      "sha256": "dad733ea9a5d3fef71062304ad16330b54eee05b5ffbb401abdaafafc4f1f126",
+      "packageSize": 63092
     },
     {
       "id": "com.island.ai-hub",
@@ -790,8 +822,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.ai-hub.island-plugin.json",
-      "sha256": "23077ebac7dba39df1353dbddad417df3aa08616939e8d53d5ce67a7b92f758d",
-      "packageSize": 46832
+      "sha256": "a74f02fe375b5ae7fa766ebd26e7371893ae0c12dba2875efdc11b690887f407",
+      "packageSize": 47319
     },
     {
       "id": "com.island.vpn",
@@ -913,8 +945,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.vpn.island-plugin.json",
-      "sha256": "f00966321e841b072c6ef61344ae2089ff27a805edf7cc1c861529ca1d6c8495",
-      "packageSize": 55223
+      "sha256": "b487ee877d0ce481157eca6f7eccbe49c1852e2cbd9ac2e751887504f1c9c496",
+      "packageSize": 55628
     },
     {
       "id": "com.island.im-notifications",
@@ -984,8 +1016,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.im-notifications.island-plugin.json",
-      "sha256": "3d2627b4e8e0bc72358cc3fc2e358fa2e074e19a472dd5a5479d3069a4764e1a",
-      "packageSize": 49877
+      "sha256": "5621f19533bbb471f6348b91fecc01081d0d054099931d9bf2a36b58129db91a",
+      "packageSize": 50111
     }
   ]
 }

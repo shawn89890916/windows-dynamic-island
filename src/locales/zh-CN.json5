@@ -253,6 +253,10 @@
         name: "VPN 代理监控",
         desc: "实时代理与网络加速监控，直连 UniClash / Clash 核心，毫秒级测速与上下行速率动态波形看板。",
       },
+      desktopGlass: {
+        name: "桌面毛玻璃",
+        desc: "为灵动岛启用可选的桌面背景模糊效果，可独立安装、更新或卸载。",
+      },
       im: {
         name: "微信 · QQ 消息中枢",
         desc: "微信与 QQ 桌面消息聚合，支持双端在线状态、未读动态预览、一键唤起客户端与灵动闪速回复。",
@@ -265,6 +269,10 @@
         author: "作者：{author}",
         official: "官方市场",
         community: "社区扩展",
+      },
+      desktopGlass: {
+        title: "桌面背景效果",
+        desc: "选择灵动岛背后的桌面效果强度。",
       },
       pomodoro: {
         focus: "深度专注",

@@ -2,6 +2,20 @@ import type { PluginManifest } from "../src/core/plugins/types";
 
 export const MARKETPLACE_CATALOG: PluginManifest[] = [
 	{
+		id: "com.island.desktop-glass",
+		name: "桌面毛玻璃",
+		titleKey: "marketplace.plugins.desktopGlass.name",
+		descKey: "marketplace.plugins.desktopGlass.desc",
+		version: "1.0.0",
+		description: "为灵动岛启用可选的桌面背景模糊效果，可独立安装、更新或卸载。",
+		author: { name: "Shawn Chen", url: "https://github.com/shawn89890916" },
+		category: "tools",
+		icon: "Sparkles",
+		accentColor: "#A78BFA",
+		tags: ["毛玻璃", "背景模糊", "外观"],
+		expandedSize: { width: 580, height: 185 },
+	},
+	{
 		id: "com.island.pomodoro",
 		name: "番茄钟",
 		titleKey: "marketplace.plugins.pomodoro.name",

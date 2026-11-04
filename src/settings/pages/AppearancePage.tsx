@@ -158,23 +158,6 @@ export function AppearancePage({ values }: { values: Record<string, unknown> }) 
 			</motion.section>
 
 			<Card>
-				<Block>
-					<Row label={t("appearance.blur.label")} desc={t("appearance.blur.desc")} />
-					<Segmented
-						className="max-w-full flex-wrap"
-						options={[
-							{ value: "none", label: t("appearance.blur.none") },
-							{ value: "subtle", label: t("appearance.blur.subtle") },
-							{ value: "moderate", label: t("appearance.blur.moderate") },
-							{ value: "ambient", label: t("appearance.blur.ambient") },
-						]}
-						value={readSetting(values, appearanceSettings.blurEffect)}
-						onChange={(val) => setSetting(appearanceSettings.blurEffect, val)}
-					/>
-				</Block>
-			</Card>
-
-			<Card>
 				<Row as="label" label={t("appearance.hide.label")} desc={t("appearance.hide.desc")}>
 					<Toggle checked={hidden} onChange={(v) => setSetting(ISLAND_HIDDEN_KEY, v)} />
 				</Row>

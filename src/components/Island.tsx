@@ -28,6 +28,10 @@ export function Island() {
 	const ctl = useIslandController(builtinModules);
 	const { mode, primary, secondary, focused } = ctl;
 	const look = useAppearance();
+	const glassPluginEnabled = plugins.some(
+		(plugin) => plugin.manifest.id === "com.island.desktop-glass" && plugin.enabled && Boolean(plugin.packageSha256),
+	);
+	const islandLook = glassPluginEnabled ? look : { ...look, blurEffect: "none" as const };
 	const s = useSettings();
 	const topMargin = Math.max(0, Number(readSetting(s, positionSettings.topMargin)) || 0);
 	const windows = look.style === "windows";
@@ -38,7 +42,7 @@ export function Island() {
 
 	const bigSize = ctl.launcher ? launcherSize(ctl.entries.length) : focused?.view.expandedSize;
 	const g = geometry(v, look, mode, bigSize, primary);
-	useHitRects(look.blurEffect, windows, g.radius);
+	useHitRects(islandLook.blurEffect, windows, g.radius);
 	const big = mode === "expanded" || mode === "peek";
 	const hidden = mode === "hidden";
 	const swallowed = mode === "swallowed";
@@ -94,7 +98,7 @@ export function Island() {
 							drag.dragging && "cursor-grabbing **:cursor-grabbing",
 						)}
 						{...(hidden || swallowed ? {} : { "data-hit": true })}
-						data-blur={look.blurEffect !== "none"}
+						data-blur={islandLook.blurEffect !== "none"}
 						{...ctl.domHover}
 						style={{ ...drag.style, marginTop: effectiveTop }}
 						onPointerDown={drag.onPointerDown}
@@ -136,7 +140,7 @@ export function Island() {
 							</>
 						)}
 
-						<Surface g={g} big={big} look={look} transition={transition} contentKey={content.key} rim={rim}>
+						<Surface g={g} big={big} look={islandLook} transition={transition} contentKey={content.key} rim={rim}>
 							{content.node}
 						</Surface>
 
