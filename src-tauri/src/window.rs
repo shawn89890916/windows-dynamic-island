@@ -212,7 +212,10 @@ pub fn spawn_hit_test(app: AppHandle) {
             let island_interactive = !fullscreen || !hide_in_fullscreen;
             let interaction_changed = island_interactive != was_interactive;
             was_interactive = island_interactive;
-            if island_interactive {
+            // Settings is a normal foreground window. Keep the island out of
+            // the topmost band until that window closes; otherwise this loop
+            // immediately reverses settings::open's demotion on focus change.
+            if island_interactive && !crate::settings::is_open() {
                 ensure_topmost(&win, fg_changed || fullscreen_left || interaction_changed);
             }
 
