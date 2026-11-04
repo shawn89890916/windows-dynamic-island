@@ -8,10 +8,27 @@
 //!
 //! The frontend gets `island://file-drop` events (see `useFileDrop.ts`).
 
+use std::sync::atomic::{AtomicBool, Ordering};
+
 use serde::Serialize;
 use tauri::{AppHandle, WebviewWindow};
 
 pub const EVENT: &str = "island://file-drop";
+
+// 拖出期间忽略灵动岛自身的拖入事件，避免展开接收区域干扰目标应用放置文件。
+static OUTGOING: AtomicBool = AtomicBool::new(false);
+
+/// 原生拖放调用同步阻塞到放置或取消结束，整个过程都需要屏蔽自身的拖入事件。
+pub fn outgoing<R>(drag: impl FnOnce() -> R) -> R {
+    OUTGOING.store(true, Ordering::Relaxed);
+    let result = drag();
+    OUTGOING.store(false, Ordering::Relaxed);
+    result
+}
+
+fn incoming(has_files: bool) -> bool {
+    has_files && !OUTGOING.load(Ordering::Relaxed)
+}
 
 #[cfg_attr(not(windows), allow(dead_code))]
 #[derive(Clone, Serialize)]
@@ -73,7 +90,7 @@ mod imp {
     use windows::Win32::System::SystemServices::MODIFIERKEYS_FLAGS;
     use windows::Win32::UI::Shell::{DragQueryFileW, HDROP};
 
-    use super::{DropEvent, EVENT};
+    use super::{DropEvent, EVENT, incoming};
 
     #[implement(IDropTarget)]
     pub struct Target {
@@ -125,7 +142,7 @@ mod imp {
             _pt: &POINTL,
             effect: *mut DROPEFFECT,
         ) -> windows::core::Result<()> {
-            let files = paths(data).is_some_and(|p| !p.is_empty());
+            let files = incoming(paths(data).is_some_and(|p| !p.is_empty()));
             self.files.set(files);
             if files {
                 self.emit(DropEvent::Enter);
@@ -170,5 +187,34 @@ mod imp {
             }
             Ok(())
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn own_drag_is_ignored_until_drop_or_failure() {
+        assert!(incoming(true));
+        assert!(!incoming(false));
+
+        let result = outgoing(|| {
+            // 从置物架或剪贴板拖出文件时，不能再次触发灵动岛的接收区域。
+            assert!(!incoming(true));
+            assert!(!incoming(false));
+            42
+        });
+        assert_eq!(result, 42);
+        assert!(incoming(true));
+
+        let result: Result<(), &str> = outgoing(|| {
+            assert!(!incoming(true));
+            Err("drag failed")
+        });
+        assert_eq!(result, Err("drag failed"));
+        // 拖放返回错误后，仍应接受下一次来自外部的文件拖入。
+        assert!(incoming(true));
+        assert!(!incoming(false));
     }
 }
