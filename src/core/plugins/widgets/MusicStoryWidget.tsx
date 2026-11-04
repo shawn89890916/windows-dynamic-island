@@ -16,14 +16,15 @@ import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } fro
 import { Button, IconButton } from "../../../components/ui/button";
 import { Card } from "../../../components/ui/card";
 import { openExternal, providerAction, useProvider } from "../../../core/bridge";
+import { useLocale, useT } from "../../../core/i18n";
 import type { Focus, Story, Track } from "./musicStory";
 import { generateStory, storyCacheKey, storySourceKey } from "./musicStory";
 
 const CACHE_PREFIX = "island_music_story_v1_";
-const FOCUS_OPTIONS: { id: Focus; label: string; icon: typeof BookOpenTextIcon }[] = [
-	{ id: "song", label: "歌曲", icon: BookOpenTextIcon },
-	{ id: "album", label: "专辑", icon: Disc3Icon },
-	{ id: "artist", label: "创作者", icon: UserRoundIcon },
+const FOCUS_OPTIONS: { id: Focus; label: Focus; icon: typeof BookOpenTextIcon }[] = [
+	{ id: "song", label: "song", icon: BookOpenTextIcon },
+	{ id: "album", label: "album", icon: Disc3Icon },
+	{ id: "artist", label: "artist", icon: UserRoundIcon },
 ];
 
 interface MusicState {
@@ -51,9 +52,9 @@ function trackFromMusic(music?: Pick<MusicState, "available" | "title" | "artist
 	};
 }
 
-function getCached(track: Track, focus: Focus): Story | null {
+function getCached(track: Track, focus: Focus, locale: string): Story | null {
 	try {
-		const raw = localStorage.getItem(CACHE_PREFIX + storyCacheKey(track, focus, ""));
+		const raw = localStorage.getItem(CACHE_PREFIX + storyCacheKey(track, focus, "", locale));
 		if (!raw) return null;
 		const value = JSON.parse(raw) as Story;
 		return Date.now() - Date.parse(value.createdUtc) < 30 * 24 * 60 * 60 * 1000 ? value : null;
@@ -62,9 +63,9 @@ function getCached(track: Track, focus: Focus): Story | null {
 	}
 }
 
-function saveCached(track: Track, focus: Focus, story: Story) {
+function saveCached(track: Track, focus: Focus, story: Story, locale: string) {
 	try {
-		localStorage.setItem(CACHE_PREFIX + storyCacheKey(track, focus, ""), JSON.stringify(story));
+		localStorage.setItem(CACHE_PREFIX + storyCacheKey(track, focus, "", locale), JSON.stringify(story));
 	} catch {
 		// Storage can be unavailable in private WebView contexts.
 	}
@@ -92,14 +93,16 @@ function renderEmphasis(text: string) {
 	return chunks;
 }
 
-function readableError(error: unknown) {
+function readableError(error: unknown, t: ReturnType<typeof useT>) {
 	const message = error instanceof Error ? error.message : String(error);
 	if (/failed to fetch|networkerror|load failed/i.test(message))
-		return "无法连接检索接口。请检查网络、接口地址及 WebView 的访问权限。";
+		return t("marketplace.widgets.pluginExtras.musicStory.networkError");
 	return message;
 }
 
 export function MusicStoryWidget({ settings }: { settings: Record<string, unknown> }) {
+	const t = useT();
+	const locale = useLocale();
 	const music = useProvider<MusicState>("music");
 	const available = music?.available;
 	const title = music?.title;
@@ -113,7 +116,7 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 	const [follow, setFollow] = useState(true);
 	const [track, setTrack] = useState<Track | null>(liveTrack);
 	const [focus, setFocus] = useState<Focus>("song");
-	const [story, setStory] = useState<Story | null>(() => (liveTrack ? getCached(liveTrack, "song") : null));
+	const [story, setStory] = useState<Story | null>(() => (liveTrack ? getCached(liveTrack, "song", locale) : null));
 	const [collapsed, setCollapsed] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [phase, setPhase] = useState("");
@@ -138,14 +141,14 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 				liveTrack.album !== track.album)
 		) {
 			setTrack(liveTrack);
-			setStory(getCached(liveTrack, focus));
+			setStory(getCached(liveTrack, focus, locale));
 			setError("");
 		}
 		if (follow && !liveTrack) {
 			setTrack(null);
 			setStory(null);
 		}
-	}, [follow, liveTrack, track, focus]);
+	}, [follow, liveTrack, track, focus, locale]);
 
 	useEffect(() => {
 		if (!music?.playing) return;
@@ -159,14 +162,12 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 		async (prompt = "") => {
 			if (!track) return;
 			if (!apiKey) {
-				setError(
-					"请先在设置中心 → 插件市场 → 已安装中填写 DeepSeek API Key。请求会向配置的接口发送曲目信息与检索内容，并可能产生费用。",
-				);
+				setError(t("marketplace.widgets.pluginExtras.musicStory.apiKeyRequired"));
 				return;
 			}
 			setLoading(true);
 			setError("");
-			setPhase("正在检索可靠的采访、唱片资料与创作者自述…");
+			setPhase(t("marketplace.widgets.pluginExtras.musicStory.searching"));
 			try {
 				const next = await generateStory(
 					track,
@@ -177,19 +178,20 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 					apiKey,
 					prompt ? (story?.body ?? "") : (story?.body ?? ""),
 					(stage) => setPhase(stage),
+					locale,
 				);
 				const merged = prompt || story ? mergeStories(story, next) : next;
 				setStory(merged);
 				setQuestion("");
-				if (!prompt) saveCached(track, focus, merged);
+				if (!prompt) saveCached(track, focus, merged, locale);
 			} catch (caught) {
-				setError(readableError(caught));
+				setError(readableError(caught, t));
 			} finally {
 				setLoading(false);
 				setPhase("");
 			}
 		},
-		[apiKey, baseUrl, focus, model, story, track],
+		[apiKey, baseUrl, focus, locale, model, story, t, track],
 	);
 
 	useEffect(() => {
@@ -211,7 +213,7 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 
 	const chooseFocus = (value: Focus) => {
 		setFocus(value);
-		setStory(track ? getCached(track, value) : null);
+		setStory(track ? getCached(track, value, locale) : null);
 		setError("");
 	};
 
@@ -237,8 +239,11 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 						</div>
 					)}
 					<div className="min-w-0 flex-1">
-						<div className="truncate text-[13px] font-semibold" title={track?.title || "等一首歌响起"}>
-							{track?.title || "等一首歌响起"}
+						<div
+							className="truncate text-[13px] font-semibold"
+							title={track?.title || t("marketplace.widgets.pluginExtras.musicStory.waitingForSong")}
+						>
+							{track?.title || t("marketplace.widgets.pluginExtras.musicStory.waitingForSong")}
 						</div>
 						<div
 							className="mt-0.5 truncate text-[11px] text-text-dim"
@@ -246,7 +251,7 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 						>
 							{track
 								? [track.artist, track.album].filter(Boolean).join(" · ") || music?.appName
-								: "在 Apple Music 或浏览器播放一首歌"}
+								: t("marketplace.widgets.pluginExtras.musicStory.playMusicHint")}
 						</div>
 						{!collapsed && music?.durationMs ? (
 							<div className="mt-2 flex items-center gap-2">
@@ -261,24 +266,40 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 					</div>
 					<div className="flex shrink-0 items-center gap-0.5">
 						{!collapsed && (
-							<IconButton aria-label="上一首" onClick={() => changeTrack("previous")} disabled={!music?.canPrevious}>
+							<IconButton
+								aria-label={t("marketplace.widgets.pluginExtras.musicStory.previous")}
+								onClick={() => changeTrack("previous")}
+								disabled={!music?.canPrevious}
+							>
 								<SkipBackIcon size={14} />
 							</IconButton>
 						)}
 						<IconButton
-							aria-label={music?.playing ? "暂停" : "播放"}
+							aria-label={
+								music?.playing
+									? t("marketplace.widgets.pluginExtras.musicStory.pause")
+									: t("marketplace.widgets.pluginExtras.musicStory.play")
+							}
 							onClick={togglePlayback}
 							disabled={!music?.available}
 						>
 							{music?.playing ? <PauseIcon size={15} /> : <PlayIcon size={15} />}
 						</IconButton>
 						{!collapsed && (
-							<IconButton aria-label="下一首" onClick={() => changeTrack("next")} disabled={!music?.canNext}>
+							<IconButton
+								aria-label={t("marketplace.widgets.pluginExtras.musicStory.next")}
+								onClick={() => changeTrack("next")}
+								disabled={!music?.canNext}
+							>
 								<SkipForwardIcon size={14} />
 							</IconButton>
 						)}
 						<IconButton
-							aria-label={collapsed ? "展开播放器" : "收起播放器"}
+							aria-label={
+								collapsed
+									? t("marketplace.widgets.pluginExtras.musicStory.expandPlayer")
+									: t("marketplace.widgets.pluginExtras.musicStory.collapsePlayer")
+							}
 							onClick={() => setCollapsed((value) => !value)}
 						>
 							{collapsed ? <ChevronDownIcon size={14} /> : <ChevronUpIcon size={14} />}
@@ -297,13 +318,15 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 							className={`flex h-7 items-center gap-1.5 rounded-full px-3 text-[11px] transition-colors ${focus === id ? "bg-white/12 text-text" : "text-text-faint hover:text-text"}`}
 						>
 							<Icon size={13} />
-							{label}
+							{t(`marketplace.widgets.pluginExtras.musicStory.${label}`)}
 						</button>
 					))}
 				</div>
 				<Button variant="soft" className="h-7 gap-1.5 rounded-full px-3 text-[11px]" onClick={toggleFollow}>
 					<LockKeyholeIcon size={12} />
-					{follow ? "跟随" : "已锁定"}
+					{follow
+						? t("marketplace.widgets.pluginExtras.musicStory.follow")
+						: t("marketplace.widgets.pluginExtras.musicStory.locked")}
 				</Button>
 			</div>
 
@@ -312,10 +335,14 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 					<div className="flex min-w-0 items-center gap-2">
 						<SparklesIcon size={14} className="shrink-0 text-text-dim" />
 						<h2 className="truncate text-[13px] font-semibold">
-							{story?.title || (focus === "song" ? "这首歌的故事" : focus === "album" ? "这张专辑" : "创作者的轨迹")}
+							{story?.title || t(`marketplace.widgets.pluginExtras.musicStory.${focus}Story`)}
 						</h2>
 					</div>
-					{story && <span className="shrink-0 text-[10px] text-text-faint">资料整理 · 查看来源</span>}
+					{story && (
+						<span className="shrink-0 text-[10px] text-text-faint">
+							{t("marketplace.widgets.pluginExtras.musicStory.sourceNote")}
+						</span>
+					)}
 				</div>
 				{loading && (
 					<div className="mb-2 flex shrink-0 items-center gap-2 text-[10.5px] text-text-faint">
@@ -345,8 +372,8 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 							<BookOpenTextIcon size={22} className="text-text-faint" />
 							<p className="max-w-[340px] text-[12px]/[1.65] text-text-faint">
 								{track
-									? "从创作、录音和表达的细节开始，顺着来源讲清这首作品背后的故事。"
-									: "播放音乐后，这里会显示当前作品。"}
+									? t("marketplace.widgets.pluginExtras.musicStory.emptyStory")
+									: t("marketplace.widgets.pluginExtras.musicStory.emptyTrack")}
 							</p>
 						</div>
 					)}
@@ -354,7 +381,7 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 				{story?.sources?.length ? (
 					<details className="mt-2 shrink-0 border-t border-hairline pt-2 text-[11px]">
 						<summary className="cursor-pointer list-none text-text-faint hover:text-text">
-							来源 · {story.sources.length}
+							{t("marketplace.widgets.pluginExtras.musicStory.sources", { n: story.sources.length })}
 						</summary>
 						<div className="mt-1.5 flex max-h-20 flex-col gap-1 overflow-y-auto">
 							{story.sources.map((source) => (
@@ -386,7 +413,7 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 						ref={questionRef}
 						value={question}
 						onChange={(event) => setQuestion(event.target.value)}
-						placeholder="还想知道什么？"
+						placeholder={t("marketplace.widgets.pluginExtras.musicStory.questionPlaceholder")}
 						className="h-full min-w-0 flex-1 bg-transparent text-[12px] text-text outline-none placeholder:text-text-faint"
 						disabled={!track || loading}
 					/>
@@ -397,7 +424,7 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 					className="h-9 rounded-full px-4"
 					disabled={!question.trim() || !track || loading}
 				>
-					追问
+					{t("marketplace.widgets.pluginExtras.musicStory.ask")}
 				</Button>
 				<Button
 					type="button"
@@ -406,7 +433,11 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 					disabled={!track || loading || !apiKey}
 					onClick={() => void run()}
 				>
-					{loading ? "整理中" : story ? "继续" : "展开故事"}
+					{loading
+						? t("marketplace.widgets.pluginExtras.musicStory.working")
+						: story
+							? t("marketplace.widgets.pluginExtras.musicStory.continue")
+							: t("marketplace.widgets.pluginExtras.musicStory.generate")}
 				</Button>
 			</form>
 		</div>

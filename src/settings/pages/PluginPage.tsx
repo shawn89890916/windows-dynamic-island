@@ -320,7 +320,7 @@ export function PluginPage({
 								{/* Summary */}
 								<div className="rounded-xl border border-white/6 bg-white/2 p-3 text-xs text-text-dim leading-relaxed">
 									<strong className="text-text font-semibold mr-1.5">{t("marketplace.ui.pluginMechanism")}</strong>
-									{guide.summary}
+									{guide.summaryKey ? t(guide.summaryKey) : guide.summary}
 								</div>
 
 								{/* Prerequisites if any */}
@@ -331,10 +331,10 @@ export function PluginPage({
 											<span>{t("marketplace.ui.prerequisites")}</span>
 										</span>
 										<div className="flex flex-col gap-1 pl-1">
-											{guide.prerequisites.map((req) => (
+											{guide.prerequisites.map((req, index) => (
 												<div key={req} className="flex items-start gap-2 text-xs text-text-dim">
 													<span className="size-1.5 rounded-full bg-amber-400/80 mt-1.5 shrink-0" />
-													<span>{req}</span>
+													<span>{guide.prerequisiteKeys?.[index] ? t(guide.prerequisiteKeys[index]) : req}</span>
 												</div>
 											))}
 										</div>
@@ -348,7 +348,7 @@ export function PluginPage({
 									<div className="flex flex-col gap-2.5">
 										{guide.steps.map((step, idx) => (
 											<div
-												key={step.title}
+												key={step.titleKey ?? step.title}
 												className="relative flex items-start gap-3 rounded-xl border border-white/5 bg-white/2.5 p-3"
 											>
 												<span className="flex size-5.5 shrink-0 items-center justify-center rounded-lg bg-accent/20 text-[11px] font-bold text-accent shadow-xs">
@@ -356,7 +356,9 @@ export function PluginPage({
 												</span>
 												<div className="min-w-0 flex-1">
 													<div className="flex flex-wrap items-center justify-between gap-2">
-														<h4 className="text-[13px] font-semibold text-text">{step.title}</h4>
+														<h4 className="text-[13px] font-semibold text-text">
+															{step.titleKey ? t(step.titleKey) : step.title}
+														</h4>
 														{step.link && (
 															<a
 																href={step.link.url}
@@ -364,18 +366,20 @@ export function PluginPage({
 																rel="noreferrer"
 																className="inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:underline"
 															>
-																<span>{step.link.label}</span>
+																<span>{step.link.labelKey ? t(step.link.labelKey) : step.link.label}</span>
 																<ExternalLinkIcon size={10} />
 															</a>
 														)}
 													</div>
-													<p className="mt-1 text-xs text-text-dim leading-relaxed">{step.desc}</p>
+													<p className="mt-1 text-xs text-text-dim leading-relaxed">
+														{step.descKey ? t(step.descKey) : step.desc}
+													</p>
 													{step.tip && (
 														<div className="mt-2 rounded-lg bg-white/4 px-2.5 py-1.5 text-[11.5px] text-amber-300/90 flex items-start gap-1.5">
 															<span className="font-semibold text-amber-400 shrink-0">
 																💡 {t("marketplace.ui.tip")}
 															</span>
-															<span>{step.tip}</span>
+															<span>{step.tipKey ? t(step.tipKey) : step.tip}</span>
 														</div>
 													)}
 												</div>
@@ -443,8 +447,8 @@ export function PluginPage({
 										<div className="flex flex-col gap-2">
 											{guide.faq.map((item) => (
 												<div key={item.q} className="rounded-lg bg-white/2 p-2.5 text-xs text-text-dim">
-													<p className="font-medium text-text">Q: {item.q}</p>
-													<p className="mt-1 text-text-dim">A: {item.a}</p>
+													<p className="font-medium text-text">Q: {item.qKey ? t(item.qKey) : item.q}</p>
+													<p className="mt-1 text-text-dim">A: {item.aKey ? t(item.aKey) : item.a}</p>
 												</div>
 											))}
 										</div>
@@ -523,7 +527,10 @@ function SettingRow({
 }) {
 	const t = useT();
 	return (
-		<Row label={field.label} desc={field.description}>
+		<Row
+			label={field.labelKey ? t(field.labelKey) : field.label}
+			desc={field.descriptionKey ? t(field.descriptionKey) : field.description}
+		>
 			{field.type === "text" && (
 				<Input
 					value={String(value ?? "")}

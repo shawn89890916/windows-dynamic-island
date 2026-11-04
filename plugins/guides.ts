@@ -1,39 +1,39 @@
-interface GuideStep {
-	title: string;
-	desc: string;
-	tip?: string;
-	link?: { url: string; label: string };
-}
-
-interface PluginGuide {
-	summary: string;
-	prerequisites?: string[];
-	steps: GuideStep[];
-	features?: string[];
-	faq?: { q: string; a: string }[];
-}
+import type { PluginGuide } from "../src/core/plugins/types";
 
 export const PLUGIN_GUIDES: Record<string, PluginGuide> = {
 	"com.island.music-story": {
 		summary: "跟随灵动岛当前播放的歌曲，整理有原文依据的歌曲、专辑与创作者故事；支持续读、追问和打开来源。",
+		summaryKey: "marketplace.widgets.pluginExtras.musicStoryGuide.summary",
 		prerequisites: [
 			"Windows 播放器或浏览器正在向系统媒体控制提供歌曲标题与歌手信息",
 			"可用的 DeepSeek API Key；检索和模型生成可能分别产生费用",
 		],
+		prerequisiteKeys: [
+			"marketplace.widgets.pluginExtras.musicStoryGuide.prerequisiteMedia",
+			"marketplace.widgets.pluginExtras.musicStoryGuide.prerequisiteKey",
+		],
 		steps: [
 			{
 				title: "配置 DeepSeek 接口",
+				titleKey: "marketplace.widgets.pluginExtras.musicStoryGuide.step1Title",
 				desc: "在设置中心“插件市场 → 已安装”中打开本插件配置，填写 API 基础地址、模型名称和个人 API Key。默认地址为 https://api.deepseek.com，默认模型为 deepseek-flash。",
+				descKey: "marketplace.widgets.pluginExtras.musicStoryGuide.step1Desc",
 				tip: "请求会向配置的接口发送曲名、艺人、专辑、追问和检索到的网页资料。请使用可信接口并留意服务商的计费规则。",
+				tipKey: "marketplace.widgets.pluginExtras.musicStoryGuide.step1Tip",
 			},
 			{
 				title: "播放音乐并选择阅读入口",
+				titleKey: "marketplace.widgets.pluginExtras.musicStoryGuide.step2Title",
 				desc: "在 Apple Music 或浏览器播放音乐后打开插件，可切换“歌曲”“专辑”“创作者”三个入口。播放器支持上一首、播放/暂停、下一首和收起。",
+				descKey: "marketplace.widgets.pluginExtras.musicStoryGuide.step2Desc",
 			},
 			{
 				title: "生成、追问与查看来源",
+				titleKey: "marketplace.widgets.pluginExtras.musicStoryGuide.step3Title",
 				desc: "点击“展开故事”生成首篇；之后可“继续”寻找新资料，也可以输入具体问题。展开“来源”并点击条目，可打开原始网页。",
+				descKey: "marketplace.widgets.pluginExtras.musicStoryGuide.step3Desc",
 				tip: "新歌自动生成默认关闭。开启后，播放稳定 8 秒会自动发起检索与生成。",
+				tipKey: "marketplace.widgets.pluginExtras.musicStoryGuide.step3Tip",
 			},
 		],
 		features: [
@@ -44,11 +44,15 @@ export const PLUGIN_GUIDES: Record<string, PluginGuide> = {
 		faq: [
 			{
 				q: "没有显示当前歌曲怎么办？",
+				qKey: "marketplace.widgets.pluginExtras.musicStoryGuide.faq1Question",
 				a: "请确认播放器正在向 Windows 系统媒体控制提供标题和艺人信息；切歌后稍等片刻，或重新展开灵动岛。",
+				aKey: "marketplace.widgets.pluginExtras.musicStoryGuide.faq1Answer",
 			},
 			{
 				q: "API Key 如何保存？",
+				qKey: "marketplace.widgets.pluginExtras.musicStoryGuide.faq2Question",
 				a: "Key 作为插件密码配置保存在灵动岛的已安装插件设置中。插件请求会将曲目信息、问题与检索资料发送至你填写的接口。",
+				aKey: "marketplace.widgets.pluginExtras.musicStoryGuide.faq2Answer",
 			},
 		],
 	},

@@ -5,7 +5,9 @@ export type PluginCategory = "productivity" | "media" | "tools" | "developer" | 
 export interface PluginSettingField {
 	key: string;
 	label: string;
+	labelKey?: MessageKey;
 	description?: string;
+	descriptionKey?: MessageKey;
 	type: "text" | "number" | "boolean" | "select" | "password";
 	options?: { label: string; value: string }[];
 	default: unknown;
@@ -53,10 +55,21 @@ export interface InstalledPlugin {
 
 export interface PluginGuide {
 	summary: string;
+	summaryKey?: MessageKey;
 	prerequisites?: string[];
-	steps: { title: string; desc: string; tip?: string; link?: { url: string; label: string } }[];
+	prerequisiteKeys?: MessageKey[];
+	steps: {
+		title: string;
+		titleKey?: MessageKey;
+		desc: string;
+		descKey?: MessageKey;
+		tip?: string;
+		tipKey?: MessageKey;
+		link?: { url: string; label: string; labelKey?: MessageKey };
+	}[];
 	features?: string[];
-	faq?: { q: string; a: string }[];
+	featuresKeys?: MessageKey[];
+	faq?: { q: string; a: string; qKey?: MessageKey; aKey?: MessageKey }[];
 }
 
 export interface PluginPackage {
