@@ -38,11 +38,10 @@ export function createVpnMonitor(config: VpnConfig) {
 	let active = false;
 	let pending: Promise<void> | null = null;
 	let timer: ReturnType<typeof setTimeout> | undefined;
-	const schedule = () => {
+	const schedule = (nextAt = Date.now() + currentConfig.interval) => {
 		if (!active) return;
-		const nextAt = Date.now() + currentConfig.interval;
 		store.set((s) => ({ ...s, nextAt }));
-		timer = setTimeout(() => void refresh(), currentConfig.interval);
+		timer = setTimeout(() => void refresh(), Math.max(0, nextAt - Date.now()));
 	};
 	const operation = (run: () => Promise<void>) => {
 		if (pending) return pending;
@@ -162,14 +161,20 @@ export function createVpnMonitor(config: VpnConfig) {
 		configure(next: VpnConfig) {
 			const intervalChanged = next.interval !== currentConfig.interval;
 			currentConfig = next;
+			// 配置变化需要刷新候选勾选状态，但保留测速结果和原有倒计时。
+			store.set((s) => ({ ...s }));
 			if (active && intervalChanged && !pending) {
 				clearTimeout(timer);
 				schedule();
 			}
 		},
 		start() {
+			if (active) return;
 			active = true;
-			if (!pending) void refresh();
+			if (pending) return;
+			const { nextAt } = store.get();
+			if (nextAt > Date.now()) schedule(nextAt);
+			else void refresh();
 		},
 		stop() {
 			active = false;
@@ -179,13 +184,22 @@ export function createVpnMonitor(config: VpnConfig) {
 }
 const empty = createVpnMonitor(vpnConfig({}));
 let current = empty;
+let cached: { key: string; monitor: ReturnType<typeof createVpnMonitor> } | undefined;
+const connectionKey = (config: VpnConfig) => JSON.stringify([config.endpoint, config.secret, config.group]);
+
+// 后台组件重新挂载时复用同一连接的结果，避免每次保存候选配置都重新测速。
+export function vpnMonitorFor(config: VpnConfig) {
+	const key = connectionKey(config);
+	if (cached?.key !== key) cached = { key, monitor: createVpnMonitor(config) };
+	return cached.monitor;
+}
 export function useVpnMonitor(settings?: Record<string, unknown>) {
 	const configJson = settings ? JSON.stringify(vpnConfig(settings)) : "";
 	const config = useMemo(() => (configJson ? (JSON.parse(configJson) as VpnConfig) : null), [configJson]);
-	const identityKey = config ? JSON.stringify([config.endpoint, config.secret, config.group]) : "";
+	const identityKey = config ? connectionKey(config) : "";
 	const monitorRef = useRef({ key: "", monitor: empty });
 	if (monitorRef.current.key !== identityKey) {
-		monitorRef.current = { key: identityKey, monitor: config ? createVpnMonitor(config) : empty };
+		monitorRef.current = { key: identityKey, monitor: config ? vpnMonitorFor(config) : empty };
 	}
 	const monitor = monitorRef.current.monitor;
 	useEffect(() => {

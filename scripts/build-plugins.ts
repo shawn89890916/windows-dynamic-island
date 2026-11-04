@@ -151,7 +151,10 @@ for (const source of MARKETPLACE_CATALOG) {
 	const code = await result.outputs.find((file) => file.path.endsWith(".js"))?.text();
 	if (!code) throw Error("No plugin script emitted");
 	const content = JSON.stringify({ formatVersion: 1, manifest, code, css });
-	const filename = `${source.id}.island-plugin.json`;
+	const filename =
+		source.id === "com.island.vpn"
+			? `${source.id}-${manifest.version}.island-plugin.json`
+			: `${source.id}.island-plugin.json`;
 	await writeFile(join(output, filename), content);
 	descriptors.push({
 		...manifest,
