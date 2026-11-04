@@ -308,7 +308,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		name: "Obsidian 知识库",
 		titleKey: "marketplace.plugins.obsidian.name",
 		descKey: "marketplace.plugins.obsidian.desc",
-		version: "1.0.0",
+		version: "1.0.1",
 		description: "沉浸式个人知识库直连，支持每日日记打卡、灵动闪念速记、最近笔记快速跳转与库内全局检索。",
 		author: {
 			name: "Obsidian",
@@ -336,6 +336,13 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 				label: "每日日记存储目录",
 				type: "text",
 				default: "",
+			},
+			{
+				key: "openAfterSave",
+				label: "保存后打开 Obsidian",
+				labelKey: "marketplace.plugins.obsidian.openAfterSave",
+				type: "boolean",
+				default: false,
 			},
 		],
 		expandedSize: { width: 580, height: 210 },

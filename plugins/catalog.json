@@ -783,7 +783,7 @@
       "name": "Obsidian 知识库",
       "titleKey": "marketplace.plugins.obsidian.name",
       "descKey": "marketplace.plugins.obsidian.desc",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "description": "沉浸式个人知识库直连，支持每日日记打卡、灵动闪念速记、最近笔记快速跳转与库内全局检索。",
       "author": {
         "name": "Obsidian",
@@ -817,6 +817,13 @@
           "label": "每日日记存储目录",
           "type": "text",
           "default": ""
+        },
+        {
+          "key": "openAfterSave",
+          "label": "保存后打开 Obsidian",
+          "labelKey": "marketplace.plugins.obsidian.openAfterSave",
+          "type": "boolean",
+          "default": false
         }
       ],
       "expandedSize": {
@@ -861,9 +868,9 @@
         "在灵动岛窗口执行代码",
         "使用宿主提供的界面与系统接口"
       ],
-      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.obsidian.island-plugin.json",
-      "sha256": "701512bdbe30878fa5667a05b8d172bcec712d4b4f77927283393bd72fa6570c",
-      "packageSize": 63106
+      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.obsidian-1.0.1.island-plugin.json",
+      "sha256": "a0dc1df6e4938e71bfc2e2d713434437a54dad94ebf3c69ecc81743863e98550",
+      "packageSize": 64195
     },
     {
       "id": "com.island.ai-hub",

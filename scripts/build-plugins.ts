@@ -155,7 +155,9 @@ for (const source of MARKETPLACE_CATALOG) {
 	const filename =
 		source.id === "com.island.vpn"
 			? `${source.id}-${manifest.version}.island-plugin.json`
-			: `${source.id}.island-plugin.json`;
+			: source.id === "com.island.obsidian"
+				? `${source.id}-${manifest.version}.island-plugin.json`
+				: `${source.id}.island-plugin.json`;
 	await writeFile(join(output, filename), content);
 	descriptors.push({
 		...manifest,

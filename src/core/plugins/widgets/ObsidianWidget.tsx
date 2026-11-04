@@ -25,7 +25,7 @@ import {
 	searchObsidian,
 } from "../obsidianClient";
 import { quickCaptureName } from "../obsidianDailyNote";
-import { getInstalledPlugins, useInstalledPlugins } from "../registry";
+import { getInstalledPlugins, updatePluginSettings, useInstalledPlugins } from "../registry";
 import { NeedsConfigCard } from "./NeedsConfigCard";
 
 export { ObsidianIconSvg } from "../../../assets/ObsidianIcon";
@@ -49,6 +49,7 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 	const isConfigured = Boolean(vaultPath || rawVaultName);
 	const dailyFolder = String(settings.dailyFolder ?? "");
 	const dailyDateFormat = String(settings.dailyDateFormat || "YYYY-MM-DD");
+	const openAfterSave = Boolean(settings.openAfterSave);
 	const httpPort = Number(
 		plugins.find((p) => p.manifest.id === "com.island.everything")?.customSettings.httpPort ||
 			settings.httpPort ||
@@ -60,6 +61,7 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 	const [activeTab, setActiveTab] = useState<TabType>("capture");
 	const [recentNotes, setRecentNotes] = useState<ObsidianNote[]>([]);
 	const [captureText, setCaptureText] = useState("");
+	const [captureFolder, setCaptureFolder] = useState(String(settings.captureFolder ?? ""));
 	const [selectedTag, setSelectedTag] = useState<string>(() =>
 		t("marketplace.widgets.pluginExtras.obsidian.tags.inspiration"),
 	);
@@ -116,9 +118,17 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 	const handleCapture = (e?: React.FormEvent) => {
 		e?.preventDefault();
 		if (!captureText.trim()) return;
-		const captureName = quickCaptureName(new Date(), dailyDateFormat);
+		const captureName = quickCaptureName(new Date());
 
-		const ok = quickCaptureToObsidian(vaultName, captureName, captureText, [selectedTag], vaultPath);
+		const ok = quickCaptureToObsidian(
+			vaultName,
+			captureName,
+			captureText,
+			[selectedTag],
+			vaultPath,
+			captureFolder,
+			openAfterSave,
+		);
 		if (ok) {
 			setCapturedSuccess(true);
 			setCaptureText("");
@@ -140,6 +150,13 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 		t("marketplace.widgets.pluginExtras.obsidian.tags.journal"),
 		t("marketplace.widgets.pluginExtras.obsidian.tags.project"),
 	];
+	const captureFolders = Array.from(
+		new Set([
+			captureFolder,
+			dailyFolder,
+			...recentNotes.map((note) => (note.folder === "根目录" ? "" : note.folder)),
+		].filter(Boolean)),
+	).sort((a, b) => a.localeCompare(b, locale));
 
 	return (
 		<div className="flex h-full items-stretch gap-3 select-none px-1 py-0.5">
@@ -337,8 +354,28 @@ export function ObsidianWidget({ settings }: { settings: Record<string, unknown>
 									</motion.button>
 								</div>
 
-								<div className="flex items-center justify-between text-[10.5px] px-1 text-text-faint">
-									<span>{t("marketplace.widgets.obsidian.tipCapture")}</span>
+								<div className="flex items-center justify-between px-1 text-[10.5px]">
+									<label className="flex items-center gap-2 text-text-faint">
+										<span>{t("marketplace.widgets.obsidian.saveTo")}</span>
+										<select
+											value={captureFolder}
+											onChange={(event) => {
+												const value = event.target.value;
+												setCaptureFolder(value);
+												updatePluginSettings("com.island.obsidian", { captureFolder: value });
+											}}
+											className="max-w-48 cursor-pointer bg-transparent text-text-faint outline-none"
+										>
+											<option value="" className="bg-neutral-900">
+												{t("marketplace.widgets.obsidian.vaultRoot")}
+											</option>
+											{captureFolders.map((folder) => (
+												<option key={folder} value={folder} className="bg-neutral-900">
+													{folder}
+												</option>
+											))}
+										</select>
+									</label>
 									{capturedSuccess && (
 										<motion.span
 											initial={{ opacity: 0, scale: 0.9 }}

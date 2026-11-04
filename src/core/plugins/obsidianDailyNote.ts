@@ -18,10 +18,11 @@ export function dailyNoteName(date: Date, format = "YYYY-MM-DD") {
 	return name.replace(/\\/g, "/");
 }
 
-/** A unique quick-capture filename that starts with the configured date pattern. */
-export function quickCaptureName(date: Date, format = "YYYY-MM-DD") {
+/** Quick-capture files use a stable prefix and a local date/time stamp. */
+export function quickCaptureName(date: Date) {
+	const datePart = dailyNoteName(date, "YYYY-MM-DD");
 	const time = [date.getHours(), date.getMinutes(), date.getSeconds()]
 		.map((part) => String(part).padStart(2, "0"))
 		.join("-");
-	return `${dailyNoteName(date, format)}-${time}`;
+	return `灵动速记-${datePart}-${time}`;
 }

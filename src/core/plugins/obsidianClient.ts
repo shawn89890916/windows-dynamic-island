@@ -11,7 +11,7 @@
 
 import { openExternal, openInFolder } from "../bridge";
 import { queryEverything } from "./everythingClient";
-import { dailyNoteName } from "./obsidianDailyNote";
+import { dailyNoteName, quickCaptureName } from "./obsidianDailyNote";
 
 export interface ObsidianNote {
 	name: string;
@@ -74,20 +74,30 @@ export function quickCaptureToObsidian(
 	content: string,
 	tags: string[] = [],
 	vaultPath = "",
+	destinationFolder = "",
+	openAfterSave = false,
 ): boolean {
 	if (!title && !content) return false;
 	const tagStr = tags.length > 0 ? `\n\n${tags.map((t) => (t.startsWith("#") ? t : `#${t}`)).join(" ")}` : "";
 	const finalContent = `${content.trim()}${tagStr}`;
-	const noteName = title.trim() || `速记-${new Date().toISOString().slice(0, 10)}-${Date.now().toString().slice(-4)}`;
+	const noteName = title.trim() || quickCaptureName(new Date());
+	const folder = destinationFolder
+		.replace(/\\/g, "/")
+		.split("/")
+		.map((part) => part.trim())
+		.filter((part) => part && part !== "." && part !== "..")
+		.join("/");
+	const fileName = [folder, noteName].filter(Boolean).join("/");
+	const openOption = openAfterSave ? "" : "&silent=true";
 
 	const p = vaultPath.trim().replace(/\\/g, "/").replace(/\/+$/, "");
 	if (p) {
 		openProtocolUrl(
-			`obsidian://new?path=${encodeURIComponent(`${p}/${noteName}.md`)}&content=${encodeURIComponent(finalContent)}`,
+			`obsidian://new?path=${encodeURIComponent(`${p}/${fileName}.md`)}&content=${encodeURIComponent(finalContent)}${openOption}`,
 		);
 	} else {
 		openProtocolUrl(
-			`obsidian://new?vault=${encodeURIComponent(vaultName)}&name=${encodeURIComponent(noteName)}&content=${encodeURIComponent(finalContent)}`,
+			`obsidian://new?vault=${encodeURIComponent(vaultName)}&file=${encodeURIComponent(fileName)}&content=${encodeURIComponent(finalContent)}${openOption}`,
 		);
 	}
 	return true;

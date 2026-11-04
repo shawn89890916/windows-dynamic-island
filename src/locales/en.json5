@@ -252,6 +252,7 @@
       obsidian: {
         name: "Obsidian Vault",
         desc: "Direct Obsidian vault bridge for daily notes, quick capture, recent files, and instant search.",
+        openAfterSave: "Open Obsidian after saving",
       },
       aiHub: {
         name: "Universal AI Hub",
@@ -384,6 +385,8 @@
         btnSave: "Save",
         tipCapture: "Press Enter to save · Auto timestamp & tag",
         successCaptured: "Saved to Obsidian",
+        saveTo: "Save to",
+        vaultRoot: "Vault root",
         placeholderSearch: "Search notes across vault...",
         btnSearch: "Search",
         tipSearch: "Press Enter to jump to Obsidian search",
