@@ -96,7 +96,6 @@ const SIZE: (f64, f64) = (860.0, 620.0);
 pub fn open(app: &AppHandle) -> tauri::Result<()> {
     SETTINGS_OPEN.store(true, Ordering::Relaxed);
     crate::blur::hide(app);
-    let _ = set_island_topmost(app, false);
     if let Some(win) = app.get_webview_window(SETTINGS_LABEL) {
         let result = (|| {
             win.unminimize()?;
