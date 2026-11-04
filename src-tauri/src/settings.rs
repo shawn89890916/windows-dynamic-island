@@ -97,13 +97,14 @@ const SIZE: (f64, f64) = (860.0, 620.0);
 
 pub fn open(app: &AppHandle) -> tauri::Result<()> {
     SETTINGS_OPEN.store(true, Ordering::Relaxed);
+    crate::blur::hide(app);
+    let _ = app.emit(SETTINGS_OPEN_EVENT, ());
     let _ = set_island_topmost(app, false);
     if let Some(win) = app.get_webview_window(SETTINGS_LABEL) {
         let result = (|| {
             win.unminimize()?;
             win.show()?;
             win.set_focus()?;
-            app.emit(SETTINGS_OPEN_EVENT, ())?;
             Ok(())
         })();
         if result.is_err() {
@@ -116,7 +117,6 @@ pub fn open(app: &AppHandle) -> tauri::Result<()> {
     // event loop). Build from another thread instead.
     let app = app.clone();
     std::thread::spawn(move || {
-        let _ = app.emit(SETTINGS_OPEN_EVENT, ());
         if let Err(e) = create(&app) {
             eprintln!("settings window: {e}");
             restore_island(&app);

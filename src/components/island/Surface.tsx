@@ -26,6 +26,7 @@ export function Surface({
 	const windows = look.style === "windows";
 	return (
 		<motion.div
+			data-island-surface
 			className={cn(
 				cn(
 					"absolute inset-0 overflow-hidden shadow-[0_16px_40px_-10px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.08)] transition-shadow duration-400 ease-[ease]",

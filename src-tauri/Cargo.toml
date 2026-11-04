@@ -1,6 +1,6 @@
 [package]
 name = "dynamic-island"
-version = "0.5.6"
+version = "0.5.7"
 description = "Island for Windows"
 license = "GPL-3.0-or-later"
 edition = "2024"
@@ -50,6 +50,7 @@ drag = "2"
 windows-collections = "0.3"
 # `#[implement]` (the drop target in `file_drop.rs`) expands to `windows_core::…`.
 windows-core = "0.62"
+windows-numerics = "0.3"
 windows = { version = "0.62", features = [
   "ApplicationModel",
   "Devices_Enumeration",
@@ -57,6 +58,11 @@ windows = { version = "0.62", features = [
   "Foundation",
   "Foundation_Collections",
   "Graphics_Imaging",
+  "Graphics_Effects",
+  "UI_Composition_Desktop",
+  "System",
+  "Win32_System_WinRT_Composition",
+  "Win32_System_WinRT_Graphics_Direct2D",
   "Management_Deployment",
   "Media_Control",
   "Media_Ocr",

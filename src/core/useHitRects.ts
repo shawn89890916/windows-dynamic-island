@@ -29,8 +29,10 @@ export function useHitRects(blurEffect: string, roundedTop: boolean, radius: num
 			});
 			const shell = document.querySelector<HTMLElement>('[data-blur="true"][data-hit]');
 			const bounds = shell?.getBoundingClientRect();
+			const surface = shell?.querySelector<HTMLElement>("[data-island-surface]");
+			const liveRadius = surface ? Number.parseFloat(getComputedStyle(surface).borderBottomLeftRadius) : radius;
 			const blurRect = bounds
-				? { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height, roundedTop, radius }
+				? { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height, roundedTop, radius: liveRadius }
 				: null;
 			const key = JSON.stringify([rects, blurRect, blurEffect]);
 			if (key !== last) {
