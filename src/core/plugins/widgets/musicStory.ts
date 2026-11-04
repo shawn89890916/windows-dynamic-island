@@ -30,7 +30,8 @@ interface Fact {
 	source_id: number;
 }
 
-const REVISION = "music-editor-13";
+const REVISION = "music-editor-14";
+const LEGACY_REVISION = "music-editor-13";
 const MAX_SEARCH_RESULTS = 8;
 
 type StoryLanguage = "zh-CN" | "en" | "pt-BR";
@@ -138,11 +139,20 @@ function message(locale: string, key: keyof (typeof text)["en"], vars: Record<st
 }
 
 export function storyCacheKey(track: Track, focus: Focus, question: string, locale = "zh-CN") {
+	const normalize = (value: string) => value.normalize("NFKC").trim().replace(/\s+/g, " ").toLocaleLowerCase();
+	const subject =
+		focus === "artist" || focus === "album"
+			? `${normalize(track.artist)}\n${normalize(track.album)}`
+			: `${normalize(track.title)}\n${normalize(track.artist)}`;
+	return encodeURIComponent(`${REVISION}\n${languageOf(locale)}\n${focus}\n${subject}\n${question.trim()}`);
+}
+
+export function legacyStoryCacheKey(track: Track, focus: Focus) {
 	const subject =
 		focus === "artist" || focus === "album"
 			? `${track.artist}\n${track.album}`
 			: `${track.title}\n${track.artist}\n${track.album}`;
-	return encodeURIComponent(`${REVISION}\n${languageOf(locale)}\n${focus}\n${subject}\n${question.trim()}`);
+	return encodeURIComponent(`${LEGACY_REVISION}\n${focus}\n${subject}\n`);
 }
 
 function focusBrief(focus: Focus, track: Track, locale: string) {

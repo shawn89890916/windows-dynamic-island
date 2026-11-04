@@ -247,7 +247,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		name: "音乐背后的故事",
 		titleKey: "marketplace.plugins.musicStory.name",
 		descKey: "marketplace.plugins.musicStory.desc",
-		version: "1.0.1",
+		version: "1.0.2",
 		description: "跟随当前播放，阅读歌曲、专辑与创作者的有据故事；支持追问、续读与来源核对。",
 		author: { name: "Shawn Chen", url: "https://github.com/shawn89890916" },
 		category: "media",

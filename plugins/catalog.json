@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "sdkVersion": 1,
-  "version": "1.0.3",
+  "version": "1.0.4",
   "plugins": [
     {
       "id": "com.island.desktop-glass",
@@ -514,7 +514,7 @@
       "name": "音乐背后的故事",
       "titleKey": "marketplace.plugins.musicStory.name",
       "descKey": "marketplace.plugins.musicStory.desc",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "description": "跟随当前播放，阅读歌曲、专辑与创作者的有据故事；支持追问、续读与来源核对。",
       "author": {
         "name": "Shawn Chen",
@@ -625,8 +625,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.music-story.island-plugin.json",
-      "sha256": "03403cf65f4ab0006b79d1608e382fa6ee0176c3c0ef0f94ad17f1bfdd90a887",
-      "packageSize": 80502
+      "sha256": "581d6d6744c8c562da3779f72d204d288b4033b92478341d729aba7ec5ad6f6b",
+      "packageSize": 84149
     },
     {
       "id": "com.island.navopath",
@@ -711,7 +711,7 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.navopath.island-plugin.json",
-      "sha256": "0493341ebed654fb2069d11a9ebc20bfd35c48344d0bbc8b3f75cc16c023e2e3",
+      "sha256": "72fab33e74fc93019b5aa5b5aaf7c09f1afd8661d65bbc2fb8d89805c559eeff",
       "packageSize": 51711
     },
     {

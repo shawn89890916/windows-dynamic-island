@@ -5,6 +5,7 @@ export interface PluginActivity {
 	priority?: number;
 	left?: string;
 	right?: string;
+	activityKey?: string;
 	progress?: number;
 	accent?: string;
 }
@@ -15,7 +16,7 @@ export function setPluginActivity(id: string, value: PluginActivity | null) {
 	if (
 		value &&
 		previous &&
-		(["active", "priority", "left", "right", "progress", "accent"] as const).every((key) =>
+		(["active", "priority", "left", "right", "activityKey", "progress", "accent"] as const).every((key) =>
 			Object.is(previous[key], value[key]),
 		)
 	)

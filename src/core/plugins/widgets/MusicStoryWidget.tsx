@@ -1,5 +1,6 @@
 import {
 	BookOpenTextIcon,
+	CheckCircle2Icon,
 	ChevronDownIcon,
 	ChevronUpIcon,
 	CircleHelpIcon,
@@ -18,9 +19,44 @@ import { Card } from "../../../components/ui/card";
 import { openExternal, providerAction, useProvider } from "../../../core/bridge";
 import { useLocale, useT } from "../../../core/i18n";
 import type { Focus, Story, Track } from "./musicStory";
-import { generateStory, storyCacheKey, storySourceKey } from "./musicStory";
+import { generateStory, legacyStoryCacheKey, storyCacheKey, storySourceKey } from "./musicStory";
 
 const CACHE_PREFIX = "island_music_story_v1_";
+const COMPLETION_PREFIX = "island_music_story_completed_";
+const PLUGIN_ID = "com.island.music-story";
+let activityTimer: ReturnType<typeof setTimeout> | undefined;
+let activitySequence = 0;
+
+function publishActivity(
+	value: { active: boolean; priority: number; left: string; right: string; activityKey?: string } | null,
+) {
+	const sdk = (
+		globalThis as typeof globalThis & {
+			__ISLAND_PLUGIN_SDK__?: {
+				setPluginActivity: (id: string, activity: typeof value) => void;
+			};
+		}
+	).__ISLAND_PLUGIN_SDK__;
+	sdk?.setPluginActivity(PLUGIN_ID, value);
+}
+
+function showCompletionActivity(label: string, status: string) {
+	if (activityTimer) clearTimeout(activityTimer);
+	publishActivity({
+		active: true,
+		priority: 75,
+		left: label,
+		right: status,
+		activityKey: `${Date.now()}:${++activitySequence}`,
+	});
+	activityTimer = setTimeout(() => publishActivity(null), 3600);
+}
+
+function showErrorActivity(label: string, status: string) {
+	if (activityTimer) clearTimeout(activityTimer);
+	publishActivity({ active: true, priority: 75, left: label, right: status });
+	activityTimer = setTimeout(() => publishActivity(null), 3600);
+}
 const FOCUS_OPTIONS: { id: Focus; label: Focus; icon: typeof BookOpenTextIcon }[] = [
 	{ id: "song", label: "song", icon: BookOpenTextIcon },
 	{ id: "album", label: "album", icon: Disc3Icon },
@@ -54,10 +90,33 @@ function trackFromMusic(music?: Pick<MusicState, "available" | "title" | "artist
 
 function getCached(track: Track, focus: Focus, locale: string): Story | null {
 	try {
-		const raw = localStorage.getItem(CACHE_PREFIX + storyCacheKey(track, focus, "", locale));
+		const key = CACHE_PREFIX + storyCacheKey(track, focus, "", locale);
+		const raw =
+			localStorage.getItem(key) ??
+			(locale.toLowerCase().startsWith("zh")
+				? localStorage.getItem(CACHE_PREFIX + legacyStoryCacheKey(track, focus))
+				: null);
 		if (!raw) return null;
 		const value = JSON.parse(raw) as Story;
-		return Date.now() - Date.parse(value.createdUtc) < 30 * 24 * 60 * 60 * 1000 ? value : null;
+		if (Date.now() - Date.parse(value.createdUtc) >= 30 * 24 * 60 * 60 * 1000) return null;
+		localStorage.setItem(key, raw);
+		return value;
+	} catch {
+		return null;
+	}
+}
+
+function recentCompletion(track: Track | null, locale: string): { at: number; focus: Focus } | null {
+	if (!track) return null;
+	try {
+		const matches = (Object.keys({ song: true, album: true, artist: true }) as Focus[])
+			.map((focus) => ({
+				focus,
+				at: Number(localStorage.getItem(COMPLETION_PREFIX + storyCacheKey(track, focus, "", locale))),
+			}))
+			.filter(({ at }) => at > 0 && Date.now() - at < 5000)
+			.sort((a, b) => b.at - a.at);
+		return matches[0] ? { at: matches[0].at, focus: matches[0].focus } : null;
 	} catch {
 		return null;
 	}
@@ -113,14 +172,18 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 			trackFromMusic({ available: available ?? false, title: title ?? "", artist: artist ?? "", album: album ?? "" }),
 		[available, title, artist, album],
 	);
+	const lastCompletion = recentCompletion(liveTrack, locale);
 	const [follow, setFollow] = useState(true);
 	const [track, setTrack] = useState<Track | null>(liveTrack);
-	const [focus, setFocus] = useState<Focus>("song");
-	const [story, setStory] = useState<Story | null>(() => (liveTrack ? getCached(liveTrack, "song", locale) : null));
+	const [focus, setFocus] = useState<Focus>(lastCompletion?.focus ?? "song");
+	const [story, setStory] = useState<Story | null>(() =>
+		liveTrack ? getCached(liveTrack, lastCompletion?.focus ?? "song", locale) : null,
+	);
 	const [collapsed, setCollapsed] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [phase, setPhase] = useState("");
 	const [error, setError] = useState("");
+	const [completedAt, setCompletedAt] = useState(() => lastCompletion?.at ?? 0);
 	const [question, setQuestion] = useState("");
 	const [now, setNow] = useState(Date.now());
 	const autoAttempt = useRef("");
@@ -142,6 +205,7 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 		) {
 			setTrack(liveTrack);
 			setStory(getCached(liveTrack, focus, locale));
+			setCompletedAt(recentCompletion(liveTrack, locale)?.at ?? 0);
 			setError("");
 		}
 		if (follow && !liveTrack) {
@@ -168,6 +232,20 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 			setLoading(true);
 			setError("");
 			setPhase(t("marketplace.widgets.pluginExtras.musicStory.searching"));
+			setCompletedAt(0);
+			try {
+				for (const completionFocus of ["song", "album", "artist"] as const)
+					localStorage.removeItem(COMPLETION_PREFIX + storyCacheKey(track, completionFocus, "", locale));
+			} catch {
+				// Storage can be unavailable in private WebView contexts.
+			}
+			if (activityTimer) clearTimeout(activityTimer);
+			publishActivity({
+				active: true,
+				priority: 75,
+				left: t("marketplace.widgets.pluginExtras.musicStoryActivity.loadingLabel"),
+				right: t("marketplace.widgets.pluginExtras.musicStoryActivity.loadingShort"),
+			});
 			try {
 				const next = await generateStory(
 					track,
@@ -176,16 +254,46 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 					baseUrl,
 					model,
 					apiKey,
-					prompt ? (story?.body ?? "") : (story?.body ?? ""),
-					(stage) => setPhase(stage),
+					story?.body ?? "",
+					(stage) => {
+						setPhase(stage);
+						const status =
+							stage === t("marketplace.widgets.pluginExtras.musicStoryActivity.searchingMore") ||
+							stage === t("marketplace.widgets.pluginExtras.musicStoryActivity.searching")
+								? t("marketplace.widgets.pluginExtras.musicStoryActivity.loadingShort")
+								: stage === t("marketplace.widgets.pluginExtras.musicStoryActivity.checking")
+									? t("marketplace.widgets.pluginExtras.musicStoryActivity.checkingShort")
+									: t("marketplace.widgets.pluginExtras.musicStoryActivity.writingShort");
+						publishActivity({
+							active: true,
+							priority: 75,
+							left: t("marketplace.widgets.pluginExtras.musicStoryActivity.loadingLabel"),
+							right: status,
+						});
+					},
 					locale,
 				);
 				const merged = prompt || story ? mergeStories(story, next) : next;
 				setStory(merged);
 				setQuestion("");
-				if (!prompt) saveCached(track, focus, merged, locale);
+				saveCached(track, focus, merged, locale);
+				const finishedAt = Date.now();
+				setCompletedAt(finishedAt);
+				try {
+					localStorage.setItem(COMPLETION_PREFIX + storyCacheKey(track, focus, "", locale), String(finishedAt));
+				} catch {
+					// Storage can be unavailable in private WebView contexts.
+				}
+				showCompletionActivity(
+					t("marketplace.widgets.pluginExtras.musicStoryActivity.loadingLabel"),
+					t("marketplace.widgets.pluginExtras.musicStoryActivity.doneShort"),
+				);
 			} catch (caught) {
 				setError(readableError(caught, t));
+				showErrorActivity(
+					t("marketplace.widgets.pluginExtras.musicStoryActivity.loadingLabel"),
+					t("marketplace.widgets.pluginExtras.musicStoryActivity.errorShort"),
+				);
 			} finally {
 				setLoading(false);
 				setPhase("");
@@ -193,6 +301,23 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 		},
 		[apiKey, baseUrl, focus, locale, model, story, t, track],
 	);
+
+	useEffect(() => {
+		if (!completedAt) return;
+		const timer = window.setTimeout(
+			() => {
+				setCompletedAt(0);
+				if (!track) return;
+				try {
+					localStorage.removeItem(COMPLETION_PREFIX + storyCacheKey(track, focus, "", locale));
+				} catch {
+					// Storage can be unavailable in private WebView contexts.
+				}
+			},
+			Math.max(0, 3600 - (Date.now() - completedAt)),
+		);
+		return () => window.clearTimeout(timer);
+	}, [completedAt, focus, locale, track]);
 
 	useEffect(() => {
 		if (!autoGenerate || !follow || !track || !music?.playing || !apiKey || story || loading) return;
@@ -399,6 +524,17 @@ export function MusicStoryWidget({ settings }: { settings: Record<string, unknow
 					</details>
 				) : null}
 			</Card>
+
+			{completedAt > 0 && (
+				<div
+					role="status"
+					aria-live="polite"
+					className="flex shrink-0 items-center gap-2 rounded-lg border border-emerald-400/15 bg-emerald-400/8 px-3 py-2 text-[11px] text-emerald-200"
+				>
+					<CheckCircle2Icon size={14} className="shrink-0" />
+					{t("marketplace.widgets.pluginExtras.musicStoryActivity.readyNotice")}
+				</div>
+			)}
 
 			{error && (
 				<div role="alert" className="shrink-0 rounded-lg bg-[#ff5f57]/10 px-3 py-2 text-[11px]/[1.5] text-[#ff9b96]">

@@ -233,6 +233,7 @@ export function createPluginModuleEntry(plugin: InstalledPlugin, t: Translate): 
 	const view = {
 		active: Boolean(plugin.packageSha256 && activity?.active),
 		priority: Math.max(0, Math.min(100, activity?.priority ?? 10)),
+		activityKey: activity?.activityKey,
 		icon: renderPluginIcon(manifest.icon, 14, manifest.accentColor),
 		accent: activity?.accent || manifest.accentColor || "#a9a49b",
 		compact: {
