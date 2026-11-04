@@ -62,7 +62,7 @@ export function Tabs({
 	const s = tabs({ iconsOnly, bottom });
 	const pill = <motion.span layoutId="tab-pill" className={s.pill()} transition={transition} />;
 	return (
-		<div className={s.base()}>
+		<div className={s.base()} data-no-drag>
 			{entries.map(({ module, view }) => {
 				const selected = current === module.id;
 				return (
