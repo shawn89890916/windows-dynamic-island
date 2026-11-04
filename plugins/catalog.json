@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "sdkVersion": 1,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "plugins": [
     {
       "id": "com.island.desktop-glass",
@@ -191,8 +191,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.weather.island-plugin.json",
-      "sha256": "4fbd9b32d5259ccfc2effb0d9499710127767d1c32fe4908df376c51162f3aa0",
-      "packageSize": 49130
+      "sha256": "644dd84e2590899899a05971aca9899ae9d80e7403029976981b0bfaffe267b6",
+      "packageSize": 49144
     },
     {
       "id": "com.island.work-countdown",
@@ -406,8 +406,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.crypto-ticker.island-plugin.json",
-      "sha256": "b5e9702afa3b5295396f0dd4092ace226e15b3d4c1f0b67ed93753977d62a04a",
-      "packageSize": 46311
+      "sha256": "3a39160a662ce8516d4ea0dad6ae787510e97077f0d5f3a836616cf8feefa9d0",
+      "packageSize": 46325
     },
     {
       "id": "com.island.steam-friends",
@@ -487,8 +487,106 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.steam-friends.island-plugin.json",
-      "sha256": "35036d4ef1d859747a0e4c31f16c0a3c5d5139830998c12f1f1e490427e266d2",
-      "packageSize": 47046
+      "sha256": "25c73823bb7adaefcef5a4f36c179e8a6e1d64fd2f1252a97d8a9ffa952afb46",
+      "packageSize": 47060
+    },
+    {
+      "id": "com.island.music-story",
+      "name": "音乐背后的故事",
+      "titleKey": "marketplace.plugins.musicStory.name",
+      "descKey": "marketplace.plugins.musicStory.desc",
+      "version": "1.0.0",
+      "description": "跟随当前播放，阅读歌曲、专辑与创作者的有据故事；支持追问、续读与来源核对。",
+      "author": {
+        "name": "Shawn Chen",
+        "url": "https://github.com/shawn89890916"
+      },
+      "category": "media",
+      "icon": "Sparkles",
+      "accentColor": "#B9B5A9",
+      "tags": [
+        "音乐",
+        "故事",
+        "专辑",
+        "采访",
+        "资料来源"
+      ],
+      "settings": [
+        {
+          "key": "baseUrl",
+          "label": "DeepSeek API 基础地址",
+          "type": "text",
+          "default": "https://api.deepseek.com"
+        },
+        {
+          "key": "model",
+          "label": "模型名称",
+          "type": "text",
+          "default": "deepseek-flash"
+        },
+        {
+          "key": "apiKey",
+          "label": "DeepSeek API Key",
+          "type": "password",
+          "default": ""
+        },
+        {
+          "key": "autoGenerate",
+          "label": "新歌播放后自动生成（会调用 API）",
+          "type": "boolean",
+          "default": false
+        }
+      ],
+      "expandedSize": {
+        "width": 640,
+        "height": 550
+      },
+      "sdkVersion": 1,
+      "guide": {
+        "summary": "跟随灵动岛当前播放的歌曲，整理有原文依据的歌曲、专辑与创作者故事；支持续读、追问和打开来源。",
+        "prerequisites": [
+          "Windows 播放器或浏览器正在向系统媒体控制提供歌曲标题与歌手信息",
+          "可用的 DeepSeek API Key；检索和模型生成可能分别产生费用"
+        ],
+        "steps": [
+          {
+            "title": "配置 DeepSeek 接口",
+            "desc": "在设置中心“插件市场 → 已安装”中打开本插件配置，填写 API 基础地址、模型名称和个人 API Key。默认地址为 https://api.deepseek.com，默认模型为 deepseek-flash。",
+            "tip": "请求会向配置的接口发送曲名、艺人、专辑、追问和检索到的网页资料。请使用可信接口并留意服务商的计费规则。"
+          },
+          {
+            "title": "播放音乐并选择阅读入口",
+            "desc": "在 Apple Music 或浏览器播放音乐后打开插件，可切换“歌曲”“专辑”“创作者”三个入口。播放器支持上一首、播放/暂停、下一首和收起。"
+          },
+          {
+            "title": "生成、追问与查看来源",
+            "desc": "点击“展开故事”生成首篇；之后可“继续”寻找新资料，也可以输入具体问题。展开“来源”并点击条目，可打开原始网页。",
+            "tip": "新歌自动生成默认关闭。开启后，播放稳定 8 秒会自动发起检索与生成。"
+          }
+        ],
+        "features": [
+          "从系统当前媒体会话读取歌名、艺人、专辑、封面与播放控制",
+          "先搜索网页资料，再核验原文摘录、生成正文并复核引用",
+          "支持段落加粗、正文选中复制、缓存 30 天、续读去重和针对性追问"
+        ],
+        "faq": [
+          {
+            "q": "没有显示当前歌曲怎么办？",
+            "a": "请确认播放器正在向 Windows 系统媒体控制提供标题和艺人信息；切歌后稍等片刻，或重新展开灵动岛。"
+          },
+          {
+            "q": "API Key 如何保存？",
+            "a": "Key 作为插件密码配置保存在灵动岛的已安装插件设置中。插件请求会将曲目信息、问题与检索资料发送至你填写的接口。"
+          }
+        ]
+      },
+      "permissions": [
+        "在灵动岛窗口执行代码",
+        "使用宿主提供的界面与系统接口"
+      ],
+      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.music-story.island-plugin.json",
+      "sha256": "b79ce69194239d1b75da6397dbbfb18d75e4d3bf6601d34b41c7eae068c40cac",
+      "packageSize": 63064
     },
     {
       "id": "com.island.navopath",
@@ -571,8 +669,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.navopath.island-plugin.json",
-      "sha256": "8ae5507073ef87edc8184fac1cb4b634d25386a014b6ba39e2f2442115e81a16",
-      "packageSize": 51527
+      "sha256": "031322e2d8d7730a3082530f54f932cad63e0e1d40ffc3e37fad23707783ebe4",
+      "packageSize": 51562
     },
     {
       "id": "com.island.everything",
@@ -743,8 +841,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.obsidian.island-plugin.json",
-      "sha256": "dad733ea9a5d3fef71062304ad16330b54eee05b5ffbb401abdaafafc4f1f126",
-      "packageSize": 63092
+      "sha256": "701512bdbe30878fa5667a05b8d172bcec712d4b4f77927283393bd72fa6570c",
+      "packageSize": 63106
     },
     {
       "id": "com.island.ai-hub",

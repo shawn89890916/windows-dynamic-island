@@ -237,6 +237,10 @@
         name: "Steam Activity",
         desc: "See what your friends are playing and launch Steam with one click.",
       },
+      musicStory: {
+        name: "Music Story",
+        desc: "Read sourced stories about the current song, album, or artist, with follow-up questions and citations.",
+      },
       navopath: {
         name: "NavoPath Planner",
         desc: "AI task & timeline planner with live MCP sync and one-click task completion.",

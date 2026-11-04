@@ -104,6 +104,7 @@ const entries: Record<string, string> = {
 	"com.island.weather": "WeatherWidget",
 	"com.island.quick-memo": "QuickMemoWidget",
 	"com.island.steam-friends": "SteamFriendsWidget",
+	"com.island.music-story": "MusicStoryWidget",
 	"com.island.navopath": "NavoPathWidget",
 	"com.island.everything": "EverythingWidget",
 	"com.island.obsidian": "ObsidianWidget",

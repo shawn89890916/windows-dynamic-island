@@ -158,6 +158,8 @@ export type MessageKey =
 	| "marketplace.plugins.crypto.desc"
 	| "marketplace.plugins.steam.name"
 	| "marketplace.plugins.steam.desc"
+	| "marketplace.plugins.musicStory.name"
+	| "marketplace.plugins.musicStory.desc"
 	| "marketplace.plugins.navopath.name"
 	| "marketplace.plugins.navopath.desc"
 	| "marketplace.plugins.everything.name"
