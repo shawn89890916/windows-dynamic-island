@@ -98,8 +98,11 @@ function getCached(track: Track, focus: Focus, locale: string): Story | null {
 				: null);
 		if (!raw) return null;
 		const value = JSON.parse(raw) as Story;
-		if (Date.now() - Date.parse(value.createdUtc) >= 30 * 24 * 60 * 60 * 1000) return null;
-		localStorage.setItem(key, raw);
+		try {
+			localStorage.setItem(key, raw);
+		} catch {
+			// Keep serving the legacy local cache if migration cannot be written.
+		}
 		return value;
 	} catch {
 		return null;
