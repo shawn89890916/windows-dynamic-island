@@ -20,6 +20,7 @@ import { useCatalog } from "../../core/plugins/catalog";
 import {
 	installLocalPlugin,
 	installPlugin,
+	pluginText,
 	renderPluginIcon,
 	togglePlugin,
 	uninstallPlugin,
@@ -233,7 +234,7 @@ export function MarketplacePage() {
 									<div className="min-w-0 flex-1">
 										<div className="flex items-center gap-2">
 											<h4 className="truncate text-[13px] font-semibold text-text group-hover/item:text-accent transition-colors">
-												{item.manifest.titleKey ? t(item.manifest.titleKey) : item.manifest.name}
+												{pluginText(t, item.manifest.titleKey, item.manifest.name)}
 											</h4>
 											<span className="flex-none rounded bg-white/8 px-1.5 py-0.2 text-[10px] text-text-faint">
 												v{item.manifest.version}
@@ -247,7 +248,7 @@ export function MarketplacePage() {
 											</span>
 										</div>
 										<p className="truncate text-xs text-text-faint">
-											{item.manifest.descKey ? t(item.manifest.descKey) : item.manifest.description}
+											{pluginText(t, item.manifest.descKey, item.manifest.description)}
 										</p>
 									</div>
 								</div>
@@ -447,14 +448,14 @@ function PluginCard({
 	onConfigure?: () => void;
 }) {
 	const t = useT();
-	const title = plugin.titleKey ? t(plugin.titleKey) : plugin.name;
-	const desc = plugin.descKey ? t(plugin.descKey) : plugin.description;
+	const title = pluginText(t, plugin.titleKey, plugin.name);
+	const desc = pluginText(t, plugin.descKey, plugin.description);
 	return (
-		<Card className="flex flex-col justify-between p-3.5 transition-all hover:border-white/12">
-			<div>
-				<div className="flex items-start justify-between gap-2">
+		<Card className="flex min-w-0 flex-col justify-between overflow-hidden p-3.5 transition-all hover:border-white/12">
+			<div className="min-w-0">
+				<div className="flex min-w-0 items-start justify-between gap-2">
 					<div
-						className={`flex items-center gap-2.5 ${isInstalled ? "cursor-pointer group/card" : ""}`}
+						className={`flex min-w-0 flex-1 items-center gap-2.5 ${isInstalled ? "cursor-pointer group/card" : ""}`}
 						onClick={isInstalled ? onConfigure : undefined}
 					>
 						<div
@@ -471,13 +472,15 @@ function PluginCard({
 							>
 								{title}
 							</h4>
-							<span className="text-[11px] text-text-faint">by {plugin.author.name}</span>
+							<span className="block truncate text-[11px] text-text-faint">by {plugin.author.name}</span>
 						</div>
 					</div>
-					<span className="rounded bg-white/6 px-1.5 py-0.2 text-[10px] text-text-faint">v{plugin.version}</span>
+					<span className="flex-none rounded bg-white/6 px-1.5 py-0.2 text-[10px] text-text-faint">
+						v{plugin.version}
+					</span>
 				</div>
 
-				<p className="mt-2.5 text-xs leading-relaxed text-text-muted">{desc}</p>
+				<p className="mt-2.5 break-words text-xs leading-relaxed text-text-muted [overflow-wrap:anywhere]">{desc}</p>
 
 				{plugin.tags && (
 					<div className="mt-3 flex flex-wrap gap-1">
@@ -490,8 +493,8 @@ function PluginCard({
 				)}
 			</div>
 
-			<div className="mt-4 flex items-center justify-between border-t border-white/6 pt-3">
-				<span className="text-[10px] text-text-faint">{t("marketplace.ui.freeOpenSource")}</span>
+			<div className="mt-4 flex min-w-0 flex-wrap items-center justify-between gap-2 border-t border-white/6 pt-3">
+				<span className="min-w-0 text-[10px] text-text-faint">{t("marketplace.ui.freeOpenSource")}</span>
 				{isInstalled ? (
 					<div className="flex items-center gap-2">
 						<span className="flex items-center gap-1 text-xs font-medium text-emerald-400">

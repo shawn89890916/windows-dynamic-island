@@ -24,6 +24,12 @@ import { ExternalPluginPanel, unloadPlugin } from "./runtime";
 import type { InstalledPlugin, LoadedPluginPackage, PluginManifest, PluginPackage } from "./types";
 
 const STORAGE_KEY = "island_installed_plugins";
+export function pluginText(t: Translate, key: MessageKey | undefined, fallback: string) {
+	if (!key) return fallback;
+	const translated = t(key);
+	return translated === key ? fallback : translated;
+}
+
 export function renderPluginIcon(iconName: string, size = 14, color?: string): ReactNode {
 	const props = { size, ...(color ? { color } : {}) };
 	const icons = {
@@ -205,7 +211,7 @@ export function updatePluginSettings(id: string, settings: Record<string, unknow
 export function createPluginModuleEntry(plugin: InstalledPlugin, t: Translate): ModuleEntry {
 	const { manifest } = plugin;
 	const activity = pluginActivities.get()[manifest.id];
-	const title = manifest.titleKey ? t(manifest.titleKey) : manifest.name;
+	const title = pluginText(t, manifest.titleKey, manifest.name);
 	const view = {
 		active: Boolean(plugin.packageSha256 && activity?.active),
 		priority: Math.max(0, Math.min(100, activity?.priority ?? 10)),

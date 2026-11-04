@@ -14,8 +14,6 @@ use tauri::{AppHandle, Emitter, Manager, State, WebviewUrl, WebviewWindowBuilder
 
 pub const CHANGED_EVENT: &str = "settings://changed";
 pub const SETTINGS_LABEL: &str = "settings";
-const SETTINGS_OPEN_EVENT: &str = "island://settings-open";
-const SETTINGS_CLOSED_EVENT: &str = "island://settings-closed";
 static SETTINGS_OPEN: AtomicBool = AtomicBool::new(false);
 
 pub fn is_open() -> bool {
@@ -98,7 +96,6 @@ const SIZE: (f64, f64) = (860.0, 620.0);
 pub fn open(app: &AppHandle) -> tauri::Result<()> {
     SETTINGS_OPEN.store(true, Ordering::Relaxed);
     crate::blur::hide(app);
-    let _ = app.emit(SETTINGS_OPEN_EVENT, ());
     let _ = set_island_topmost(app, false);
     if let Some(win) = app.get_webview_window(SETTINGS_LABEL) {
         let result = (|| {
@@ -156,7 +153,6 @@ fn set_island_topmost(app: &AppHandle, topmost: bool) -> tauri::Result<()> {
 fn restore_island(app: &AppHandle) {
     SETTINGS_OPEN.store(false, Ordering::Relaxed);
     let _ = set_island_topmost(app, true);
-    let _ = app.emit(SETTINGS_CLOSED_EVENT, ());
 }
 
 const REPO_URL: &str = "https://github.com/shawn89890916/windows-dynamic-island";

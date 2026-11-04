@@ -34,9 +34,6 @@ export function useIslandController(modules: IslandModule[]) {
 	const settings = useSettings();
 	const entries = useModuleEntries(modules, settings);
 	const fullscreen = useFullscreen();
-	const [settingsOpen, setSettingsOpen] = useState(false);
-	useTauriEvent("island://settings-open", () => setSettingsOpen(true));
-	useTauriEvent("island://settings-closed", () => setSettingsOpen(false));
 
 	// Required actions (such as a hydration reminder at zero) take precedence
 	// over ordinary attention requests when deciding which tab opens.
@@ -56,7 +53,7 @@ export function useIslandController(modules: IslandModule[]) {
 	const enabled = useCallback((id: string) => entries.some((e) => e.module.id === id), [entries]);
 	const mode = islandMode({
 		swallowed: settings[ISLAND_HIDDEN_KEY] === true,
-		hidden: settingsOpen || (fullscreen && readSetting(settings, generalSettings.hideInFullscreen)),
+		hidden: fullscreen && readSetting(settings, generalSettings.hideInFullscreen),
 		expanded: hover.open,
 		forceExpanded,
 		peeking: peekId !== null,

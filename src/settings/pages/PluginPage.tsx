@@ -23,6 +23,7 @@ import { useT } from "../../core/i18n";
 import { useCatalog } from "../../core/plugins/catalog";
 import {
 	installPlugin,
+	pluginText,
 	renderPluginIcon,
 	togglePlugin,
 	uninstallPlugin,
@@ -89,8 +90,8 @@ export function PluginPage({
 		return <Navigate to="/marketplace" replace />;
 	}
 
-	const title = manifest.titleKey ? t(manifest.titleKey) : manifest.name;
-	const desc = manifest.descKey ? t(manifest.descKey) : manifest.description;
+	const title = pluginText(t, manifest.titleKey, manifest.name);
+	const desc = pluginText(t, manifest.descKey, manifest.description);
 	const guide = manifest.guide || catalogItem?.guide;
 
 	const handleSettingChange = (key: string, value: unknown) => {
