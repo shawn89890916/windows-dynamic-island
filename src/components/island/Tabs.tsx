@@ -1,5 +1,5 @@
 import { LayoutGridIcon, SettingsIcon } from "lucide-react";
-import { motion, type Transition } from "motion/react";
+import { motion, Reorder, type Transition } from "motion/react";
 import type { CSSProperties, ReactNode } from "react";
 import { tv } from "tailwind-variants";
 import { command } from "../../core/bridge";
@@ -43,6 +43,7 @@ export function Tabs({
 	entries,
 	current,
 	onSelect,
+	onReorder,
 	iconsOnly,
 	bottom,
 	transition,
@@ -51,6 +52,7 @@ export function Tabs({
 	entries: ModuleEntry[];
 	current: string | null;
 	onSelect: (id: string) => void;
+	onReorder?: (ids: string[]) => void;
 	iconsOnly: boolean;
 	/** Below the content (Windows Island): centered. */
 	bottom: boolean;
@@ -61,27 +63,57 @@ export function Tabs({
 	const t = useT();
 	const s = tabs({ iconsOnly, bottom });
 	const pill = <motion.span layoutId="tab-pill" className={s.pill()} transition={transition} />;
+	const renderTab = ({ module, view }: ModuleEntry, draggable = false) => {
+		const selected = current === module.id;
+		const className = `${s.tab({ active: selected })}${draggable ? " cursor-grab touch-none active:cursor-grabbing" : ""}`;
+		return (
+			<button
+				type="button"
+				key={module.id}
+				className={className}
+				title={t(module.title)}
+				style={{ "--tab-accent": view.accent ?? "#fff" } as CSSProperties}
+				onClick={() => onSelect(module.id)}
+			>
+				{selected && pill}
+				<span className={s.part()}>{view.icon}</span>
+				{/* Many modules: only the open tab spells out its name. */}
+				{!iconsOnly && selected && <span className={s.part()}>{t(module.title)}</span>}
+				{view.active && !selected && <span className={s.dot()} />}
+			</button>
+		);
+	};
 	return (
 		<div className={s.base()} data-no-drag>
-			{entries.map(({ module, view }) => {
-				const selected = current === module.id;
-				return (
-					<button
-						type="button"
-						key={module.id}
-						className={s.tab({ active: selected })}
-						title={t(module.title)}
-						style={{ "--tab-accent": view.accent ?? "#fff" } as CSSProperties}
-						onClick={() => onSelect(module.id)}
-					>
-						{selected && pill}
-						<span className={s.part()}>{view.icon}</span>
-						{/* Many modules: only the open tab spells out its name. */}
-						{!iconsOnly && selected && <span className={s.part()}>{t(module.title)}</span>}
-						{view.active && !selected && <span className={s.dot()} />}
-					</button>
-				);
-			})}
+			{iconsOnly ? (
+				<Reorder.Group
+					as="div"
+					axis="x"
+					className="flex shrink-0 items-center gap-1"
+					values={entries.map((entry) => entry.module.id)}
+					onReorder={(ids) => onReorder?.(ids)}
+				>
+					{entries.map(({ module, view }) => (
+						<Reorder.Item
+							as="button"
+							type="button"
+							key={module.id}
+							value={module.id}
+							className={`${s.tab({ active: current === module.id })} cursor-grab touch-none active:cursor-grabbing`}
+							title={`${t(module.title)} · ${t("layout.drag")}`}
+							style={{ "--tab-accent": view.accent ?? "#fff" } as CSSProperties}
+							whileDrag={{ scale: 1.12, zIndex: 1, boxShadow: "0 8px 18px -8px rgba(0,0,0,0.65)" }}
+							onClick={() => onSelect(module.id)}
+						>
+							{current === module.id && pill}
+							<span className={s.part()}>{view.icon}</span>
+							{view.active && current !== module.id && <span className={s.dot()} />}
+						</Reorder.Item>
+					))}
+				</Reorder.Group>
+			) : (
+				entries.map((entry) => renderTab(entry))
+			)}
 			<button
 				type="button"
 				className={s.tab({ active: current === LAUNCHER, launcher: true })}

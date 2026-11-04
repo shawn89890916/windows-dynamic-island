@@ -40,7 +40,7 @@ export function NavoPathWidget({ settings }: { settings: Record<string, unknown>
 				description={t("marketplace.widgets.navopath.needsConfig")}
 				icon={<img src={navopathLogo} alt="" className="size-5 object-contain" />}
 				accentColor="#A9A49B"
-				externalUrl="navopath://app"
+				externalUrl="https://navopath.com/app"
 				externalLabel={t("marketplace.widgets.navopath.openApp")}
 				settingsDefs={[
 					{ key: "mcpEndpoint", label: t("calendar.navopath.endpointLabel"), type: "text", default: DEFAULT_ENDPOINT },
@@ -77,7 +77,7 @@ export function NavoPathWidget({ settings }: { settings: Record<string, unknown>
 				>
 					<SlidersIcon size={15} />
 				</button>
-				<button type="button" onClick={() => void openExternal("navopath://app")} className="navopath-open">
+				<button type="button" onClick={() => void openExternal("https://navopath.com/app")} className="navopath-open">
 					{t("marketplace.widgets.navopath.openApp")}
 					<ExternalLinkIcon size={12} />
 				</button>

@@ -9,6 +9,7 @@ import {
 	moduleEnabled,
 	readSetting,
 	type Values as Settings,
+	setSetting,
 	useSettings,
 } from "./settings";
 import type { IslandMode, IslandModule, ModuleEntry } from "./types";
@@ -70,6 +71,17 @@ export function useIslandController(modules: IslandModule[]) {
 			: (openTab ?? primary?.module.id ?? entries.find((e) => !e.view.hidden)?.module.id ?? null));
 	const focused = entries.find((e) => e.module.id === focusedId);
 	const tabs = tabBar(entries, settings, focusedId);
+	const reorderTabs = (ids: string[]) => {
+		const movable = new Set(tabs.map((entry) => entry.module.id));
+		const ordered = [
+			...new Set([...readSetting(settings, layoutSettings.order), ...entries.map((entry) => entry.module.id)]),
+		];
+		let next = 0;
+		setSetting(
+			layoutSettings.order,
+			ordered.map((id) => (movable.has(id) ? (ids[next++] ?? id) : id)),
+		);
+	};
 
 	/** A tab picked by the user: the island may shrink away from the pointer. */
 	const selectTab = useCallback(
@@ -128,6 +140,7 @@ export function useIslandController(modules: IslandModule[]) {
 	return {
 		entries,
 		tabs,
+		reorderTabs,
 		launcher: mode === "expanded" && focusedId === LAUNCHER,
 		mode,
 		primary,
@@ -165,7 +178,11 @@ function useModuleEntries(builtinModules: IslandModule[], settings: Settings): M
 		readSetting(settings, layoutSettings.order),
 	);
 
-	return [...builtinEntries, ...pluginEntries];
+	return inOrder(
+		[...builtinEntries, ...pluginEntries],
+		(e) => e.module.id,
+		readSetting(settings, layoutSettings.order),
+	);
 }
 
 /** The two active modules with the highest priority. */

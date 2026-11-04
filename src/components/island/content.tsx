@@ -36,6 +36,7 @@ export function islandContent(ctl: IslandController, look: Appearance, v: Varian
 					ctl.setTab(id);
 					ctl.expand(id);
 				}}
+				onReorder={ctl.reorderTabs}
 				iconsOnly={windows}
 				bottom={v.tabsAtBottom}
 				transition={v.shellSpring}
