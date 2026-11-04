@@ -944,7 +944,7 @@
         "在灵动岛窗口执行代码",
         "使用宿主提供的界面与系统接口"
       ],
-      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.vpn.island-plugin.json",
+      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.vpn-1.0.2.island-plugin.json",
       "sha256": "4f0d7eed68e19dc32b5fcedd4e23622b1281b32e9275b04c4e3de1eeced48b26",
       "packageSize": 55840
     },
