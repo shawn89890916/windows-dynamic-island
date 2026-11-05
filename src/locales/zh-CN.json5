@@ -666,6 +666,13 @@
       label: "限额重置时展开",
       desc: "当订阅计划的请求限额重置并可再次使用时展开通知。",
     },
+    alert: {
+      fiveHour: { label: "5 小时用量提醒", desc: "5 小时用量达到此比例时展开灵动岛。" },
+      weekly: { label: "周用量提醒", desc: "周用量达到此比例时展开灵动岛。" },
+      note: "每个额度周期内，用量首次越过阈值时提醒一次。",
+      compact: "{agent} · {window}",
+      message: "{agent}的{window}用量已达到提醒阈值。",
+    },
     status: {
       connected: "已连接",
       disconnected: "未连接",

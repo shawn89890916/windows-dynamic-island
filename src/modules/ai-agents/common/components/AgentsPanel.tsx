@@ -4,10 +4,11 @@ import { SectionLabel } from "../../../../components/ui/text";
 import { cn } from "../../../../core/cn";
 import { useT } from "../../../../core/i18n";
 import { useNow } from "../format";
-import type { AgentDefinition, AgentSessionRef, AgentSnapshot } from "../types";
+import type { AgentDefinition, AgentSessionRef, AgentSnapshot, UsageAlert as UsageAlertData } from "../types";
 import { AgentCard } from "./AgentCard";
 import { PermissionPrompt } from "./PermissionPrompt";
 import { SessionList } from "./SessionList";
+import { UsageAlertBanner } from "./UsageAlert";
 import { UsageChart } from "./UsageChart";
 
 /** Expanded "AI Agents" dashboard. */
@@ -15,10 +16,12 @@ export function AgentsPanel({
 	agents,
 	snapshots,
 	sessions,
+	usageAlert,
 }: {
 	agents: AgentDefinition[];
 	snapshots: AgentSnapshot[];
 	sessions: AgentSessionRef[];
+	usageAlert?: UsageAlertData | null;
 }) {
 	const busy = sessions.some((s) => s.session.status === "working" || s.session.status === "waiting");
 	const now = useNow(busy ? 1000 : 30_000);
@@ -117,6 +120,8 @@ export function AgentsPanel({
 					)}
 				</div>
 			</div>
+
+			{usageAlert && <UsageAlertBanner alert={usageAlert} />}
 
 			<AgentCard key={agent.id} agent={agent} snapshot={snapshots[index]} now={now} />
 

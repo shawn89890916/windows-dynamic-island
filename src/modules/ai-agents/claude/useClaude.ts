@@ -61,6 +61,7 @@ export function useClaude(): AgentSnapshot {
 		limits.push({
 			id: "5h",
 			label: t("agents.limit.fiveHour"),
+			windowMinutes: 300,
 			usedPct: fiveHour.usedPct,
 			resetsAt: toMs(fiveHour.resetsAt),
 		});
@@ -68,6 +69,7 @@ export function useClaude(): AgentSnapshot {
 		limits.push({
 			id: "7d",
 			label: t("agents.limit.sevenDay"),
+			windowMinutes: 10_080,
 			usedPct: sevenDay.usedPct,
 			resetsAt: toMs(sevenDay.resetsAt),
 		});

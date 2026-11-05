@@ -670,6 +670,13 @@
       label: "Expand when the limit resets",
       desc: "When the request limit of the plan resets and can be used again.",
     },
+    alert: {
+      fiveHour: { label: "5-hour usage alert", desc: "Expand the island when 5-hour usage reaches this level." },
+      weekly: { label: "Weekly usage alert", desc: "Expand the island when weekly usage reaches this level." },
+      note: "Alerts trigger once per limit window after usage crosses the threshold.",
+      compact: "{agent} · {window}",
+      message: "{agent} {window} usage reached the alert threshold.",
+    },
     status: {
       connected: "Connected",
       disconnected: "Disconnected",

@@ -643,6 +643,13 @@
       label: "Expandir quando o limite resetar",
       desc: "Quando o limite de requisições do plano redefinir e poder ser usado novamente.",
     },
+    alert: {
+      fiveHour: { label: "Alerta de uso em 5 horas", desc: "Expande a ilha quando o uso em 5 horas atingir este nível." },
+      weekly: { label: "Alerta de uso semanal", desc: "Expande a ilha quando o uso semanal atingir este nível." },
+      note: "O alerta aparece uma vez por janela, quando o uso ultrapassa o limite.",
+      compact: "{agent} · {window}",
+      message: "O uso de {window} do {agent} atingiu o limite de alerta.",
+    },
     status: {
       connected: "Conectado",
       disconnected: "Desconectado",

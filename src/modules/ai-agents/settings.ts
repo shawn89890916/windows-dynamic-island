@@ -27,6 +27,21 @@ export const agentSettings = {
 	},
 } satisfies Record<string, SettingDef>;
 
+export const agentUsageAlertSettings = {
+	fiveHour: {
+		key: "agents.usageAlert.fiveHour",
+		label: "agents.alert.fiveHour.label",
+		description: "agents.alert.fiveHour.desc",
+		default: 80,
+	} satisfies SettingDef<number>,
+	weekly: {
+		key: "agents.usageAlert.weekly",
+		label: "agents.alert.weekly.label",
+		description: "agents.alert.weekly.desc",
+		default: 80,
+	} satisfies SettingDef<number>,
+};
+
 /**
  * Sounds for a session that finished or asks for permission, with the audio
  * file to play (`null`: the one shipped with the app). Read by the backend

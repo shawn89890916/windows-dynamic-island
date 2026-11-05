@@ -85,7 +85,13 @@ function limit(t: Translate, id: string, w: LimitWindow, fallback: MessageKey): 
 			: m === 10_080 || m == null
 				? t(fallback)
 				: t("codex.limitWindow", { time: m % 1440 === 0 ? `${m / 1440}d` : m % 60 === 0 ? `${m / 60}h` : `${m} min` });
-	return { id, label, usedPct: w.usedPct, resetsAt: w.resetsAt ? w.resetsAt * 1000 : null };
+	return {
+		id,
+		label,
+		usedPct: w.usedPct,
+		windowMinutes: w.windowMinutes ?? (fallback === "agents.limit.fiveHour" ? 300 : 10_080),
+		resetsAt: w.resetsAt ? w.resetsAt * 1000 : null,
+	};
 }
 
 function describe(t: Translate, a: { kind: string; arg?: string }) {

@@ -67,6 +67,7 @@ export interface UsageLimit {
 	id: string;
 	label: string;
 	usedPct: number;
+	windowMinutes?: number | null;
 	/** Unix ms. */
 	resetsAt?: number | null;
 }
@@ -110,4 +111,11 @@ export interface UsageHistory {
 export interface AgentSessionRef {
 	agent: AgentDefinition;
 	session: AgentSession;
+}
+
+export interface UsageAlert {
+	id: string;
+	agent: AgentDefinition;
+	window: "5h" | "weekly";
+	usedPct: number;
 }
