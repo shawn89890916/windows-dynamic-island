@@ -14,6 +14,7 @@ export function Surface({
 	contentKey,
 	contentTop = 0,
 	macCompact = false,
+	macCompactInline = false,
 	rim,
 	children,
 }: {
@@ -24,6 +25,7 @@ export function Surface({
 	contentKey: string;
 	contentTop?: number;
 	macCompact?: boolean;
+	macCompactInline?: boolean;
 	rim: ReactNode;
 	children: ReactNode;
 }) {
@@ -54,8 +56,12 @@ export function Surface({
 			<AnimatePresence mode="popLayout" initial={false}>
 				<motion.div
 					key={contentKey}
-					className="absolute top-0 left-1/2 origin-top -translate-x-1/2"
-					style={{ top: contentTop, width: g.width, height: g.height - contentTop }}
+					className={cn("absolute top-0 origin-top", macCompactInline ? "left-1/2 ml-5" : "left-1/2 -translate-x-1/2")}
+					style={{
+						top: contentTop,
+						width: macCompactInline ? Math.max(0, g.width / 2 - 20) : g.width,
+						height: g.height - contentTop,
+					}}
 					initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
 					animate={{
 						opacity: 1,

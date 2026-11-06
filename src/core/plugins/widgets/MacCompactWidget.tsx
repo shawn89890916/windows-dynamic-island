@@ -9,7 +9,7 @@ export function MacCompactWidget() {
 				{pluginText(t, "marketplace.plugins.macCompact.name", "Mac Dynamic Island")}
 			</p>
 			<p className="text-xs text-text-dim">
-				{pluginText(t, "marketplace.plugins.macCompact.desc", "Requires Island for Windows v0.5.18 or later.")}
+				{pluginText(t, "marketplace.plugins.macCompact.desc", "Requires Island for Windows v0.5.21 or later.")}
 			</p>
 		</div>
 	);

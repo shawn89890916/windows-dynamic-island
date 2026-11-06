@@ -52,7 +52,7 @@ export function Island() {
 	const swallowed = !macCompact && mode === "swallowed";
 	const anchorOnly = macCompact && (mode === "hidden" || mode === "swallowed");
 	const macMusic = macCompact && mode === "compact" && primary?.module.id === "music";
-	const contentTop = macCompact && (big || (mode === "compact" && !macMusic)) ? MAC_CAMERA_BAND : 0;
+	const contentTop = macCompact && big ? MAC_CAMERA_BAND : 0;
 	const resting = mode === "compact" || mode === "idle";
 	const showSecondary = mode === "compact" && secondary !== undefined;
 	const transition = big ? v.expandSpring : v.shellSpring;
@@ -155,6 +155,7 @@ export function Island() {
 							contentKey={content.key}
 							contentTop={contentTop}
 							macCompact={macCompact}
+							macCompactInline={macCompact && mode === "compact"}
 							rim={rim}
 						>
 							{content.node}
