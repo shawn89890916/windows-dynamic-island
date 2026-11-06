@@ -6,7 +6,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		name: "Mac 灵动岛",
 		titleKey: "marketplace.plugins.macCompact.name",
 		descKey: "marketplace.plugins.macCompact.desc",
-		version: "1.0.0",
+		version: "1.0.1",
 		description: "需要灵动岛 v0.5.18 或更新版本。启用后常驻仿摄像头孔，收起音乐时只显示封面和波形，并跟随 Windows 的摄像头和麦克风使用状态显示绿点或橙点。",
 		author: { name: "Shawn Chen", url: "https://github.com/shawn89890916" },
 		category: "system",

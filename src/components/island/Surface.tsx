@@ -13,6 +13,7 @@ export function Surface({
 	transition,
 	contentKey,
 	contentTop = 0,
+	macCompact = false,
 	rim,
 	children,
 }: {
@@ -22,6 +23,7 @@ export function Surface({
 	transition: Transition;
 	contentKey: string;
 	contentTop?: number;
+	macCompact?: boolean;
 	rim: ReactNode;
 	children: ReactNode;
 }) {
@@ -41,6 +43,7 @@ export function Surface({
 								: "bg-black/60",
 				),
 				big &&
+					!macCompact &&
 					"shadow-[0_28px_80px_-12px_rgba(0,0,0,0.95),0_10px_32px_-4px_rgba(0,0,0,0.6),inset_0_1px_1px_0_rgba(255,255,255,0.14),0_0_0_1px_rgba(255,255,255,0.1)]",
 			)}
 			style={windows ? glowStyle(look) : undefined}

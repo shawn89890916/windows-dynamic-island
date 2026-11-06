@@ -26,11 +26,11 @@ export function MacCamera() {
 	}, []);
 
 	return (
-		<div className="pointer-events-none absolute top-[13px] left-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+		<div className="pointer-events-none absolute top-[13px] left-1/2 z-10 ml-1 -translate-x-1/2 -translate-y-1/2">
 			<span
 				data-mac-camera
 				aria-hidden="true"
-				className="block size-2.5 rounded-full border border-[#26272d] bg-[radial-gradient(circle_at_38%_35%,#4c4c71_0%,#1e2036_25%,#0b0b11_57%)]"
+				className="block size-2 rounded-full border border-[#17181e] bg-[radial-gradient(circle_at_38%_35%,#27283a_0%,#11121c_30%,#050507_62%)]"
 			/>
 			<span role="status" className="sr-only">
 				{capture === "idle" ? "" : t(`marketplace.plugins.macCompact.${capture}`)}

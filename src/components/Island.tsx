@@ -154,6 +154,7 @@ export function Island() {
 							transition={transition}
 							contentKey={content.key}
 							contentTop={contentTop}
+							macCompact={macCompact}
 							rim={rim}
 						>
 							{content.node}

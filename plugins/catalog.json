@@ -1,14 +1,14 @@
 {
   "formatVersion": 1,
   "sdkVersion": 1,
-  "version": "1.0.6",
+  "version": "1.0.7",
   "plugins": [
     {
       "id": "com.island.mac-compact",
       "name": "Mac 灵动岛",
       "titleKey": "marketplace.plugins.macCompact.name",
       "descKey": "marketplace.plugins.macCompact.desc",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "description": "需要灵动岛 v0.5.18 或更新版本。启用后常驻仿摄像头孔，收起音乐时只显示封面和波形，并跟随 Windows 的摄像头和麦克风使用状态显示绿点或橙点。",
       "author": {
         "name": "Shawn Chen",
@@ -29,7 +29,7 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.mac-compact.island-plugin.json",
-      "sha256": "2f24a804ad524b8ab14e3632599a2386395ae199e3a51901c43ed4f1aa66dc9c",
+      "sha256": "0a76e0ac33615a5706ae414a16942ad9a749dc4c1469a640644fd82434365d5a",
       "packageSize": 26667
     },
     {
