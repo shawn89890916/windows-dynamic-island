@@ -44,7 +44,7 @@ fn apps_in_use(apps: &windows_registry::Key) -> bool {
 
 #[cfg(windows)]
 fn session_is_live(start: Option<u64>, stop: Option<u64>) -> bool {
-    start.is_some_and(|time| time > 0) && stop == Some(0)
+    start.is_some_and(|start| start > 0 && stop.is_none_or(|stop| stop < start))
 }
 
 pub fn mac_appearance_enabled(settings: &Settings) -> bool {
@@ -65,11 +65,13 @@ mod tests {
     use super::session_is_live;
 
     #[test]
-    fn only_a_started_session_with_zero_stop_time_is_live() {
+    fn a_session_is_live_until_its_stop_time_reaches_its_start_time() {
         assert!(session_is_live(Some(100), Some(0)));
+        assert!(session_is_live(Some(200), Some(100)));
+        assert!(session_is_live(Some(100), None));
         assert!(!session_is_live(None, Some(0)));
         assert!(!session_is_live(Some(0), Some(0)));
-        assert!(!session_is_live(Some(100), None));
         assert!(!session_is_live(Some(100), Some(200)));
+        assert!(!session_is_live(Some(100), Some(100)));
     }
 }
