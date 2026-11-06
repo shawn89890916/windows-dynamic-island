@@ -11,7 +11,12 @@ import { Tabs } from "./Tabs";
  * What fills the island in its current mode. `key` changes whenever the
  * content does, so the swap animates.
  */
-export function islandContent(ctl: IslandController, look: Appearance, v: Variant): { key: string; node: ReactNode } {
+export function islandContent(
+	ctl: IslandController,
+	look: Appearance,
+	v: Variant,
+	macCompact = false,
+): { key: string; node: ReactNode } {
 	const { mode, primary, focused } = ctl;
 	const windows = look.style === "windows";
 
@@ -19,9 +24,13 @@ export function islandContent(ctl: IslandController, look: Appearance, v: Varian
 		return {
 			key: `compact:${primary.module.id}`,
 			node: (
-				<div className="flex h-full items-center justify-between pr-3 pl-2">
-					<div className="flex min-w-0 items-center gap-2">{primary.view.compact.left}</div>
-					<div className="flex min-w-0 items-center justify-end gap-2">{primary.view.compact.right}</div>
+				<div className={cn("flex h-full items-center justify-between", macCompact ? "gap-1 px-0" : "pr-3 pl-2")}>
+					<div className={cn("flex min-w-0 items-center", macCompact ? "gap-1" : "gap-2")}>
+						{primary.view.compact.left}
+					</div>
+					<div className={cn("flex min-w-0 items-center justify-end", macCompact ? "gap-1" : "gap-2")}>
+						{primary.view.compact.right}
+					</div>
 				</div>
 			),
 		};

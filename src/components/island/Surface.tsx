@@ -56,10 +56,10 @@ export function Surface({
 			<AnimatePresence mode="popLayout" initial={false}>
 				<motion.div
 					key={contentKey}
-					className={cn("absolute top-0 origin-top", macCompactInline ? "left-1/2 ml-5" : "left-1/2 -translate-x-1/2")}
+					className={cn("absolute top-0 origin-top", macCompactInline ? "left-1/2 ml-1" : "left-1/2 -translate-x-1/2")}
 					style={{
 						top: contentTop,
-						width: macCompactInline ? Math.max(0, g.width / 2 - 20) : g.width,
+						width: macCompactInline ? Math.max(0, g.width / 2 - 4) : g.width,
 						height: g.height - contentTop,
 					}}
 					initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}

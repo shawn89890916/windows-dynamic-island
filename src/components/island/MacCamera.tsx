@@ -26,7 +26,7 @@ export function MacCamera() {
 	}, []);
 
 	return (
-		<div className="pointer-events-none absolute top-[19px] left-1/2 z-10 -ml-[18px] -translate-x-1/2 -translate-y-1/2">
+		<div className="pointer-events-none absolute top-4 left-1/2 z-10 -ml-6 -translate-x-1/2 -translate-y-1/2">
 			<span
 				data-mac-camera
 				aria-hidden="true"
@@ -39,7 +39,7 @@ export function MacCamera() {
 				<span
 					aria-hidden="true"
 					data-capture={capture}
-					className="absolute top-1/2 left-[30px] size-1.5 -translate-y-1/2 rounded-full"
+					className="absolute top-1/2 left-[19px] size-1.5 -translate-y-1/2 rounded-full"
 					style={{ background: capture === "camera" ? "#30D158" : "#FF9F0A" }}
 				/>
 			)}
