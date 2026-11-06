@@ -5,6 +5,7 @@ import { useTauriEvent } from "../core/bridge";
 import { cn } from "../core/cn";
 import { useSyncLocale } from "../core/i18n";
 import { type IslandApi, IslandContext } from "../core/island";
+import { macAppearanceEnabled } from "../core/plugins/appearancePlugin";
 import { useInstalledPlugins } from "../core/plugins/registry";
 import { PluginBackgrounds } from "../core/plugins/runtime";
 import { positionSettings, readSetting, useSettings } from "../core/settings";
@@ -17,8 +18,9 @@ import { requestAskFocus } from "../modules/ask/store";
 import { requestFindFocus } from "../modules/find/store";
 import { AmbientBubbles, SecondaryBubble } from "./island/Bubbles";
 import { islandContent } from "./island/content";
-import { ambientWidth, BUBBLE, BUBBLE_GAP, geometry, variantOf } from "./island/geometry";
+import { ambientWidth, BUBBLE, BUBBLE_GAP, geometry, MAC_CAMERA_BAND, variantOf } from "./island/geometry";
 import { launcherSize } from "./island/Launcher";
+import { MacCamera } from "./island/MacCamera";
 import { Rim } from "./island/Rim";
 import { Surface } from "./island/Surface";
 import { useIslandFileDrop } from "./island/useIslandFileDrop";
@@ -27,11 +29,13 @@ export function Island() {
 	const plugins = useInstalledPlugins();
 	const ctl = useIslandController(builtinModules);
 	const { mode, primary, secondary, focused } = ctl;
-	const look = useAppearance();
+	const baseLook = useAppearance();
+	const macCompact = macAppearanceEnabled(plugins);
+	const look = macCompact ? { ...baseLook, style: "windows" as const, idleClock: false, rim: [] } : baseLook;
 	const glassPluginEnabled = plugins.some(
 		(plugin) => plugin.manifest.id === "com.island.desktop-glass" && plugin.enabled && Boolean(plugin.packageSha256),
 	);
-	const islandLook = glassPluginEnabled ? look : { ...look, blurEffect: "none" as const };
+	const islandLook = glassPluginEnabled && !macCompact ? look : { ...look, blurEffect: "none" as const };
 	const s = useSettings();
 	const topMargin = Math.max(0, Number(readSetting(s, positionSettings.topMargin)) || 0);
 	const windows = look.style === "windows";
@@ -41,11 +45,14 @@ export function Island() {
 	useIslandFileDrop(ctl);
 
 	const bigSize = ctl.launcher ? launcherSize(ctl.entries.length) : focused?.view.expandedSize;
-	const g = geometry(v, look, mode, bigSize, primary);
+	const g = geometry(v, look, mode, bigSize, primary, macCompact);
 	useHitRects(islandLook.blurEffect, windows, g.radius);
 	const big = mode === "expanded" || mode === "peek";
-	const hidden = mode === "hidden";
-	const swallowed = mode === "swallowed";
+	const hidden = !macCompact && mode === "hidden";
+	const swallowed = !macCompact && mode === "swallowed";
+	const anchorOnly = macCompact && (mode === "hidden" || mode === "swallowed");
+	const macMusic = macCompact && mode === "compact" && primary?.module.id === "music";
+	const contentTop = macCompact && (big || (mode === "compact" && !macMusic)) ? MAC_CAMERA_BAND : 0;
 	const resting = mode === "compact" || mode === "idle";
 	const showSecondary = mode === "compact" && secondary !== undefined;
 	const transition = big ? v.expandSpring : v.shellSpring;
@@ -95,9 +102,10 @@ export function Island() {
 					<motion.div
 						className={cn(
 							"pointer-events-auto relative touch-none will-change-[width,height,transform]",
+							anchorOnly && "pointer-events-none",
 							drag.dragging && "cursor-grabbing **:cursor-grabbing",
 						)}
-						{...(hidden || swallowed ? {} : { "data-hit": true })}
+						{...(hidden || swallowed || anchorOnly ? {} : { "data-hit": true })}
 						data-blur={islandLook.blurEffect !== "none"}
 						{...ctl.domHover}
 						style={{ ...drag.style, marginTop: effectiveTop }}
@@ -114,12 +122,11 @@ export function Island() {
 						}}
 						transition={transition}
 						onClick={() => {
-							if (resting || mode === "peek") ctl.expand();
+							if (resting || mode === "peek") ctl.expand(macMusic ? "music" : undefined);
 						}}
 						onMouseEnter={() => {
-							if (mode === "compact" && primary) {
-								ctl.expand(primary.module.id);
-							}
+							if (macMusic) ctl.domHover.onMouseEnter?.();
+							else if (mode === "compact" && primary) ctl.expand(primary.module.id);
 						}}
 					>
 						{/* Concave "ears" that blend the notch into the top edge of the screen. Only when attached to screen top */}
@@ -140,9 +147,18 @@ export function Island() {
 							</>
 						)}
 
-						<Surface g={g} big={big} look={islandLook} transition={transition} contentKey={content.key} rim={rim}>
+						<Surface
+							g={g}
+							big={big}
+							look={islandLook}
+							transition={transition}
+							contentKey={content.key}
+							contentTop={contentTop}
+							rim={rim}
+						>
 							{content.node}
 						</Surface>
+						{macCompact && <MacCamera />}
 
 						<AmbientBubbles entries={ctl.entries} visible={resting} shrunk={mode === "idle" && !windows} {...bubble} />
 						<SecondaryBubble entry={showSecondary ? secondary : undefined} {...bubble} />

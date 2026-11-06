@@ -1,5 +1,6 @@
 import { emit, listen } from "@tauri-apps/api/event";
 import {
+	CameraIcon,
 	CloudSunIcon,
 	CoffeeIcon,
 	CompassIcon,
@@ -20,6 +21,7 @@ import { command, isTauri } from "../bridge";
 import { type MessageKey, type Translate, useT } from "../i18n";
 import type { IslandModule, ModuleEntry } from "../types";
 import { pluginActivities } from "./activity";
+import { isModulePlugin } from "./appearancePlugin";
 import { ExternalPluginPanel, unloadPlugin } from "./runtime";
 import type { InstalledPlugin, LoadedPluginPackage, PluginManifest, PluginPackage } from "./types";
 
@@ -33,6 +35,7 @@ export function pluginText(t: Translate, key: MessageKey | undefined, fallback: 
 export function renderPluginIcon(iconName: string, size = 14, color?: string): ReactNode {
 	const props = { size, ...(color ? { color } : {}) };
 	const icons = {
+		Camera: CameraIcon,
 		Timer: TimerIcon,
 		CloudSun: CloudSunIcon,
 		Coffee: CoffeeIcon,
@@ -266,7 +269,7 @@ export function usePluginModuleEntries() {
 	const plugins = useInstalledPlugins();
 	pluginActivities.use();
 	const t = useT();
-	return plugins.filter((p) => p.enabled).map((p) => createPluginModuleEntry(p, t));
+	return plugins.filter(isModulePlugin).map((p) => createPluginModuleEntry(p, t));
 }
 export function createPluginModule(plugin: InstalledPlugin): IslandModule {
 	return {

@@ -12,6 +12,7 @@ export function Surface({
 	look,
 	transition,
 	contentKey,
+	contentTop = 0,
 	rim,
 	children,
 }: {
@@ -20,6 +21,7 @@ export function Surface({
 	look: Appearance;
 	transition: Transition;
 	contentKey: string;
+	contentTop?: number;
 	rim: ReactNode;
 	children: ReactNode;
 }) {
@@ -50,7 +52,7 @@ export function Surface({
 				<motion.div
 					key={contentKey}
 					className="absolute top-0 left-1/2 origin-top -translate-x-1/2"
-					style={{ width: g.width, height: g.height }}
+					style={{ top: contentTop, width: g.width, height: g.height - contentTop }}
 					initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
 					animate={{
 						opacity: 1,

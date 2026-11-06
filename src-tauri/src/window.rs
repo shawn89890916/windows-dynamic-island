@@ -174,7 +174,8 @@ pub fn spawn_hit_test(app: AppHandle) {
         let mut hovering = false;
         let mut fullscreen = false;
         let mut hide_in_fullscreen = true;
-        let mut was_interactive = true;
+        let mut mac_camera_visible = false;
+        let mut was_visible = true;
         let mut tick = 0u32;
         let mut last_fg = 0isize;
         let mut button_down = false;
@@ -195,6 +196,9 @@ pub fn spawn_hit_test(app: AppHandle) {
                     .and_then(|value| value.as_bool())
                     .unwrap_or(true);
                 let fs = fullscreen_app_active(&win);
+                mac_camera_visible = fs
+                    && hide_in_fullscreen
+                    && crate::capture_privacy::mac_appearance_enabled(app.state::<crate::settings::Settings>().inner());
                 if fs != fullscreen {
                     fullscreen = fs;
                     fullscreen_left = !fs;
@@ -210,12 +214,13 @@ pub fn spawn_hit_test(app: AppHandle) {
             let fg_changed = fg != last_fg;
             last_fg = fg;
             let island_interactive = !fullscreen || !hide_in_fullscreen;
-            let interaction_changed = island_interactive != was_interactive;
-            was_interactive = island_interactive;
+            let visible = island_interactive || mac_camera_visible;
+            let visibility_changed = visible != was_visible;
+            was_visible = visible;
             // Keep the island's topmost state while settings is open, but do
             // not reorder it above the settings window on foreground changes.
-            if island_interactive && !crate::settings::is_open() {
-                ensure_topmost(&win, fg_changed || fullscreen_left || interaction_changed);
+            if visible && !crate::settings::is_open() {
+                ensure_topmost(&win, fg_changed || fullscreen_left || visibility_changed);
             }
 
             let dragging = app.state::<DragState>().0.load(Ordering::Relaxed);

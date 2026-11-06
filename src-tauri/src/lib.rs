@@ -1,5 +1,6 @@
 mod autostart;
 mod blur;
+mod capture_privacy;
 mod display;
 mod file_drop;
 mod hub;
@@ -103,6 +104,7 @@ pub fn run() {
             blur::set_blur_rect,
             navopath::navopath_mcp_request,
             vpn::vpn_request,
+            capture_privacy::capture_privacy,
             plugins::plugin_catalog,
             plugins::plugin_download,
             plugins::plugin_import,

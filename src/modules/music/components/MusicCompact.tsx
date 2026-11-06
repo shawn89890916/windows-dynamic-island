@@ -1,9 +1,35 @@
+import { AudioLinesIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { Marquee } from "../../../components/Marquee";
 import { cn } from "../../../core/cn";
 import { formatTime, type MusicState, useLivePosition } from "../hooks/useMusic";
 import { Artwork } from "./Artwork";
 import { Visualizer } from "./Visualizer";
+
+export function MusicCover({ music }: { music: MusicState }) {
+	return (
+		<>
+			<Artwork src={music.thumbnail} size={20} radius={5} trackKey={music.title} />
+			<span className="sr-only">{[music.title, music.artist].filter(Boolean).join(" · ")}</span>
+		</>
+	);
+}
+
+export function MusicWaveform({
+	music,
+	accent,
+	showVisualizer,
+}: {
+	music: MusicState;
+	accent: string;
+	showVisualizer: boolean;
+}) {
+	return showVisualizer ? (
+		<Visualizer playing={music.playing} color={accent} height={15} barWidth={2} />
+	) : (
+		<AudioLinesIcon aria-hidden size={16} color={accent} />
+	);
+}
 
 /** Left slot of the compact pill: artwork + title over a dimmed artist line. */
 export function MusicCompactLeft({ music }: { music: MusicState }) {

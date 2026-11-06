@@ -47,6 +47,11 @@ const WINDOWS: Variant = {
 };
 /** Windows Island at rest without the clock: a small, empty pill. */
 const WINDOWS_BARE_IDLE: Geo = { width: 110, height: 30, radius: 15, ear: 0 };
+const MAC_IDLE: Geo = { width: 76, height: 26, radius: 13, ear: 0 };
+const MAC_MUSIC: Geo = { width: 136, height: 26, radius: 13, ear: 0 };
+
+/** Space for the fixed camera above activity and expanded content. */
+export const MAC_CAMERA_BAND = 22;
 
 export const BUBBLE = 38;
 export const BUBBLE_GAP = 10;
@@ -64,19 +69,26 @@ export function geometry(
 	mode: IslandMode,
 	bigSize: { width: number; height: number } | undefined,
 	primary: ModuleEntry | undefined,
+	macCompact = false,
 ): Geo {
 	switch (mode) {
 		case "hidden":
 		case "swallowed":
 		case "idle":
+			if (macCompact) return MAC_IDLE;
 			return look.style === "windows" && !look.idleClock ? WINDOWS_BARE_IDLE : v.idle;
 		case "compact":
-			return { ...v.compact, width: primary?.view.compact?.width ?? v.compact.width };
+			if (macCompact && primary?.module.id === "music") return MAC_MUSIC;
+			return {
+				...v.compact,
+				width: primary?.view.compact?.width ?? v.compact.width,
+				height: v.compact.height + (macCompact ? MAC_CAMERA_BAND : 0),
+			};
 		case "peek":
 		case "expanded": {
 			const size = bigSize ?? v.expanded;
 			const extra = mode === "expanded" || mode === "peek" ? v.tabBar : 0;
-			return { ...v.expanded, width: size.width, height: size.height + extra };
+			return { ...v.expanded, width: size.width, height: size.height + extra + (macCompact ? MAC_CAMERA_BAND : 0) };
 		}
 	}
 }

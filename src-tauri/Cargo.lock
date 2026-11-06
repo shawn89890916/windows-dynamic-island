@@ -954,7 +954,7 @@ checksum = "d0881ea181b1df73ff77ffaaf9c7544ecc11e82fba9b5f27b262a3c73a332555"
 
 [[package]]
 name = "dynamic-island"
-version = "0.5.17"
+version = "0.5.18"
 dependencies = [
  "base64 0.23.1",
  "chrono",
@@ -981,6 +981,7 @@ dependencies = [
  "windows-collections",
  "windows-core 0.62.2",
  "windows-numerics",
+ "windows-registry",
 ]
 
 [[package]]

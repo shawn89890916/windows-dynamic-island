@@ -266,6 +266,12 @@
         name: "VPN & Proxy HUD",
         desc: "Live network acceleration and proxy monitor connected directly to UniClash / Clash core.",
       },
+      macCompact: {
+        name: "Mac Dynamic Island",
+        desc: "Requires Island for Windows v0.5.18 or later. Keeps a simulated camera cutout visible, reduces collapsed music to cover art and a waveform, and shows green or orange when Windows reports camera or microphone use.",
+        camera: "Camera in use",
+        microphone: "Microphone in use",
+      },
       desktopGlass: {
         name: "Desktop Glass",
         desc: "Optional desktop backdrop blur for the island, managed as an independent plugin.",

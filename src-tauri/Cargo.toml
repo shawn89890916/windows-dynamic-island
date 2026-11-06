@@ -1,6 +1,6 @@
 [package]
 name = "dynamic-island"
-version = "0.5.17"
+version = "0.5.18"
 description = "Island for Windows"
 license = "GPL-3.0-or-later"
 edition = "2024"
@@ -44,6 +44,7 @@ getrandom = "0.3"
 url = "2"
 
 [target.'cfg(windows)'.dependencies]
+windows-registry = "0.6"
 # Drags shelf items out of the island into other apps (OLE drag & drop).
 drag = "2"
 # `IIterable` / `IMapView` for WinRT calls (`windows` doesn't re-export them).

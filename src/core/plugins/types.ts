@@ -30,6 +30,7 @@ export interface PluginManifest {
 		url?: string;
 	};
 	category: PluginCategory;
+	appearance?: "mac-compact";
 	icon: string; // Lucide icon name or emoji or SVG
 	accentColor?: string;
 	homepage?: string;

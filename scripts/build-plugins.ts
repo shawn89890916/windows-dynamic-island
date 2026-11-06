@@ -112,6 +112,7 @@ const entries: Record<string, string> = {
 	"com.island.vpn": "VpnWidget",
 	"com.island.im-notifications": "ImNotificationWidget",
 	"com.island.desktop-glass": "DesktopGlassWidget",
+	"com.island.mac-compact": "MacCompactWidget",
 };
 const diagnosticNames: Record<string, string> = {
 	"com.island.navopath": "diagnoseNavoPath",

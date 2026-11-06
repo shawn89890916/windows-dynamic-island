@@ -4,10 +4,12 @@ import { MusicIcon } from "lucide-react";
  * media controls (browsers, Apple Music, VLC…). Everything music-related lives
  * in this folder; its backend counterpart is `src-tauri/src/providers/music/`.
  */
+import { macAppearanceEnabled } from "../../core/plugins/appearancePlugin";
+import { useInstalledPlugins } from "../../core/plugins/registry";
 import { useSetting } from "../../core/settings";
 import type { IslandModule, ModuleView } from "../../core/types";
 import { Artwork } from "./components/Artwork";
-import { MusicCompactLeft, MusicCompactRight } from "./components/MusicCompact";
+import { MusicCompactLeft, MusicCompactRight, MusicCover, MusicWaveform } from "./components/MusicCompact";
 import { MusicPanel } from "./components/MusicPanel";
 import { SpotifySettings } from "./components/SpotifySettings";
 import { useAccentColor } from "./hooks/useAccentColor";
@@ -22,6 +24,7 @@ export const musicModule: IslandModule = {
 	SettingsSection: SpotifySettings,
 	useView(): ModuleView {
 		const { music, active } = useMusic();
+		const macCompact = macAppearanceEnabled(useInstalledPlugins());
 		const accent = useAccentColor(music?.thumbnail);
 		const autoExpand = useSetting(musicSettings.autoExpand);
 		const showVisualizer = useSetting(musicSettings.visualizer);
@@ -31,8 +34,12 @@ export const musicModule: IslandModule = {
 			priority: music?.playing ? 50 : 10,
 			icon: <Artwork src={music?.thumbnail} size={22} radius={11} />,
 			compact: music && {
-				left: <MusicCompactLeft music={music} />,
-				right: <MusicCompactRight music={music} accent={accent} showVisualizer={showVisualizer} />,
+				left: macCompact ? <MusicCover music={music} /> : <MusicCompactLeft music={music} />,
+				right: macCompact ? (
+					<MusicWaveform music={music} accent={accent} showVisualizer={showVisualizer} />
+				) : (
+					<MusicCompactRight music={music} accent={accent} showVisualizer={showVisualizer} />
+				),
 				width: 340,
 			},
 			expanded: <MusicPanel music={music} accent={accent} showVisualizer={showVisualizer} />,

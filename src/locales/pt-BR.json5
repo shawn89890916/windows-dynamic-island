@@ -247,6 +247,12 @@
         name: "Monitor de VPN e Proxy",
         desc: "Monitoramento em tempo real de aceleração de rede e proxy conectado ao núcleo UniClash / Clash.",
       },
+      macCompact: {
+        name: "Ilha Dinâmica do Mac",
+        desc: "Requer o Island for Windows v0.5.18 ou posterior. Mantém um recorte de câmera simulado, exibe a capa e a forma de onda quando o player está recolhido e indica em verde ou laranja o uso da câmera ou do microfone detectado pelo Windows.",
+        camera: "Câmera em uso",
+        microphone: "Microfone em uso",
+      },
       desktopGlass: {
         name: "Efeito de vidro",
         desc: "Desfoque opcional do plano de fundo atrás da ilha, gerenciado como plugin independente.",

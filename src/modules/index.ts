@@ -1,3 +1,4 @@
+import { isModulePlugin } from "../core/plugins/appearancePlugin";
 import { createPluginModule, getInstalledPlugins, useInstalledPlugins } from "../core/plugins/registry";
 import type { IslandModule } from "../core/types";
 import { activitiesModule } from "./activities";
@@ -35,9 +36,7 @@ export const builtinModules: IslandModule[] = [
  * Returns all built-in modules plus all enabled installed plugins.
  */
 export function getAllModules(): IslandModule[] {
-	const pluginModules = getInstalledPlugins()
-		.filter((p) => p.enabled)
-		.map(createPluginModule);
+	const pluginModules = getInstalledPlugins().filter(isModulePlugin).map(createPluginModule);
 	return [...builtinModules, ...pluginModules];
 }
 
@@ -47,7 +46,7 @@ export function getAllModules(): IslandModule[] {
  */
 export function useAllModules(): IslandModule[] {
 	const plugins = useInstalledPlugins();
-	const pluginModules = plugins.filter((p) => p.enabled).map(createPluginModule);
+	const pluginModules = plugins.filter(isModulePlugin).map(createPluginModule);
 	return [...builtinModules, ...pluginModules];
 }
 

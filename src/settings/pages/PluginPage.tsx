@@ -20,6 +20,7 @@ import { Navigate, useNavigate, useParams } from "react-router";
 import { Card, Row } from "../../components/ui/card";
 import { Input, Select } from "../../components/ui/form";
 import { useT } from "../../core/i18n";
+import { isAppearancePlugin } from "../../core/plugins/appearancePlugin";
 import { useCatalog } from "../../core/plugins/catalog";
 import {
 	installPlugin,
@@ -301,9 +302,11 @@ export function PluginPage({
 							<Toggle checked={plugin.enabled} onChange={() => togglePlugin(manifest.id)} />
 						</Row>
 
-						<Row label={t("layout.place")} desc={t("layout.placeDesc")} disabled={!plugin.enabled}>
-							<PlacementSelect moduleId={manifest.id} disabled={!plugin.enabled} />
-						</Row>
+						{!isAppearancePlugin(manifest) && (
+							<Row label={t("layout.place")} desc={t("layout.placeDesc")} disabled={!plugin.enabled}>
+								<PlacementSelect moduleId={manifest.id} disabled={!plugin.enabled} />
+							</Row>
+						)}
 					</Card>
 
 					{/* Card 2: Parameters & Settings Form */}
