@@ -6,7 +6,15 @@ import type { AgentSessionRef } from "../types";
 import { StatusGlyph } from "./StatusGlyph";
 
 /** Left slot of the compact pill: animated agent glyph + what it's doing. */
-export function AgentCompactLeft({ hot, busyCount }: { hot: AgentSessionRef; busyCount: number }) {
+export function AgentCompactLeft({
+	hot,
+	busyCount,
+	macCompact = false,
+}: {
+	hot: AgentSessionRef;
+	busyCount: number;
+	macCompact?: boolean;
+}) {
 	const { agent, session } = hot;
 	const t = useT();
 	const label =
@@ -41,7 +49,7 @@ export function AgentCompactLeft({ hot, busyCount }: { hot: AgentSessionRef; bus
 					{label}
 				</motion.span>
 			</AnimatePresence>
-			{busyCount > 1 && (
+			{busyCount > 1 && !macCompact && (
 				<span className="grid h-4 min-w-4 place-items-center rounded-lg bg-white/14 px-1 text-[10px] font-bold">
 					{busyCount}
 				</span>

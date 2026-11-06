@@ -11,6 +11,8 @@ import { useEffect, useRef, useState } from "react";
  * To support another agent, add a folder exporting an `AgentDefinition` and
  * append it to `agents` below.
  */
+import { macAppearanceEnabled } from "../../core/plugins/appearancePlugin";
+import { useInstalledPlugins } from "../../core/plugins/registry";
 import { useSetting } from "../../core/settings";
 import type { IslandModule, ModuleView } from "../../core/types";
 import { AgentUsageAlertSettings } from "./AgentUsageAlertSettings";
@@ -54,6 +56,7 @@ export const aiAgentsModule: IslandModule = {
 		</>
 	),
 	useView(): ModuleView {
+		const macCompact = macAppearanceEnabled(useInstalledPlugins());
 		const peekOnWaiting = useSetting(agentSettings.peekOnWaiting);
 		const peekOnDone = useSetting(agentSettings.peekOnDone);
 		const peekOnLimitsReset = useSetting(agentSettings.peekOnLimitsReset);
@@ -130,7 +133,7 @@ export const aiAgentsModule: IslandModule = {
 			compact: usageAlert
 				? { left: <UsageAlertCompact alert={usageAlert} />, right: null, width: 340 }
 				: hot && {
-						left: <AgentCompactLeft hot={hot} busyCount={busyCount} />,
+						left: <AgentCompactLeft hot={hot} busyCount={busyCount} macCompact={macCompact} />,
 						right: <AgentCompactRight hot={hot} />,
 						width: 340,
 					},
