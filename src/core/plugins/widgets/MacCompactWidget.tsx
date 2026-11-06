@@ -1,5 +1,26 @@
+import { useEffect } from "react";
 import { useT } from "../../i18n";
 import { pluginText } from "../registry";
+
+export function MacCompactBackground() {
+	useEffect(() => {
+		const style = document.createElement("style");
+		style.dataset.pluginStyle = "com.island.mac-compact";
+		style.textContent = `
+			[data-island-surface] > div.ml-1 {
+				left: 0 !important;
+				margin-left: 0 !important;
+				width: 100% !important;
+			}
+			div:has(> [data-mac-camera]) {
+				margin-left: -17px !important;
+			}
+		`;
+		document.head.append(style);
+		return () => style.remove();
+	}, []);
+	return null;
+}
 
 export function MacCompactWidget() {
 	const t = useT();
