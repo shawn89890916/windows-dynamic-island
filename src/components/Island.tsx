@@ -81,7 +81,7 @@ export function Island() {
 	);
 
 	const content = islandContent(ctl, look, v);
-	const rim = windows ? <Rim look={look} /> : null;
+	const rim = windows && !macCompact ? <Rim look={look} /> : null;
 	const bubble = { transition: v.shellSpring, rim, onOpen: ctl.expand };
 
 	return (
