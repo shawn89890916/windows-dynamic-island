@@ -16,12 +16,20 @@ export function MacCompactBackground() {
 				padding-inline: 8px !important;
 			}
 			[data-mac-camera] {
+				width: var(--mac-camera-size) !important;
+				height: var(--mac-camera-size) !important;
 				border-color: #101114 !important;
 				background: radial-gradient(circle at 38% 35%, #18191d 0%, #090a0d 42%, #020203 76%) !important;
 				box-shadow: inset 0 0 0 1px rgb(255 255 255 / 4%), 0 1px 2px rgb(0 0 0 / 90%);
 			}
 			div:has(> [data-mac-camera]) {
+				--mac-camera-size: clamp(12px, 1.11vw, 16px);
 				margin-left: -17px !important;
+			}
+			div:has(> [data-mac-camera]) [data-capture] {
+				width: clamp(5px, 0.42vw, 6px) !important;
+				height: clamp(5px, 0.42vw, 6px) !important;
+				left: calc(var(--mac-camera-size) + 3px) !important;
 			}
 		`;
 		document.head.append(style);
