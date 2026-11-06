@@ -26,7 +26,7 @@ export function MacCamera() {
 	}, []);
 
 	return (
-		<div className="pointer-events-none absolute top-4 left-1/2 z-10 -ml-9 -translate-x-1/2 -translate-y-1/2">
+		<div className="pointer-events-none absolute top-4 left-1/2 z-10 -ml-8 -translate-x-1/2 -translate-y-1/2">
 			<span
 				data-mac-camera
 				aria-hidden="true"
