@@ -12,6 +12,14 @@ export function MacCompactBackground() {
 				margin-left: 0 !important;
 				width: 100% !important;
 			}
+			[data-island-surface] > div.ml-1 > div {
+				padding-inline: 8px !important;
+			}
+			[data-mac-camera] {
+				border-color: #101114 !important;
+				background: radial-gradient(circle at 38% 35%, #18191d 0%, #090a0d 42%, #020203 76%) !important;
+				box-shadow: inset 0 0 0 1px rgb(255 255 255 / 4%), 0 1px 2px rgb(0 0 0 / 90%);
+			}
 			div:has(> [data-mac-camera]) {
 				margin-left: -17px !important;
 			}
