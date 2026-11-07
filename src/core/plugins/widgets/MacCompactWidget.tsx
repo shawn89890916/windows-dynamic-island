@@ -15,19 +15,6 @@ export function MacCompactBackground() {
 			[data-island-surface] > div.ml-1 > div {
 				padding-inline: 8px !important;
 			}
-			[data-island-surface] > div.ml-1 > div > :first-child {
-				margin-right: 5px !important;
-			}
-			[data-island-surface] > div.ml-1 > div > :last-child {
-				margin-left: 5px !important;
-			}
-			[data-hit]:has(> div > [data-mac-camera]) > button[data-hit] {
-				top: 50% !important;
-				left: calc(100% + 8px) !important;
-				width: 34px !important;
-				height: 34px !important;
-				translate: 0 -50%;
-			}
 			[data-mac-camera] {
 				width: var(--mac-camera-size) !important;
 				height: var(--mac-camera-size) !important;
@@ -36,8 +23,8 @@ export function MacCompactBackground() {
 				box-shadow: inset 0 0 0 1px rgb(255 255 255 / 4%), 0 1px 2px rgb(0 0 0 / 90%);
 			}
 			div:has(> [data-mac-camera]) {
-				--mac-camera-size: clamp(10px, 0.92vw, 13px);
-				margin-left: -2px !important;
+				--mac-camera-size: clamp(12px, 1.11vw, 16px);
+				margin-left: -17px !important;
 			}
 			div:has(> [data-mac-camera]) [data-capture] {
 				width: clamp(5px, 0.42vw, 6px) !important;

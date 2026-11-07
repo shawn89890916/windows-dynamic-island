@@ -1,6 +1,6 @@
 [package]
 name = "dynamic-island"
-version = "0.5.26"
+version = "0.5.27"
 description = "Island for Windows"
 license = "GPL-3.0-or-later"
 edition = "2024"
