@@ -935,6 +935,10 @@
       label: "音量调节",
       desc: "调节音量时显示电平指示条。",
     },
+    brightness: {
+      label: "屏幕亮度",
+      desc: "调节屏幕亮度时显示电平指示条。",
+    },
     battery: {
       label: "电池状态",
       desc: "电源插拔提示，以及低电量警告（20%、10%、5%）。",
@@ -1247,6 +1251,9 @@
     volume: {
       title: "音量",
       muted: "已静音",
+    },
+    brightness: {
+      title: "亮度",
     },
     battery: {
       charging: "充电中",

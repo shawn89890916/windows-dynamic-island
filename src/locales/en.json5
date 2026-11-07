@@ -939,6 +939,10 @@
       label: "Volume",
       desc: "A level bar when the volume changes.",
     },
+    brightness: {
+      label: "Screen brightness",
+      desc: "A level bar when the screen brightness changes.",
+    },
     battery: {
       label: "Battery",
       desc: "Charger plugged in or out, and low battery warnings (20%, 10%, 5%).",
@@ -1251,6 +1255,9 @@
     volume: {
       title: "Volume",
       muted: "Muted",
+    },
+    brightness: {
+      title: "Brightness",
     },
     battery: {
       charging: "Charging",

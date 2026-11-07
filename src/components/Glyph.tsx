@@ -10,6 +10,7 @@ const GLYPHS: Record<string, number> = {
 	music: 0xe8d6,
 	volume: 0xe767,
 	mute: 0xe74f,
+	sun: 0xe706,
 	battery: 0xe83f,
 	charging: 0xe945,
 	mail: 0xe715,

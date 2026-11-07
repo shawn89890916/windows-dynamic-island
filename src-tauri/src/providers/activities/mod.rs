@@ -10,6 +10,7 @@
 mod api;
 mod battery;
 mod bluetooth;
+mod brightness;
 mod volume;
 
 use std::collections::HashMap;
@@ -214,6 +215,8 @@ impl Provider for ActivitiesProvider {
 
         let watcher = activities.clone();
         std::thread::spawn(move || volume::watch(watcher));
+        let watcher = activities.clone();
+        std::thread::spawn(move || brightness::watch(watcher));
         let watcher = activities.clone();
         std::thread::spawn(move || battery::watch(watcher));
         std::thread::spawn(move || bluetooth::watch(activities));

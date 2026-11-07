@@ -12,6 +12,8 @@ import { Badge } from "../../components/Glyph";
 import { Empty } from "../../components/ui/text";
 import { useProvider } from "../../core/bridge";
 import { useT } from "../../core/i18n";
+import { macAppearanceEnabled } from "../../core/plugins/appearancePlugin";
+import { useInstalledPlugins } from "../../core/plugins/registry";
 import { moduleEnabled, readSetting, useSettings } from "../../core/settings";
 import type { IslandModule, ModuleView } from "../../core/types";
 import { ActivityCard } from "./components/ActivityCard";
@@ -38,13 +40,19 @@ export const activitiesModule: IslandModule = {
 	SettingsSection: ApiSettings,
 	useHiddenSettings() {
 		const state = useProvider<ActivitiesState>(ACTIVITIES_PROVIDER);
-		return state?.hasBattery === false ? [activitySettings.battery.key] : [];
+		const macCompact = macAppearanceEnabled(useInstalledPlugins());
+		return [
+			...(state?.hasBattery === false ? [activitySettings.battery.key] : []),
+			...(!macCompact ? [activitySettings.brightness.key] : []),
+		];
 	},
 	useView(): ModuleView {
 		const state = useProvider<ActivitiesState>(ACTIVITIES_PROVIDER);
 		const settings = useSettings();
+		const macCompact = macAppearanceEnabled(useInstalledPlugins());
 
 		const shown = (a: Activity) => {
+			if (a.source === "brightness" && !macCompact) return false;
 			const owner = MODULE_SOURCES[a.source];
 			if (owner) return readSetting(settings, moduleEnabled({ id: owner, title: "activities.title" }));
 			return readSetting(settings, SOURCE_SETTING[a.source] ?? activitySettings.api);

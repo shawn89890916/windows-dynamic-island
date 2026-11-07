@@ -8,6 +8,12 @@ export const activitySettings = {
 		description: "activities.volume.desc",
 		default: true,
 	},
+	brightness: {
+		key: "activities.brightness",
+		label: "activities.brightness.label",
+		description: "activities.brightness.desc",
+		default: true,
+	},
 	battery: {
 		key: "activities.battery",
 		label: "activities.battery.label",
@@ -31,6 +37,7 @@ export const activitySettings = {
 /** Activity `source` → the setting that shows it (other sources belong to their own modules). */
 export const SOURCE_SETTING: Record<string, SettingDef> = {
 	volume: activitySettings.volume,
+	brightness: activitySettings.brightness,
 	battery: activitySettings.battery,
 	bluetooth: activitySettings.bluetooth,
 };

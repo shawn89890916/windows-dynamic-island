@@ -1,15 +1,15 @@
 {
   "formatVersion": 1,
   "sdkVersion": 1,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "plugins": [
     {
       "id": "com.island.mac-compact",
       "name": "Mac 灵动岛",
       "titleKey": "marketplace.plugins.macCompact.name",
       "descKey": "marketplace.plugins.macCompact.desc",
-      "version": "1.0.7",
-      "description": "需要灵动岛 v0.5.23 或更新版本。启用后常驻仿摄像头孔，收起音乐时只显示封面和波形，并跟随 Windows 的摄像头和麦克风使用状态显示绿点或橙点。",
+      "version": "1.0.8",
+      "description": "常驻仿摄像头孔并优化分岛间距；支持 Windows 音量与屏幕亮度调节活动，并显示摄像头和麦克风状态。需要灵动岛 v0.5.26 或更新版本。",
       "author": {
         "name": "Shawn Chen",
         "url": "https://github.com/shawn89890916"
@@ -29,8 +29,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.mac-compact.island-plugin.json",
-      "sha256": "6131bb458d45b3b4d9f8f984d1cc46667e962ed0dd79cd0421846101976ee1df",
-      "packageSize": 28723
+      "sha256": "d716307a6f672ef4e136c26246ddd5a52de0e79d57e5431a7d12519e3f1680ae",
+      "packageSize": 29172
     },
     {
       "id": "com.island.desktop-glass",
@@ -740,7 +740,7 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.navopath.island-plugin.json",
-      "sha256": "72fab33e74fc93019b5aa5b5aaf7c09f1afd8661d65bbc2fb8d89805c559eeff",
+      "sha256": "e0f04b495ef8d86176edf731d7afbadd8a12a41579fc10cd440dcc81a34d8944",
       "packageSize": 51711
     },
     {
