@@ -47,7 +47,7 @@ const WINDOWS: Variant = {
 };
 /** Windows Island at rest without the clock: a small, empty pill. */
 const WINDOWS_BARE_IDLE: Geo = { width: 110, height: 30, radius: 15, ear: 0 };
-const MAC_IDLE: Geo = { width: 112, height: 32, radius: 16, ear: 0 };
+const MAC_IDLE: Geo = { width: 48, height: 20, radius: 10, ear: 0 };
 const MAC_COMPACT_WIDTH = 185;
 const MAC_MUSIC: Geo = { width: MAC_COMPACT_WIDTH, height: 32, radius: 16, ear: 0 };
 
