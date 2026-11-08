@@ -6,7 +6,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		name: "Mac 灵动岛",
 		titleKey: "marketplace.plugins.macCompact.name",
 		descKey: "marketplace.plugins.macCompact.desc",
-		version: "1.3.3",
+		version: "1.3.4",
 		description: "恢复待机摄像头造型，活动胶囊按两侧内容收紧，并接入灵动岛的位置和组件布局设置。需要灵动岛 v0.5.32 或更新版本。",
 		author: { name: "Shawn Chen", url: "https://github.com/shawn89890916" },
 		category: "system",

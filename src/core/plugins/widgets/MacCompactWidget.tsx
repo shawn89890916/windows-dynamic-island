@@ -6,7 +6,17 @@ export function MacCompactBackground() {
 	useEffect(() => {
 		const style = document.createElement("style");
 		style.dataset.pluginStyle = "com.island.mac-compact";
+		const stage = document.querySelector<HTMLElement>("[data-mac-compact-stage]");
+		const updateScale = () => {
+			stage?.style.setProperty("--mac-compact-stage-scale", String(1 / Math.max(1, window.devicePixelRatio)));
+		};
+		updateScale();
+		window.addEventListener("resize", updateScale);
 		style.textContent = `
+			[data-mac-compact-stage] {
+				transform: scale(var(--mac-compact-stage-scale, 1));
+				transform-origin: top left;
+			}
 			[data-island-surface]:has([data-mac-compact-content]) {
 				background: transparent !important;
 				box-shadow: none !important;
@@ -66,7 +76,11 @@ export function MacCompactBackground() {
 			}
 		`;
 		document.head.append(style);
-		return () => style.remove();
+		return () => {
+			window.removeEventListener("resize", updateScale);
+			stage?.style.removeProperty("--mac-compact-stage-scale");
+			style.remove();
+		};
 	}, []);
 	return null;
 }

@@ -111,7 +111,10 @@ export function Island() {
 	return (
 		<IslandContext.Provider value={api}>
 			<PluginBackgrounds plugins={plugins} />
-			<div className="pointer-events-none fixed inset-0 flex items-start justify-center">
+			<div
+				data-mac-compact-stage={macCompact || undefined}
+				className="pointer-events-none fixed inset-0 flex items-start justify-center"
+			>
 				{/* The tray's black hole: the island spins into its own center and comes back out. */}
 				<motion.div
 					className="pointer-events-none relative flex origin-center justify-center"
