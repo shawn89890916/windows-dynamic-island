@@ -1,6 +1,17 @@
 import type { PluginGuide } from "../src/core/plugins/types";
 
 export const PLUGIN_GUIDES: Record<string, PluginGuide> = {
+	"com.island.smooth-tabs": {
+		summary: "为整排功能图标和九宫格提供悬停切换与连续滑动选中框。",
+		prerequisites: ["灵动岛 v0.5.42 或更新版本"],
+		steps: [
+			{ title: "安装并启用", desc: "在插件市场安装“丝滑切换”并保持启用，无需替换图标或重新配置模块。" },
+			{ title: "悬停切换", desc: "展开灵动岛，将鼠标移到功能图标或九宫格上；默认停留 60 毫秒打开面板。齿轮仍需点击。" },
+			{ title: "调整或恢复", desc: "在插件配置中调整等待和动画时长；停用或卸载后恢复点击切换。" },
+		],
+		features: ["选中框连续滑动，快速反向时追随最新目标", "拖动排序期间暂停悬停", "兼容顶部和底部图标栏，遵循减少动态效果偏好"],
+		faq: [{ q: "安装后没有效果？", a: "请确认主程序至少为 v0.5.42 且插件已启用；旧版缺少导航扩展接口。" }],
+	},
 	"com.island.music-story": {
 		summary: "跟随灵动岛当前播放的歌曲，整理有原文依据的歌曲、专辑与创作者故事；支持续读、追问和打开来源。",
 		summaryKey: "marketplace.widgets.pluginExtras.musicStoryGuide.summary",

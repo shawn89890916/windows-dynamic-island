@@ -99,6 +99,7 @@ const sdkPlugin: BunPlugin = {
 	},
 };
 const entries: Record<string, string> = {
+	"com.island.smooth-tabs": "SmoothTabsWidget",
 	"com.island.pomodoro": "PomodoroWidget",
 	"com.island.crypto-ticker": "CryptoTickerWidget",
 	"com.island.work-countdown": "WorkCountdownWidget",
@@ -121,8 +122,19 @@ const diagnosticNames: Record<string, string> = {
 	"com.island.obsidian": "diagnoseObsidian",
 	"com.island.everything": "diagnoseEverything",
 };
-const descriptors: PluginManifest[] = [];
-for (const source of MARKETPLACE_CATALOG) {
+const community = JSON.parse(await readFile(join(root, "plugins/community.json"), "utf8")) as PluginManifest[];
+const communityIds = new Set(community.map((plugin) => plugin.id));
+const selectedId = Bun.argv.find((arg) => arg.startsWith("--only="))?.slice("--only=".length);
+if (selectedId && !MARKETPLACE_CATALOG.some((plugin) => plugin.id === selectedId))
+	throw Error(`Unknown plugin ${selectedId}`);
+const descriptors: PluginManifest[] = selectedId
+	? JSON.parse(await readFile(join(root, "plugins/catalog.json"), "utf8")).plugins
+	: [];
+if (selectedId) {
+	for (let index = descriptors.length - 1; index >= 0; index--)
+		if (communityIds.has(descriptors[index].id)) descriptors.splice(index, 1);
+}
+for (const source of MARKETPLACE_CATALOG.filter((plugin) => !selectedId || plugin.id === selectedId)) {
 	const widget = entries[source.id];
 	if (!widget) throw Error(`Missing entry ${source.id}`);
 	const css = await buildPluginCss(widget);
@@ -140,6 +152,8 @@ for (const source of MARKETPLACE_CATALOG) {
 		background = `import {usePomodoroLive,startPomodoroBackground} from '../../src/core/plugins/pluginActivityStore';function Background({settings}){const value=usePomodoroLive();React.useEffect(()=>startPomodoroBackground(),[]);React.useEffect(()=>value.setDurations(Number(settings.workDuration??25),Number(settings.breakDuration??5)),[settings.workDuration,settings.breakDuration,value.setDurations]);React.useEffect(()=>{sdk.setPluginActivity('${source.id}',{active:value.isRunning,priority:85,left:value.mode==='work'?'专注':'休息',right:value.formattedTime,progress:value.progressPercent});},[value.isRunning,value.mode,value.formattedTime,value.progressPercent]);return null;}`;
 	if (source.id === "com.island.mac-compact")
 		background = "function Background(){return React.createElement(MacCompactBackground);}";
+	if (source.id === "com.island.smooth-tabs")
+		background = "import {SmoothTabsBackground as Background} from '../../src/core/plugins/widgets/SmoothTabsWidget';";
 	const entry = `import * as React from 'react';import {${widget}${source.id === "com.island.desktop-glass" ? ",DesktopGlassBackground" : source.id === "com.island.mac-compact" ? ",MacCompactBackground" : ""}} from '../../src/core/plugins/widgets/${widget}';${diagnose ? `import {${diagnose}} from '../diagnostics';` : ""}const sdk=globalThis.__ISLAND_PLUGIN_SDK__;${background}sdk.registerPlugin(${JSON.stringify(source.id)},${JSON.stringify(manifest.version)},{Panel:${widget}${source.id === "com.island.desktop-glass" ? ",Background:DesktopGlassBackground" : background ? ",Background" : ""}${diagnose ? `,diagnose:${diagnose}` : ""}});`;
 	const entryPath = join(generated, `${source.id}.tsx`);
 	await writeFile(entryPath, entry);
@@ -163,15 +177,17 @@ for (const source of MARKETPLACE_CATALOG) {
 				? `${source.id}-${manifest.version}.island-plugin.json`
 				: `${source.id}.island-plugin.json`;
 	await writeFile(join(output, filename), content);
-	descriptors.push({
+	const descriptor = {
 		...manifest,
 		packageUrl: `https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/${filename}`,
 		sha256: sha(content),
 		packageSize: Buffer.byteLength(content),
-	});
+	};
+	const previous = descriptors.findIndex((plugin) => plugin.id === source.id);
+	if (previous === -1) descriptors.push(descriptor);
+	else descriptors[previous] = descriptor;
 	console.log(`${source.id}: code ${Buffer.byteLength(code)} B, shared styles ${Buffer.byteLength(css)} B`);
 }
-const community = JSON.parse(await readFile(join(root, "plugins/community.json"), "utf8")) as PluginManifest[];
 const publishedIds = new Set(descriptors.map((plugin) => plugin.id));
 for (const plugin of community) {
 	if (!plugin.id || !plugin.packageUrl || !plugin.sha256 || plugin.sdkVersion !== 1)
@@ -182,4 +198,4 @@ for (const plugin of community) {
 }
 const index = `${JSON.stringify({ formatVersion: 1, sdkVersion: 1, version: release.version, plugins: descriptors }, null, 2)}\n`;
 await writeFile(join(root, "plugins/catalog.json"), index);
-console.log(`Built ${descriptors.length} independent packages`);
+console.log(`Built ${selectedId ? 1 : descriptors.length} independent packages`);

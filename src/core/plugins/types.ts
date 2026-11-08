@@ -31,6 +31,7 @@ export interface PluginManifest {
 	};
 	category: PluginCategory;
 	appearance?: "mac-compact";
+	behavior?: "tab-navigation";
 	icon: string; // Lucide icon name or emoji or SVG
 	accentColor?: string;
 	homepage?: string;

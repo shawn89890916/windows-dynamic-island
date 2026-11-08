@@ -4,7 +4,7 @@ import { useAppearance } from "../core/appearance";
 import { useTauriEvent } from "../core/bridge";
 import { cn } from "../core/cn";
 import { useSyncLocale } from "../core/i18n";
-import { type IslandApi, IslandContext } from "../core/island";
+import { type IslandApi, IslandContext, tabNavigation } from "../core/island";
 import { macAppearanceEnabled } from "../core/plugins/appearancePlugin";
 import { useInstalledPlugins } from "../core/plugins/registry";
 import { PluginBackgrounds } from "../core/plugins/runtime";
@@ -27,6 +27,7 @@ import { useIslandFileDrop } from "./island/useIslandFileDrop";
 
 export function Island() {
 	const plugins = useInstalledPlugins();
+	const navigation = tabNavigation.use();
 	const ctl = useIslandController(builtinModules);
 	const { mode, primary, secondary, focused } = ctl;
 	const baseLook = useAppearance();
@@ -47,7 +48,7 @@ export function Island() {
 	useIslandFileDrop(ctl);
 
 	const bigSize = ctl.launcher ? launcherSize(ctl.entries.length) : focused?.view.expandedSize;
-	const content = islandContent(ctl, look, v, macCompact);
+	const content = islandContent(ctl, look, v, macCompact, navigation);
 	useEffect(() => {
 		if (!macCompact || mode !== "compact") return;
 		let element: HTMLElement | null = null;

@@ -5,7 +5,7 @@ export function isAppearancePlugin(manifest: PluginManifest) {
 }
 
 export function isModulePlugin(plugin: InstalledPlugin) {
-	return plugin.enabled && !isAppearancePlugin(plugin.manifest);
+	return plugin.enabled && !isAppearancePlugin(plugin.manifest) && plugin.manifest.behavior !== "tab-navigation";
 }
 
 export function macAppearanceEnabled(plugins: InstalledPlugin[]) {

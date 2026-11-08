@@ -50,3 +50,29 @@ export function createStore<T>(initial: T) {
 
 /** Files are being dragged over the island (the shelf shows up to take them). */
 export const draggingFiles = createStore(false);
+
+export interface TabNavigationOptions {
+	hoverDelayMs: number;
+	slideDurationMs: number;
+	fadeDurationMs: number;
+}
+
+/** 导航插件通过共享 SDK 注册效果，卸载后自动恢复宿主默认行为。 */
+export const tabNavigation = createStore<TabNavigationOptions | null>(null);
+const navigationOverrides = new Map<symbol, TabNavigationOptions>();
+export function configureTabNavigation(options: TabNavigationOptions) {
+	const limit = (value: number, fallback: number, min: number, max: number) =>
+		Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback;
+	const token = Symbol();
+	navigationOverrides.set(token, {
+		hoverDelayMs: limit(options.hoverDelayMs, 60, 0, 1000),
+		slideDurationMs: limit(options.slideDurationMs, 240, 100, 600),
+		fadeDurationMs: limit(options.fadeDurationMs, 150, 0, 400),
+	});
+	const publish = () => tabNavigation.set([...navigationOverrides.values()].at(-1) ?? null);
+	publish();
+	return () => {
+		navigationOverrides.delete(token);
+		publish();
+	};
+}

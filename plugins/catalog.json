@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "sdkVersion": 1,
-  "version": "1.1.5",
+  "version": "1.1.6",
   "plugins": [
     {
       "id": "com.island.mac-compact",
@@ -1228,6 +1228,88 @@
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.im-notifications.island-plugin.json",
       "sha256": "e44e529ac63478ec40d535099ffd3400648b098c270501e870b8102f20046a84",
       "packageSize": 50261
+    },
+    {
+      "id": "com.island.smooth-tabs",
+      "behavior": "tab-navigation",
+      "name": "丝滑切换",
+      "version": "1.0.0",
+      "description": "悬停图标即可切换面板，选中框连续滑动，支持拖动排序与可调动画时长。需要灵动岛 v0.5.42 或更新版本。",
+      "author": {
+        "name": "Island Community"
+      },
+      "category": "system",
+      "icon": "Sparkles",
+      "accentColor": "#A5B4FC",
+      "tags": [
+        "悬停切换",
+        "动画",
+        "导航",
+        "外观"
+      ],
+      "settings": [
+        {
+          "key": "hoverDelayMs",
+          "label": "悬停等待（毫秒，0–1000）",
+          "type": "number",
+          "default": 60
+        },
+        {
+          "key": "slideDurationMs",
+          "label": "滑块时长（毫秒，100–600）",
+          "type": "number",
+          "default": 240
+        },
+        {
+          "key": "fadeDurationMs",
+          "label": "面板淡入（毫秒，0–400）",
+          "type": "number",
+          "default": 150
+        }
+      ],
+      "expandedSize": {
+        "width": 580,
+        "height": 200
+      },
+      "sdkVersion": 1,
+      "guide": {
+        "summary": "为整排功能图标和九宫格提供悬停切换与连续滑动选中框。",
+        "prerequisites": [
+          "灵动岛 v0.5.42 或更新版本"
+        ],
+        "steps": [
+          {
+            "title": "安装并启用",
+            "desc": "在插件市场安装“丝滑切换”并保持启用，无需替换图标或重新配置模块。"
+          },
+          {
+            "title": "悬停切换",
+            "desc": "展开灵动岛，将鼠标移到功能图标或九宫格上；默认停留 60 毫秒打开面板。齿轮仍需点击。"
+          },
+          {
+            "title": "调整或恢复",
+            "desc": "在插件配置中调整等待和动画时长；停用或卸载后恢复点击切换。"
+          }
+        ],
+        "features": [
+          "选中框连续滑动，快速反向时追随最新目标",
+          "拖动排序期间暂停悬停",
+          "兼容顶部和底部图标栏，遵循减少动态效果偏好"
+        ],
+        "faq": [
+          {
+            "q": "安装后没有效果？",
+            "a": "请确认主程序至少为 v0.5.42 且插件已启用；旧版缺少导航扩展接口。"
+          }
+        ]
+      },
+      "permissions": [
+        "在灵动岛窗口执行代码",
+        "使用宿主提供的界面与系统接口"
+      ],
+      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.smooth-tabs.island-plugin.json",
+      "sha256": "ba5adf7fbbc853f87483a10d19f62aadc292ebeb9e0fb9f74cf0d59c264e0a18",
+      "packageSize": 28972
     }
   ]
 }

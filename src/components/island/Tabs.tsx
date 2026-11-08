@@ -1,9 +1,10 @@
 import { LayoutGridIcon, SettingsIcon } from "lucide-react";
-import { motion, Reorder, type Transition } from "motion/react";
-import type { CSSProperties, ReactNode } from "react";
+import { LayoutGroup, motion, Reorder, type Transition, useReducedMotion } from "motion/react";
+import { type CSSProperties, type ReactNode, useEffect, useId, useRef } from "react";
 import { tv } from "tailwind-variants";
 import { command } from "../../core/bridge";
 import { useT } from "../../core/i18n";
+import type { TabNavigationOptions } from "../../core/island";
 import type { ModuleEntry } from "../../core/types";
 import { LAUNCHER } from "../../core/useIslandController";
 
@@ -47,6 +48,7 @@ export function Tabs({
 	iconsOnly,
 	bottom,
 	transition,
+	navigation,
 	extra,
 }: {
 	entries: ModuleEntry[];
@@ -57,12 +59,69 @@ export function Tabs({
 	/** Below the content (Windows Island): centered. */
 	bottom: boolean;
 	transition: Transition;
+	navigation: TabNavigationOptions | null;
 	/** The open module's `tabBarExtra`, shown next to the gear. */
 	extra?: ReactNode;
 }) {
 	const t = useT();
 	const s = tabs({ iconsOnly, bottom });
-	const pill = <motion.span layoutId="tab-pill" className={s.pill()} transition={transition} />;
+	const groupId = useId();
+	const reducedMotion = useReducedMotion();
+	const timer = useRef<number | undefined>(undefined);
+	const pending = useRef<string | null>(null);
+	const pressed = useRef(false);
+	const dragging = useRef(false);
+	const suppressClick = useRef(false);
+	const latest = useRef({ current, entries, onSelect, navigation });
+	latest.current = { current, entries, onSelect, navigation };
+	const cancelHover = () => {
+		window.clearTimeout(timer.current);
+		pending.current = null;
+	};
+	useEffect(() => {
+		const release = () => {
+			pressed.current = false;
+		};
+		window.addEventListener("pointerup", release);
+		window.addEventListener("pointercancel", release);
+		return () => {
+			window.clearTimeout(timer.current);
+			window.removeEventListener("pointerup", release);
+			window.removeEventListener("pointercancel", release);
+		};
+	}, []);
+	const select = (id: string) => {
+		cancelHover();
+		if (dragging.current || suppressClick.current) return;
+		onSelect(id);
+	};
+	// 只从实际指针移动开始计时，避免面板变宽时图标经过静止鼠标而连锁切换。
+	const hover = (id: string, pointerType: string) => {
+		if (pending.current === id) return;
+		cancelHover();
+		if (!navigation || pointerType !== "mouse" || pressed.current || dragging.current || id === current) return;
+		pending.current = id;
+		timer.current = window.setTimeout(() => {
+			pending.current = null;
+			const next = latest.current;
+			if (!next.navigation || pressed.current || dragging.current || next.current === id) return;
+			if (id !== LAUNCHER && !next.entries.some((entry) => entry.module.id === id)) return;
+			next.onSelect(id);
+		}, navigation.hoverDelayMs);
+	};
+	const pill = (
+		<motion.span
+			layoutId="tab-pill"
+			className={`${s.pill()} pointer-events-none`}
+			transition={
+				reducedMotion
+					? { duration: 0 }
+					: navigation
+						? { type: "spring", visualDuration: navigation.slideDurationMs / 1000, bounce: 0.08 }
+						: transition
+			}
+		/>
+	);
 	const renderTab = ({ module, view }: ModuleEntry, draggable = false) => {
 		const selected = current === module.id;
 		const className = `${s.tab({ active: selected })}${draggable ? " cursor-grab touch-none active:cursor-grabbing" : ""}`;
@@ -73,7 +132,9 @@ export function Tabs({
 				className={className}
 				title={t(module.title)}
 				style={{ "--tab-accent": view.accent ?? "#fff" } as CSSProperties}
-				onClick={() => onSelect(module.id)}
+				onPointerMove={(event) => hover(module.id, event.pointerType)}
+				onPointerLeave={cancelHover}
+				onClick={() => select(module.id)}
 			>
 				{selected && pill}
 				<span className={s.part()}>{view.icon}</span>
@@ -84,69 +145,98 @@ export function Tabs({
 		);
 	};
 	return (
-		<div className={s.base()} data-no-drag>
-			{iconsOnly ? (
-				<Reorder.Group
-					as="div"
-					axis="x"
-					className="flex shrink-0 items-center gap-1"
-					values={entries.map((entry) => entry.module.id)}
-					onReorder={(ids) => onReorder?.(ids)}
+		<LayoutGroup id={groupId}>
+			<div
+				className={s.base()}
+				data-no-drag
+				onPointerLeave={cancelHover}
+				onKeyDownCapture={(event) => {
+					if (event.key === "Enter" || event.key === " ") {
+						cancelHover();
+						suppressClick.current = false;
+					}
+				}}
+				onPointerDownCapture={() => {
+					cancelHover();
+					pressed.current = true;
+					suppressClick.current = false;
+				}}
+			>
+				{iconsOnly ? (
+					<Reorder.Group
+						as="div"
+						axis="x"
+						className="flex shrink-0 items-center gap-1"
+						values={entries.map((entry) => entry.module.id)}
+						onReorder={(ids) => onReorder?.(ids)}
+					>
+						{entries.map(({ module, view }) => (
+							<Reorder.Item
+								as="button"
+								type="button"
+								key={module.id}
+								value={module.id}
+								className={`${s.tab({ active: current === module.id })} cursor-grab touch-none active:cursor-grabbing`}
+								title={`${t(module.title)} · ${t("layout.drag")}`}
+								style={{ "--tab-accent": view.accent ?? "#fff" } as CSSProperties}
+								whileDrag={{ scale: 1.12, zIndex: 1, boxShadow: "0 8px 18px -8px rgba(0,0,0,0.65)" }}
+								onPointerMove={(event) => hover(module.id, event.pointerType)}
+								onPointerLeave={cancelHover}
+								onDragStart={() => {
+									cancelHover();
+									dragging.current = true;
+									suppressClick.current = true;
+								}}
+								onDragEnd={() => {
+									dragging.current = false;
+								}}
+								onClick={() => select(module.id)}
+							>
+								{current === module.id && pill}
+								<span className={s.part()}>{view.icon}</span>
+								{view.active && current !== module.id && <span className={s.dot()} />}
+							</Reorder.Item>
+						))}
+					</Reorder.Group>
+				) : (
+					entries.map((entry) => renderTab(entry))
+				)}
+				<button
+					type="button"
+					className={s.tab({ active: current === LAUNCHER, launcher: true })}
+					title={t("layout.launcher")}
+					onPointerMove={(event) => hover(LAUNCHER, event.pointerType)}
+					onPointerLeave={cancelHover}
+					onClick={(e) => {
+						e.stopPropagation();
+						select(LAUNCHER);
+					}}
 				>
-					{entries.map(({ module, view }) => (
-						<Reorder.Item
-							as="button"
-							type="button"
-							key={module.id}
-							value={module.id}
-							className={`${s.tab({ active: current === module.id })} cursor-grab touch-none active:cursor-grabbing`}
-							title={`${t(module.title)} · ${t("layout.drag")}`}
-							style={{ "--tab-accent": view.accent ?? "#fff" } as CSSProperties}
-							whileDrag={{ scale: 1.12, zIndex: 1, boxShadow: "0 8px 18px -8px rgba(0,0,0,0.65)" }}
-							onClick={() => onSelect(module.id)}
-						>
-							{current === module.id && pill}
-							<span className={s.part()}>{view.icon}</span>
-							{view.active && current !== module.id && <span className={s.dot()} />}
-						</Reorder.Item>
-					))}
-				</Reorder.Group>
-			) : (
-				entries.map((entry) => renderTab(entry))
-			)}
-			<button
-				type="button"
-				className={s.tab({ active: current === LAUNCHER, launcher: true })}
-				title={t("layout.launcher")}
-				onClick={(e) => {
-					e.stopPropagation();
-					onSelect(LAUNCHER);
-				}}
-			>
-				{current === LAUNCHER && pill}
-				<span className={s.part()}>
-					<LayoutGridIcon size={14} />
-				</span>
-			</button>
-			{/* Sliders inside: pressing them must not drag the island. */}
-			{extra && (
-				<div className={s.extra()} data-no-drag>
-					{extra}
-				</div>
-			)}
-			<motion.button
-				className={s.gear()}
-				title={t("island.settings")}
-				whileHover={{ rotate: 45 }}
-				whileTap={{ scale: 0.85 }}
-				transition={{ type: "spring", stiffness: 300, damping: 15 }}
-				onClick={(e) => {
-					e.stopPropagation();
-					command("open_settings");
-				}}
-			>
-				<SettingsIcon size={16} />
-			</motion.button>
-		</div>
+					{current === LAUNCHER && pill}
+					<span className={s.part()}>
+						<LayoutGridIcon size={14} />
+					</span>
+				</button>
+				{/* Sliders inside: pressing them must not drag the island. */}
+				{extra && (
+					<div className={s.extra()} data-no-drag>
+						{extra}
+					</div>
+				)}
+				<motion.button
+					className={s.gear()}
+					title={t("island.settings")}
+					whileHover={{ rotate: 45 }}
+					whileTap={{ scale: 0.85 }}
+					transition={{ type: "spring", stiffness: 300, damping: 15 }}
+					onClick={(e) => {
+						e.stopPropagation();
+						command("open_settings");
+					}}
+				>
+					<SettingsIcon size={16} />
+				</motion.button>
+			</div>
+		</LayoutGroup>
 	);
 }
