@@ -47,9 +47,10 @@ const WINDOWS: Variant = {
 };
 /** Windows Island at rest without the clock: a small, empty pill. */
 const WINDOWS_BARE_IDLE: Geo = { width: 110, height: 30, radius: 15, ear: 0 };
-const MAC_IDLE: Geo = { width: 48, height: 20, radius: 10, ear: 0 };
+const MAC_IDLE: Geo = { width: 40, height: 24, radius: 12, ear: 0 };
 const MAC_COMPACT_WIDTH = 185;
-const MAC_MUSIC: Geo = { width: MAC_COMPACT_WIDTH, height: 32, radius: 16, ear: 0 };
+const MAC_COMPACT_HEIGHT = 50;
+const MAC_MUSIC: Geo = { width: MAC_COMPACT_WIDTH, height: MAC_COMPACT_HEIGHT, radius: 25, ear: 0 };
 
 /** Space for the fixed camera above activity and expanded content. */
 export const MAC_CAMERA_BAND = 22;
@@ -83,7 +84,8 @@ export function geometry(
 			return {
 				...v.compact,
 				width: macCompact ? MAC_COMPACT_WIDTH : (primary?.view.compact?.width ?? v.compact.width),
-				height: macCompact ? MAC_IDLE.height : v.compact.height,
+				radius: macCompact ? MAC_COMPACT_HEIGHT / 2 : v.compact.radius,
+				height: macCompact ? MAC_COMPACT_HEIGHT : v.compact.height,
 			};
 		case "peek":
 		case "expanded": {

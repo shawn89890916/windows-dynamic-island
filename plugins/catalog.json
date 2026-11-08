@@ -1,15 +1,15 @@
 {
   "formatVersion": 1,
   "sdkVersion": 1,
-  "version": "1.1.4",
+  "version": "1.1.5",
   "plugins": [
     {
       "id": "com.island.mac-compact",
       "name": "Mac 灵动岛",
       "titleKey": "marketplace.plugins.macCompact.name",
       "descKey": "marketplace.plugins.macCompact.desc",
-      "version": "1.2.0",
-      "description": "待机时贴合摄像头显示小胶囊；音量和亮度活动以完整胶囊展示，并对齐右侧分岛。需要灵动岛 v0.5.29 或更新版本。",
+      "version": "1.3.0",
+      "description": "待机和活动态分别使用独立尺寸；音量与亮度展示为宽高协调的居中胶囊，并对齐右侧分岛。需要灵动岛 v0.5.30 或更新版本。",
       "author": {
         "name": "Shawn Chen",
         "url": "https://github.com/shawn89890916"
@@ -29,8 +29,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.mac-compact.island-plugin.json",
-      "sha256": "4a3d2c0bdc8739f845de17c0a3024f622f8e92654ade10288f6381dff1f3c7e9",
-      "packageSize": 28653
+      "sha256": "5131db0c6aa574faab58a6c4c15fdfbd610756a30c1da0c313f38d6768237469",
+      "packageSize": 28665
     },
     {
       "id": "com.island.desktop-glass",
@@ -740,7 +740,7 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.navopath.island-plugin.json",
-      "sha256": "4ad704337a52a8cddf153348ae7140dc118e586cdb88e84e69dedc42b9e34ecc",
+      "sha256": "59c50d74fbd1e28b770e9d622aa5ab3a880c6d821aa76c1f2049efce836d4c91",
       "packageSize": 51711
     },
     {
