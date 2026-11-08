@@ -33,6 +33,7 @@ export function Island() {
 	const macCompact = macAppearanceEnabled(plugins);
 	const [macCompactWidth, setMacCompactWidth] = useState(128);
 	const [macCompactHidden, setMacCompactHidden] = useState(false);
+	const [macStageScale, setMacStageScale] = useState(1);
 	const look = macCompact ? { ...baseLook, style: "windows" as const, idleClock: false, rim: [] } : baseLook;
 	const glassPluginEnabled = plugins.some(
 		(plugin) => plugin.manifest.id === "com.island.desktop-glass" && plugin.enabled && Boolean(plugin.packageSha256),
@@ -45,6 +46,13 @@ export function Island() {
 	const effectiveTop = v.top + topMargin;
 	useSyncLocale();
 	useIslandFileDrop(ctl);
+	useEffect(() => {
+		if (!macCompact) return;
+		const updateScale = () => setMacStageScale(1 / Math.max(1, window.devicePixelRatio));
+		updateScale();
+		window.addEventListener("resize", updateScale);
+		return () => window.removeEventListener("resize", updateScale);
+	}, [macCompact]);
 
 	const bigSize = ctl.launcher ? launcherSize(ctl.entries.length) : focused?.view.expandedSize;
 	const content = islandContent(ctl, look, v, macCompact);
@@ -119,6 +127,7 @@ export function Island() {
 			<div
 				data-mac-compact-stage={macCompact || undefined}
 				className="pointer-events-none fixed inset-0 flex items-start justify-center"
+				style={macCompact ? { transform: `scale(${macStageScale})`, transformOrigin: "top center" } : undefined}
 			>
 				{/* The tray's black hole: the island spins into its own center and comes back out. */}
 				<motion.div
