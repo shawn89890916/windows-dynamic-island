@@ -12,6 +12,8 @@ import {
 } from "../../core/appearance";
 import { cn } from "../../core/cn";
 import { useT } from "../../core/i18n";
+import { macAppearanceEnabled } from "../../core/plugins/appearancePlugin";
+import { useInstalledPlugins } from "../../core/plugins/registry";
 import { appearanceSettings, ISLAND_HIDDEN_KEY, type IslandStyle, readSetting, setSetting } from "../../core/settings";
 import { Title } from "../components/Heading";
 import { Toggle, ToggleRow } from "../components/Toggle";
@@ -34,6 +36,7 @@ export function AppearancePage({ values }: { values: Record<string, unknown> }) 
 	const thickness = readSetting(values, appearanceSettings.thickness);
 	const rim = borderColors(border, custom);
 	const windows = style === "windows";
+	const macCompact = macAppearanceEnabled(useInstalledPlugins());
 	const hidden = values[ISLAND_HIDDEN_KEY] === true;
 
 	return (
@@ -141,7 +144,7 @@ export function AppearancePage({ values }: { values: Record<string, unknown> }) 
 				<ToggleRow def={appearanceSettings.idleClock} value={readSetting(values, appearanceSettings.idleClock)} />
 				<Row
 					label={t("appearance.tabsPosition.label")}
-					desc={windows ? t("appearance.tabsPosition.desc") : t("appearance.windowsOnly")}
+					desc={windows || macCompact ? t("appearance.tabsPosition.desc") : t("appearance.windowsOnly")}
 					className="flex-wrap gap-x-4 gap-y-2 [&>span:first-child]:flex-[1_1_16rem]"
 				>
 					<Segmented
@@ -151,7 +154,7 @@ export function AppearancePage({ values }: { values: Record<string, unknown> }) 
 							{ value: "bottom", label: t("appearance.tabsPosition.bottom") },
 						]}
 						value={readSetting(values, appearanceSettings.tabsPosition)}
-						disabled={!windows}
+						disabled={!windows && !macCompact}
 						onChange={(value) => setSetting(appearanceSettings.tabsPosition, value)}
 					/>
 				</Row>

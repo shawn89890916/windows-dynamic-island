@@ -16,8 +16,8 @@ export function MacCompactBackground() {
 				display: flex !important;
 				align-items: center !important;
 				justify-content: space-between !important;
-				gap: 4px !important;
-				padding-inline: 8px !important;
+				gap: 3px !important;
+				padding-inline: 6px !important;
 			}
 			[data-mac-compact-content] > div > :first-child {
 				min-width: 0;
@@ -30,13 +30,14 @@ export function MacCompactBackground() {
 				overflow: hidden;
 			}
 			[data-mac-compact-content] [data-activity-level-bar] {
-				width: 64px !important;
+				width: 54px !important;
 			}
 			[data-mac-privacy-indicator] [data-capture] {
 				width: 6px !important;
 				height: 6px !important;
 			}
-			[data-island-secondary-bubble] {
+			[data-island-secondary-bubble],
+			[data-island-ambient-bubbles] {
 				top: calc(50% - 19px) !important;
 			}
 		`;

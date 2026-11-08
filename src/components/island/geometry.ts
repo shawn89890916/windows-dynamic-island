@@ -48,9 +48,9 @@ const WINDOWS: Variant = {
 /** Windows Island at rest without the clock: a small, empty pill. */
 const WINDOWS_BARE_IDLE: Geo = { width: 110, height: 30, radius: 15, ear: 0 };
 const MAC_IDLE: Geo = { width: 40, height: 24, radius: 12, ear: 0 };
-const MAC_COMPACT_WIDTH = 185;
-const MAC_COMPACT_HEIGHT = 50;
-const MAC_MUSIC: Geo = { width: MAC_COMPACT_WIDTH, height: MAC_COMPACT_HEIGHT, radius: 25, ear: 0 };
+const MAC_COMPACT_WIDTH = 128;
+const MAC_COMPACT_HEIGHT = 38;
+const MAC_MUSIC: Geo = { width: MAC_COMPACT_WIDTH, height: MAC_COMPACT_HEIGHT, radius: 19, ear: 0 };
 
 /** Space for the fixed camera above activity and expanded content. */
 export const MAC_CAMERA_BAND = 22;

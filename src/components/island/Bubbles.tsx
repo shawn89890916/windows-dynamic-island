@@ -18,7 +18,10 @@ export function AmbientBubbles({
 	...bubble
 }: BubbleProps & { entries: ModuleEntry[]; visible: boolean; shrunk: boolean }) {
 	return (
-		<div className="pointer-events-none absolute top-0 right-[calc(100%+10px)] flex flex-row-reverse gap-2">
+		<div
+			data-island-ambient-bubbles
+			className="pointer-events-none absolute top-0 right-[calc(100%+10px)] flex flex-row-reverse gap-2"
+		>
 			<AnimatePresence>
 				{visible &&
 					entries
