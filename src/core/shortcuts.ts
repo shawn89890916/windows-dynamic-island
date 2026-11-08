@@ -25,6 +25,12 @@ export type ShortcutsState = Partial<Record<string, ShortcutStatus>>;
 const BUILTIN_SHORTCUTS: Record<string, SettingDef<string | null> & { fallback: string }> = {
 	ask: { key: "shortcut.ask", label: "shortcuts.ask", default: null, fallback: "Ctrl+Alt+Space" },
 	find: { key: "shortcut.find", label: "shortcuts.find", default: null, fallback: "Ctrl+Alt+F" },
+	visibilityToggle: {
+		key: "shortcut.visibilityToggle",
+		label: "shortcuts.visibilityToggle",
+		default: null,
+		fallback: "Ctrl+Alt+H",
+	},
 	macCompactToggle: {
 		key: "shortcut.macCompactToggle",
 		label: "shortcuts.macCompactToggle",
@@ -48,6 +54,7 @@ export function shortcutStateIds(values: Record<string, unknown>): string[] {
 	return [
 		"ask",
 		"find",
+		"visibilityToggle",
 		"macCompactToggle",
 		...Object.keys(values)
 			.filter((key) => key.startsWith("shortcut.module."))

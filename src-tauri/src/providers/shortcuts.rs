@@ -1,7 +1,7 @@
 //! Configurable global shortcuts for built-in modules and installed plugins.
 //!
-//! Built-in Ask and Find actions retain their defaults. Other module shortcuts
-//! are opt-in settings stored under `shortcut.module.<module-id>`.
+//! Built-in actions use defaults unless overridden. Module shortcuts are
+//! opt-in settings stored under `shortcut.module.<module-id>`.
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{self, Sender};
@@ -26,7 +26,7 @@ struct Action {
 	fallback: Option<&'static str>,
 }
 
-const BUILTIN_ACTIONS: [Action; 3] = [
+const BUILTIN_ACTIONS: [Action; 4] = [
 	Action {
 		id: "ask",
 		default: "Ctrl+Alt+Space",
@@ -35,6 +35,11 @@ const BUILTIN_ACTIONS: [Action; 3] = [
 	Action {
 		id: "find",
 		default: "Ctrl+Alt+F",
+		fallback: None,
+	},
+	Action {
+		id: "visibilityToggle",
+		default: "Ctrl+Alt+H",
 		fallback: None,
 	},
 	Action {
@@ -55,6 +60,7 @@ static REGISTERED: Mutex<Vec<RegisteredShortcut>> = Mutex::new(Vec::new());
 
 pub enum ShortcutTarget {
 	Module(String),
+	VisibilityToggle,
 	MacCompactToggle,
 }
 
@@ -63,6 +69,7 @@ pub fn event_for(shortcut: &Shortcut) -> Option<ShortcutTarget> {
 	let id = &registered.iter().find(|entry| &entry.shortcut == shortcut)?.id;
 	match id.as_str() {
 		"ask" | "find" => Some(ShortcutTarget::Module(id.clone())),
+		"visibilityToggle" => Some(ShortcutTarget::VisibilityToggle),
 		"macCompactToggle" => Some(ShortcutTarget::MacCompactToggle),
 		_ => id.strip_prefix("module:").map(|module_id| ShortcutTarget::Module(module_id.to_string())),
 	}

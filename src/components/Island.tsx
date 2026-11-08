@@ -121,23 +121,17 @@ export function Island() {
 				data-mac-compact-stage={macCompact || undefined}
 				className="pointer-events-none fixed inset-0 flex items-start justify-center"
 			>
-				{/* The tray's black hole: the island spins into its own center and comes back out. */}
+				{/* Scale into the tray and spring back out when the island is hidden or restored. */}
 				<motion.div
 					className="pointer-events-none relative flex origin-center justify-center"
 					initial={false}
 					aria-hidden={hideMacCompact || undefined}
 					animate={
 						swallowed || hideMacCompact
-							? { scale: 0, rotate: swallowed ? -200 : 0, opacity: 0 }
-							: { scale: 1, rotate: 0, opacity: 1 }
+							? { scale: 0, opacity: 0 }
+							: { scale: 1, opacity: 1 }
 					}
-					transition={
-						macCompact
-							? { type: "spring", stiffness: 500, damping: 32, mass: 0.7 }
-							: swallowed
-								? { duration: 0.46, ease: [0.55, 0, 1, 0.45] }
-								: { duration: 0.56, ease: [0.34, 1.4, 0.64, 1], opacity: { duration: 0.26 } }
-					}
+					transition={{ type: "spring", stiffness: 420, damping: 38, mass: 0.9, bounce: 0 }}
 				>
 					<motion.div
 						className={cn(

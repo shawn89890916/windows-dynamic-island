@@ -845,6 +845,7 @@ export type MessageKey =
 	| "shortcuts.label"
 	| "shortcuts.ask"
 	| "shortcuts.find"
+	| "shortcuts.visibilityToggle"
 	| "shortcuts.macCompactToggle"
 	| "shortcuts.desc"
 	| "shortcuts.press"

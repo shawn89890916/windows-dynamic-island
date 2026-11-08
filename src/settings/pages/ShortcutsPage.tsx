@@ -13,12 +13,19 @@ export function ShortcutsPage({ values }: { values: Record<string, unknown> }) {
 	const actionNames = Object.fromEntries(
 		modules.map((module) => [module.shortcut ?? `module:${module.id}`, t(module.title)]),
 	);
+	actionNames.visibilityToggle = t("shortcuts.visibilityToggle");
 	if (macCompact) actionNames.macCompactToggle = t("shortcuts.macCompactToggle");
 
 	return (
 		<>
 			<Title>{t("shortcuts.title")}</Title>
 			<Card>
+				<ShortcutRow
+					id="visibilityToggle"
+					values={values}
+					actionLabel={t("shortcuts.visibilityToggle")}
+					actionNames={actionNames}
+				/>
 				{modules.map((module) => (
 					<ShortcutRow
 						key={module.id}

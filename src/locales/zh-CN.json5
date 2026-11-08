@@ -988,6 +988,7 @@
     label: "全局快捷键",
     ask: "打开 Ask Claude",
     find: "打开 屏幕查找",
+    visibilityToggle: "显示/隐藏灵动岛",
     macCompactToggle: "Mac 灵动岛快速隐藏/显示",
     desc: "在任何界面随时生效。点击并按下新快捷键；按 Esc 取消。",
     press: "请按下快捷键组合…",

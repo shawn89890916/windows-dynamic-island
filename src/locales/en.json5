@@ -992,6 +992,7 @@
     label: "Keyboard shortcut",
     ask: "Open Ask Claude",
     find: "Open Find on screen",
+    visibilityToggle: "Show/hide Dynamic Island",
     macCompactToggle: "Quickly hide/show Mac Island",
     desc: "Works from anywhere. Click and press the new keys; Esc cancels.",
     press: "Press the keys…",
