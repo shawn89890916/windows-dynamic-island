@@ -15,7 +15,7 @@ export function MacCompactBackground() {
 		style.textContent = `
 			[data-mac-compact-stage] {
 				transform: scale(var(--mac-compact-stage-scale, 1));
-				transform-origin: top left;
+				transform-origin: top center;
 			}
 			[data-mac-compact-content] {
 				left: 0 !important;

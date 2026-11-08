@@ -8,7 +8,7 @@
       "name": "Mac 灵动岛",
       "titleKey": "marketplace.plugins.macCompact.name",
       "descKey": "marketplace.plugins.macCompact.desc",
-      "version": "1.3.6",
+      "version": "1.3.7",
       "description": "恢复待机摄像头造型，活动胶囊按两侧内容收紧，并接入灵动岛的位置和组件布局设置。需要灵动岛 v0.5.32 或更新版本。",
       "author": {
         "name": "Shawn Chen",
@@ -29,8 +29,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.mac-compact.island-plugin.json",
-      "sha256": "bcc21f7b4d8d6122939b3b8d075c0c2f5df02b57b7a6141f886a2a7e44c2576d",
-      "packageSize": 29818
+      "sha256": "9eddc1210921566808a6198aa1d2736ac81462d1e67b0593f95769185e007d7f",
+      "packageSize": 29820
     },
     {
       "id": "com.island.desktop-glass",
@@ -740,7 +740,7 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.navopath.island-plugin.json",
-      "sha256": "f0bc5b9256a752aaa1ad3384aa131970f58020b26f4c3ab195414fa9672aa4c0",
+      "sha256": "400c9dd52d18b86e291d58c1bd49bf9fa39639cc0ab37e0fd00d7d31bb000071",
       "packageSize": 51711
     },
     {
