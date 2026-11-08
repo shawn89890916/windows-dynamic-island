@@ -113,6 +113,7 @@
     ui: {
       safety: "Os pacotes são baixados e verificados antes de substituir um plugin instalado.",
       refresh: "Atualizar catálogo",
+      submitPlugin: "Enviar um plugin",
       catalogError: "Falha ao atualizar o catálogo; exibindo dados em cache: {error}",
       explore: "Explorar",
       installed: "Instalados",

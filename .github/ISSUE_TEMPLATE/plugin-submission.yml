@@ -1,0 +1,32 @@
+name: Plugin market submission
+description: Submit a plugin package for automatic publication to the Windows Dynamic Island marketplace.
+title: "[Plugin Submission] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Automatic publishing
+        Submissions that pass validation are published automatically without human review. Your package must be a GitHub Release asset in a repository owned by your submitting account. The package runs inside the Dynamic Island WebView and can access host APIs and app-window data. The app asks each user to trust the publisher before installation.
+  - type: input
+    id: package_url
+    attributes:
+      label: Plugin package URL
+      description: HTTPS URL to your release asset, named `<plugin-id>.island-plugin.json`.
+      placeholder: https://github.com/your-account/your-repo/releases/download/v1.0.0/com.example.plugin.island-plugin.json
+    validations:
+      required: true
+  - type: input
+    id: sha256
+    attributes:
+      label: Package SHA-256
+      description: SHA-256 of the exact downloaded package file.
+      placeholder: 64 hexadecimal characters
+    validations:
+      required: true
+  - type: checkboxes
+    id: rights
+    attributes:
+      label: Confirmation
+      options:
+        - label: I created or have permission to publish this package, and I understand that valid submissions are listed automatically without human review.
+          required: true

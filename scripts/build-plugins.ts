@@ -9,6 +9,7 @@ import * as JSX from "react/jsx-runtime";
 import { MARKETPLACE_CATALOG } from "../plugins/catalog.source";
 import { PLUGIN_GUIDES } from "../plugins/guides";
 import release from "../plugins/release.json";
+import type { PluginManifest } from "../src/core/plugins/types";
 
 const root = resolve(import.meta.dir, "..");
 const generated = join(root, "plugins/.generated");
@@ -120,7 +121,7 @@ const diagnosticNames: Record<string, string> = {
 	"com.island.obsidian": "diagnoseObsidian",
 	"com.island.everything": "diagnoseEverything",
 };
-const descriptors = [];
+const descriptors: PluginManifest[] = [];
 for (const source of MARKETPLACE_CATALOG) {
 	const widget = entries[source.id];
 	if (!widget) throw Error(`Missing entry ${source.id}`);
@@ -169,6 +170,15 @@ for (const source of MARKETPLACE_CATALOG) {
 		packageSize: Buffer.byteLength(content),
 	});
 	console.log(`${source.id}: code ${Buffer.byteLength(code)} B, shared styles ${Buffer.byteLength(css)} B`);
+}
+const community = JSON.parse(await readFile(join(root, "plugins/community.json"), "utf8")) as PluginManifest[];
+const publishedIds = new Set(descriptors.map((plugin) => plugin.id));
+for (const plugin of community) {
+	if (!plugin.id || !plugin.packageUrl || !plugin.sha256 || plugin.sdkVersion !== 1)
+		throw Error(`Invalid community plugin catalogue entry: ${plugin.id || "unknown"}`);
+	if (publishedIds.has(plugin.id)) throw Error(`Duplicate marketplace plugin id: ${plugin.id}`);
+	publishedIds.add(plugin.id);
+	descriptors.push(plugin);
 }
 const index = `${JSON.stringify({ formatVersion: 1, sdkVersion: 1, version: release.version, plugins: descriptors }, null, 2)}\n`;
 await writeFile(join(root, "plugins/catalog.json"), index);

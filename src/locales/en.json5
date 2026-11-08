@@ -132,6 +132,7 @@
     ui: {
       safety: "Plugin packages are downloaded and checked before they replace an installed plugin.",
       refresh: "Refresh catalog",
+      submitPlugin: "Submit a plugin",
       catalogError: "Catalog refresh failed; showing cached results: {error}",
       explore: "Explore",
       installed: "Installed",

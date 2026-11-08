@@ -128,6 +128,7 @@
     ui: {
       safety: "插件包会先下载并校验，再替换已安装的插件。",
       refresh: "刷新目录",
+      submitPlugin: "提交插件",
       catalogError: "目录更新失败，继续显示缓存：{error}",
       explore: "探索发现",
       installed: "已安装",

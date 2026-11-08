@@ -160,15 +160,29 @@ export function MarketplacePage() {
 				<Lead>{t("marketplace.desc")}</Lead>
 				<div className="mt-2 flex items-start justify-between gap-3 rounded-lg border border-amber-400/15 bg-amber-400/5 px-3 py-2 text-[11px] leading-relaxed text-text-faint">
 					<p>{t("marketplace.ui.safety")}</p>
-					<button
-						type="button"
-						onClick={() => void refresh()}
-						disabled={catalogLoading}
-						className="flex shrink-0 items-center gap-1 text-accent disabled:opacity-50"
-					>
-						<RefreshCwIcon size={12} className={catalogLoading ? "animate-spin" : ""} />
-						{t("marketplace.ui.refresh")}
-					</button>
+					<div className="flex shrink-0 items-center gap-3">
+						<button
+							type="button"
+							onClick={() =>
+								void openExternal(
+									"https://github.com/shawn89890916/windows-dynamic-island/issues/new?template=plugin-submission.yml",
+								)
+							}
+							className="flex items-center gap-1 text-accent hover:underline"
+						>
+							<ExternalLinkIcon size={12} />
+							{t("marketplace.ui.submitPlugin")}
+						</button>
+						<button
+							type="button"
+							onClick={() => void refresh()}
+							disabled={catalogLoading}
+							className="flex items-center gap-1 text-accent disabled:opacity-50"
+						>
+							<RefreshCwIcon size={12} className={catalogLoading ? "animate-spin" : ""} />
+							{t("marketplace.ui.refresh")}
+						</button>
+					</div>
 				</div>
 				{catalogError && (
 					<p className="mt-2 text-xs text-amber-200">{t("marketplace.ui.catalogError", { error: catalogError })}</p>

@@ -67,6 +67,7 @@ export type MessageKey =
 	| "marketplace.desc"
 	| "marketplace.ui.safety"
 	| "marketplace.ui.refresh"
+	| "marketplace.ui.submitPlugin"
 	| "marketplace.ui.catalogError"
 	| "marketplace.ui.explore"
 	| "marketplace.ui.installed"
