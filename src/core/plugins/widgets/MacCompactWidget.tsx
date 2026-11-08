@@ -30,7 +30,7 @@ export function MacCompactBackground() {
 				max-width: 100% !important;
 				align-items: center !important;
 				justify-content: space-between !important;
-				gap: 3px !important;
+				gap: 32px !important;
 				padding-inline: 6px !important;
 			}
 			[data-mac-compact-content] > div > :first-child {

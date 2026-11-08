@@ -26,14 +26,11 @@ export function MacCamera() {
 	}, []);
 
 	return (
-		<div
-			data-mac-privacy-indicator
-			className="pointer-events-none absolute top-4 left-1/2 z-10 -ml-8 -translate-x-1/2 -translate-y-1/2"
-		>
+		<div data-mac-privacy-indicator className="pointer-events-none absolute inset-0 z-10 grid place-items-center">
 			<span
-				data-mac-camera
+				data-mac-camera-lens
 				aria-hidden="true"
-				className="block size-2.5 rounded-full border border-[#17181e] bg-[radial-gradient(circle_at_38%_35%,#27283a_0%,#11121c_30%,#050507_62%)]"
+				className="size-4 rounded-full border border-[#33354a] bg-[radial-gradient(circle_at_36%_32%,#727ba0_0%,#3b4264_12%,#1b1d30_36%,#090a10_68%,#030304_100%)] shadow-[inset_0_0_4px_rgba(114,123,160,.45),0_0_2px_rgba(180,190,255,.22)]"
 			/>
 			<span role="status" className="sr-only">
 				{capture === "idle" ? "" : t(`marketplace.plugins.macCompact.${capture}`)}
@@ -42,7 +39,7 @@ export function MacCamera() {
 				<span
 					aria-hidden="true"
 					data-capture={capture}
-					className="absolute top-1/2 left-[19px] size-1.5 -translate-y-1/2 rounded-full"
+					className="absolute top-1/2 left-[calc(50%+10px)] size-1.5 -translate-y-1/2 rounded-full"
 					style={{ background: capture === "camera" ? "#30D158" : "#FF9F0A" }}
 				/>
 			)}
