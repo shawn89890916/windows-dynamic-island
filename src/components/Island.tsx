@@ -32,6 +32,7 @@ export function Island() {
 	const baseLook = useAppearance();
 	const macCompact = macAppearanceEnabled(plugins);
 	const [macCompactWidth, setMacCompactWidth] = useState(128);
+	const [macCompactHidden, setMacCompactHidden] = useState(false);
 	const look = macCompact ? { ...baseLook, style: "windows" as const, idleClock: false, rim: [] } : baseLook;
 	const glassPluginEnabled = plugins.some(
 		(plugin) => plugin.manifest.id === "com.island.desktop-glass" && plugin.enabled && Boolean(plugin.packageSha256),
@@ -75,6 +76,7 @@ export function Island() {
 	const big = mode === "expanded" || mode === "peek";
 	const hidden = !macCompact && mode === "hidden";
 	const swallowed = !macCompact && mode === "swallowed";
+	const hideMacCompact = macCompact && macCompactHidden;
 	const anchorOnly = macCompact && (mode === "hidden" || mode === "swallowed");
 	const macMusic = macCompact && mode === "compact" && primary?.module.id === "music";
 	const contentTop = macCompact && big ? MAC_CAMERA_BAND : 0;
@@ -99,6 +101,9 @@ export function Island() {
 		if (id === "ask") requestAskFocus();
 		if (id === "find") requestFindFocus();
 	});
+	useTauriEvent("island://toggle-mac-compact-visibility", () => {
+		if (macCompact) setMacCompactHidden((hidden) => !hidden);
+	});
 
 	const api: IslandApi = useMemo(
 		() => ({ mode, tab: ctl.tab, expand: ctl.expand, collapse: ctl.collapse, keepOpen: ctl.keepOpen }),
@@ -119,20 +124,27 @@ export function Island() {
 				<motion.div
 					className="pointer-events-none relative flex origin-center justify-center"
 					initial={false}
-					animate={swallowed ? { scale: 0, rotate: -200, opacity: 0 } : { scale: 1, rotate: 0, opacity: 1 }}
+					aria-hidden={hideMacCompact || undefined}
+					animate={
+						swallowed || hideMacCompact
+							? { scale: 0, rotate: swallowed ? -200 : 0, opacity: 0 }
+							: { scale: 1, rotate: 0, opacity: 1 }
+					}
 					transition={
-						swallowed
-							? { duration: 0.46, ease: [0.55, 0, 1, 0.45] }
-							: { duration: 0.56, ease: [0.34, 1.4, 0.64, 1], opacity: { duration: 0.26 } }
+						macCompact
+							? { type: "spring", stiffness: 500, damping: 32, mass: 0.7 }
+							: swallowed
+								? { duration: 0.46, ease: [0.55, 0, 1, 0.45] }
+								: { duration: 0.56, ease: [0.34, 1.4, 0.64, 1], opacity: { duration: 0.26 } }
 					}
 				>
 					<motion.div
 						className={cn(
 							"pointer-events-auto relative touch-none will-change-[width,height,transform]",
-							anchorOnly && "pointer-events-none",
+							(anchorOnly || hideMacCompact) && "pointer-events-none",
 							drag.dragging && "cursor-grabbing **:cursor-grabbing",
 						)}
-						{...(hidden || swallowed || anchorOnly ? {} : { "data-hit": true })}
+						{...(hidden || swallowed || anchorOnly || hideMacCompact ? {} : { "data-hit": true })}
 						data-blur={islandLook.blurEffect !== "none"}
 						{...ctl.domHover}
 						style={{ ...drag.style, marginTop: effectiveTop }}

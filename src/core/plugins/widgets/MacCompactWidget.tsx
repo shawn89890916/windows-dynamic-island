@@ -6,61 +6,34 @@ export function MacCompactBackground() {
 	useEffect(() => {
 		const style = document.createElement("style");
 		style.dataset.pluginStyle = "com.island.mac-compact";
-		const stage = document.querySelector<HTMLElement>("[data-mac-compact-stage]");
-		const updateScale = () => {
-			stage?.style.setProperty("--mac-compact-stage-scale", String(1 / Math.max(1, window.devicePixelRatio)));
-		};
-		updateScale();
-		window.addEventListener("resize", updateScale);
 		style.textContent = `
-			[data-mac-compact-stage] {
-				transform: scale(var(--mac-compact-stage-scale, 1));
-				transform-origin: top center;
-			}
-			[data-mac-compact-content] {
+			[data-island-surface] > div.ml-1 {
 				left: 0 !important;
 				margin-left: 0 !important;
-				transform: none !important;
-				width: max-content !important;
-				max-width: calc(100vw - 24px) !important;
+				width: 100% !important;
 			}
-			[data-mac-compact-content] > div {
-				display: flex !important;
-				width: max-content !important;
-				max-width: 100% !important;
-				align-items: center !important;
-				justify-content: space-between !important;
-				gap: 32px !important;
-				padding-inline: 6px !important;
+			[data-island-surface] > div.ml-1 > div {
+				padding-inline: 8px !important;
 			}
-			[data-mac-compact-content] > div > :first-child {
-				min-width: 0;
-				max-width: 100%;
-				overflow: hidden;
+			[data-mac-camera] {
+				width: var(--mac-camera-size) !important;
+				height: var(--mac-camera-size) !important;
+				border-color: #101114 !important;
+				background: radial-gradient(circle at 38% 35%, #18191d 0%, #090a0d 42%, #020203 76%) !important;
+				box-shadow: inset 0 0 0 1px rgb(255 255 255 / 4%), 0 1px 2px rgb(0 0 0 / 90%);
 			}
-			[data-mac-compact-content] > div > :last-child {
-				min-width: 0;
-				max-width: 100%;
-				overflow: hidden;
+			div:has(> [data-mac-camera]) {
+				--mac-camera-size: clamp(12px, 1.11vw, 16px);
+				margin-left: -17px !important;
 			}
-			[data-mac-compact-content] [data-activity-level-bar] {
-				width: 54px !important;
-			}
-			[data-mac-privacy-indicator] [data-capture] {
-				width: 6px !important;
-				height: 6px !important;
-			}
-			[data-island-secondary-bubble],
-			[data-island-ambient-bubbles] {
-				top: calc(50% - 19px) !important;
+			div:has(> [data-mac-camera]) [data-capture] {
+				width: clamp(5px, 0.42vw, 6px) !important;
+				height: clamp(5px, 0.42vw, 6px) !important;
+				left: calc(var(--mac-camera-size) + 3px) !important;
 			}
 		`;
 		document.head.append(style);
-		return () => {
-			window.removeEventListener("resize", updateScale);
-			stage?.style.removeProperty("--mac-compact-stage-scale");
-			style.remove();
-		};
+		return () => style.remove();
 	}, []);
 	return null;
 }

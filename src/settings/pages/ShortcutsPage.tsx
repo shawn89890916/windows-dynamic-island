@@ -1,5 +1,7 @@
 import { Card } from "../../components/ui/card";
 import { useT } from "../../core/i18n";
+import { macAppearanceEnabled } from "../../core/plugins/appearancePlugin";
+import { useInstalledPlugins } from "../../core/plugins/registry";
 import { useAllModules } from "../../modules";
 import { Title } from "../components/Heading";
 import { ShortcutRow } from "../components/ShortcutRow";
@@ -7,9 +9,11 @@ import { ShortcutRow } from "../components/ShortcutRow";
 export function ShortcutsPage({ values }: { values: Record<string, unknown> }) {
 	const t = useT();
 	const modules = useAllModules();
+	const macCompact = macAppearanceEnabled(useInstalledPlugins());
 	const actionNames = Object.fromEntries(
 		modules.map((module) => [module.shortcut ?? `module:${module.id}`, t(module.title)]),
 	);
+	if (macCompact) actionNames.macCompactToggle = t("shortcuts.macCompactToggle");
 
 	return (
 		<>
@@ -24,6 +28,14 @@ export function ShortcutsPage({ values }: { values: Record<string, unknown> }) {
 						actionNames={actionNames}
 					/>
 				))}
+				{macCompact && (
+					<ShortcutRow
+						id="macCompactToggle"
+						values={values}
+						actionLabel={t("shortcuts.macCompactToggle")}
+						actionNames={actionNames}
+					/>
+				)}
 			</Card>
 		</>
 	);

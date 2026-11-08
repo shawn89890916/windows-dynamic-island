@@ -47,6 +47,9 @@ pub fn run() {
                     {
                         match target {
                             providers::shortcuts::ShortcutTarget::Module(id) => open_module(app, &id),
+                            providers::shortcuts::ShortcutTarget::MacCompactToggle => {
+                                let _ = app.emit("island://toggle-mac-compact-visibility", ());
+                            }
                         }
                     }
                 })

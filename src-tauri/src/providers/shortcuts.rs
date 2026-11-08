@@ -26,7 +26,7 @@ struct Action {
 	fallback: Option<&'static str>,
 }
 
-const BUILTIN_ACTIONS: [Action; 2] = [
+const BUILTIN_ACTIONS: [Action; 3] = [
 	Action {
 		id: "ask",
 		default: "Ctrl+Alt+Space",
@@ -35,6 +35,11 @@ const BUILTIN_ACTIONS: [Action; 2] = [
 	Action {
 		id: "find",
 		default: "Ctrl+Alt+F",
+		fallback: None,
+	},
+	Action {
+		id: "macCompactToggle",
+		default: "Ctrl+Alt+M",
 		fallback: None,
 	},
 ];
@@ -50,6 +55,7 @@ static REGISTERED: Mutex<Vec<RegisteredShortcut>> = Mutex::new(Vec::new());
 
 pub enum ShortcutTarget {
 	Module(String),
+	MacCompactToggle,
 }
 
 pub fn event_for(shortcut: &Shortcut) -> Option<ShortcutTarget> {
@@ -57,6 +63,7 @@ pub fn event_for(shortcut: &Shortcut) -> Option<ShortcutTarget> {
 	let id = &registered.iter().find(|entry| &entry.shortcut == shortcut)?.id;
 	match id.as_str() {
 		"ask" | "find" => Some(ShortcutTarget::Module(id.clone())),
+		"macCompactToggle" => Some(ShortcutTarget::MacCompactToggle),
 		_ => id.strip_prefix("module:").map(|module_id| ShortcutTarget::Module(module_id.to_string())),
 	}
 }
