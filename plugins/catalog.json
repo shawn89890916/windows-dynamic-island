@@ -1,15 +1,15 @@
 {
   "formatVersion": 1,
   "sdkVersion": 1,
-  "version": "1.1.2",
+  "version": "1.1.3",
   "plugins": [
     {
       "id": "com.island.mac-compact",
       "name": "Mac 灵动岛",
       "titleKey": "marketplace.plugins.macCompact.name",
       "descKey": "marketplace.plugins.macCompact.desc",
-      "version": "1.0.9",
-      "description": "恢复 Mac 灵动岛原有紧凑尺寸与分岛定位；支持 Windows 音量和屏幕亮度活动。需要灵动岛 v0.5.27 或更新版本。",
+      "version": "1.1.0",
+      "description": "居中避让相机并对齐分岛；支持 Windows 音量和屏幕亮度活动。需要灵动岛 v0.5.28 或更新版本。",
       "author": {
         "name": "Shawn Chen",
         "url": "https://github.com/shawn89890916"
@@ -29,8 +29,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.mac-compact.island-plugin.json",
-      "sha256": "70a037d0234b1fb9a25f99a13f7cba7f361f11e7229638c8108b31523ee38dcf",
-      "packageSize": 28671
+      "sha256": "39d769661b21c79239bc394dd9ab62a2d00199f7a4b20f6cb75b47167b524bb6",
+      "packageSize": 29338
     },
     {
       "id": "com.island.desktop-glass",
@@ -740,7 +740,7 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.navopath.island-plugin.json",
-      "sha256": "e49bdc6860cad824aee26a9485dd61cae9f551054f58e429130617b30c8d98c5",
+      "sha256": "afe23bbb50a19a808568aa04f65787a3ab8407688b4a3129b1c248f9133d06c9",
       "packageSize": 51711
     },
     {

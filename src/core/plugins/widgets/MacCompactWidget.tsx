@@ -7,13 +7,33 @@ export function MacCompactBackground() {
 		const style = document.createElement("style");
 		style.dataset.pluginStyle = "com.island.mac-compact";
 		style.textContent = `
-			[data-island-surface] > div.ml-1 {
+			[data-mac-compact-content] {
 				left: 0 !important;
 				margin-left: 0 !important;
 				width: 100% !important;
 			}
-			[data-island-surface] > div.ml-1 > div {
+			[data-mac-compact-content] > div {
+				display: grid !important;
+				grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) !important;
+				column-gap: 0 !important;
 				padding-inline: 8px !important;
+			}
+			[data-mac-compact-content] > div > :first-child {
+				grid-column: 1;
+				justify-self: start;
+				min-width: 0;
+				max-width: 100%;
+				overflow: hidden;
+			}
+			[data-mac-compact-content] > div > :last-child {
+				grid-column: 3;
+				justify-self: end;
+				min-width: 0;
+				max-width: 100%;
+				overflow: hidden;
+			}
+			[data-mac-compact-content] [data-activity-level-bar] {
+				width: 44px !important;
 			}
 			[data-mac-camera] {
 				width: var(--mac-camera-size) !important;
@@ -24,7 +44,10 @@ export function MacCompactBackground() {
 			}
 			div:has(> [data-mac-camera]) {
 				--mac-camera-size: clamp(12px, 1.11vw, 16px);
-				margin-left: -17px !important;
+				margin-left: 0 !important;
+			}
+			[data-island-secondary-bubble] {
+				top: calc(50% - 19px) !important;
 			}
 			div:has(> [data-mac-camera]) [data-capture] {
 				width: clamp(5px, 0.42vw, 6px) !important;

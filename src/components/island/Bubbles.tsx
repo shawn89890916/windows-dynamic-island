@@ -76,6 +76,7 @@ function Bubble({
 	return (
 		<motion.button
 			className={bubble({ ambient })}
+			data-island-secondary-bubble={!ambient || undefined}
 			data-hit
 			layout={layout}
 			initial={{ opacity: 0, scale: 0.3, x: from }}

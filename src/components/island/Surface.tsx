@@ -56,6 +56,7 @@ export function Surface({
 			<AnimatePresence mode="popLayout" initial={false}>
 				<motion.div
 					key={contentKey}
+					data-mac-compact-content={macCompactInline || undefined}
 					className={cn("absolute top-0 origin-top", macCompactInline ? "left-1/2 ml-1" : "left-1/2 -translate-x-1/2")}
 					style={{
 						top: contentTop,
