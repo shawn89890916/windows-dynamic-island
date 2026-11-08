@@ -1,5 +1,5 @@
 //! NavoPath's session headers are not accepted by its browser CORS preflight.
-//! Send desktop MCP requests natively without exposing a general HTTP proxy.
+//! Send desktop MCP requests natively while honoring the Windows system proxy.
 use std::time::Duration;
 
 use serde::Serialize;
@@ -53,6 +53,7 @@ fn request(
         return Err("MCP token is required".into());
     }
     let agent: ureq::Agent = ureq::Agent::config_builder()
+        .proxy(ureq::Proxy::try_from_env())
         .http_status_as_error(false)
         .max_redirects(0)
         .timeout_global(Some(Duration::from_secs(20)))
