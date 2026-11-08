@@ -4,7 +4,7 @@ import { useT } from "../../core/i18n";
 
 type CapturePrivacy = "camera" | "microphone" | "idle";
 
-export function MacCamera({ idle }: { idle: boolean }) {
+export function MacCamera() {
 	const t = useT();
 	const [capture, setCapture] = useState<CapturePrivacy>("idle");
 
@@ -26,14 +26,15 @@ export function MacCamera({ idle }: { idle: boolean }) {
 	}, []);
 
 	return (
-		<div data-mac-privacy-indicator className="pointer-events-none absolute inset-0 z-10">
-			{idle && (
-				<span
-					aria-hidden="true"
-					data-mac-camera-lens
-					className="absolute left-1/2 top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-[#090a0d] shadow-[inset_0_1px_3px_rgba(0,0,0,.95),0_0_1px_rgba(255,255,255,.25)]"
-				/>
-			)}
+		<div
+			data-mac-privacy-indicator
+			className="pointer-events-none absolute top-4 left-1/2 z-10 -ml-8 -translate-x-1/2 -translate-y-1/2"
+		>
+			<span
+				data-mac-camera
+				aria-hidden="true"
+				className="block size-2.5 rounded-full border border-[#17181e] bg-[radial-gradient(circle_at_38%_35%,#27283a_0%,#11121c_30%,#050507_62%)]"
+			/>
 			<span role="status" className="sr-only">
 				{capture === "idle" ? "" : t(`marketplace.plugins.macCompact.${capture}`)}
 			</span>
@@ -41,7 +42,7 @@ export function MacCamera({ idle }: { idle: boolean }) {
 				<span
 					aria-hidden="true"
 					data-capture={capture}
-					className="absolute right-2 top-2 block size-1.5 rounded-full"
+					className="absolute top-1/2 left-[19px] size-1.5 -translate-y-1/2 rounded-full"
 					style={{ background: capture === "camera" ? "#30D158" : "#FF9F0A" }}
 				/>
 			)}

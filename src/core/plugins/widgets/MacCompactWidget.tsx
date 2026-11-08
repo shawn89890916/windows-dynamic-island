@@ -17,51 +17,31 @@ export function MacCompactBackground() {
 				transform: scale(var(--mac-compact-stage-scale, 1));
 				transform-origin: top left;
 			}
-			[data-island-surface]:has([data-mac-compact-content]) {
-				background: transparent !important;
-				box-shadow: none !important;
-				overflow: visible !important;
-			}
 			[data-mac-compact-content] {
 				left: 0 !important;
 				margin-left: 0 !important;
 				transform: none !important;
 				width: max-content !important;
 				max-width: calc(100vw - 24px) !important;
-				height: 38px !important;
 			}
 			[data-mac-compact-content] > div {
 				display: flex !important;
 				width: max-content !important;
 				max-width: 100% !important;
 				align-items: center !important;
-				justify-content: flex-start !important;
-				gap: 52px !important;
-				padding: 0 !important;
+				justify-content: space-between !important;
+				gap: 3px !important;
+				padding-inline: 6px !important;
 			}
 			[data-mac-compact-content] > div > :first-child {
 				min-width: 0;
 				max-width: 100%;
 				overflow: hidden;
-				box-sizing: border-box;
-				height: 38px;
-				flex: none;
-				padding-inline: 8px;
-				border-radius: 999px;
-				background: #000;
-				box-shadow: 0 3px 10px rgba(0, 0, 0, 0.24);
 			}
 			[data-mac-compact-content] > div > :last-child {
 				min-width: 0;
 				max-width: 100%;
 				overflow: hidden;
-				box-sizing: border-box;
-				height: 38px;
-				flex: none;
-				padding-inline: 8px;
-				border-radius: 999px;
-				background: #000;
-				box-shadow: 0 3px 10px rgba(0, 0, 0, 0.24);
 			}
 			[data-mac-compact-content] [data-activity-level-bar] {
 				width: 54px !important;
