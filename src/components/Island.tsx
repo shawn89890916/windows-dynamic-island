@@ -184,7 +184,7 @@ export function Island() {
 						>
 							{content.node}
 						</Surface>
-						{macCompact && <MacCamera idle={mode === "idle" || mode === "hidden" || mode === "swallowed"} />}
+						{macCompact && <MacCamera idle={!big} />}
 
 						<AmbientBubbles entries={ctl.entries} visible={resting} shrunk={mode === "idle" && !windows} {...bubble} />
 						<SecondaryBubble entry={showSecondary ? secondary : undefined} {...bubble} />
