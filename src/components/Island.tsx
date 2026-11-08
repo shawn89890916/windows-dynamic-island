@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAppearance } from "../core/appearance";
 import { useTauriEvent } from "../core/bridge";
 import { cn } from "../core/cn";
@@ -31,6 +31,7 @@ export function Island() {
 	const { mode, primary, secondary, focused } = ctl;
 	const baseLook = useAppearance();
 	const macCompact = macAppearanceEnabled(plugins);
+	const [macCompactWidth, setMacCompactWidth] = useState(128);
 	const look = macCompact ? { ...baseLook, style: "windows" as const, idleClock: false, rim: [] } : baseLook;
 	const glassPluginEnabled = plugins.some(
 		(plugin) => plugin.manifest.id === "com.island.desktop-glass" && plugin.enabled && Boolean(plugin.packageSha256),
@@ -45,7 +46,31 @@ export function Island() {
 	useIslandFileDrop(ctl);
 
 	const bigSize = ctl.launcher ? launcherSize(ctl.entries.length) : focused?.view.expandedSize;
-	const g = geometry(v, look, mode, bigSize, primary, macCompact);
+	const content = islandContent(ctl, look, v, macCompact);
+	useEffect(() => {
+		if (!macCompact || mode !== "compact") return;
+		let element: HTMLElement | null = null;
+		const measure = () => {
+			const next = document.querySelector<HTMLElement>("[data-mac-compact-content]");
+			if (next !== element) {
+				if (element) observer.unobserve(element);
+				element = next;
+				if (element) observer.observe(element);
+			}
+			if (!element) return;
+			const width = Math.max(88, Math.min(window.innerWidth - 24, element.offsetWidth));
+			setMacCompactWidth((current) => (current === width ? current : width));
+		};
+		const observer = new ResizeObserver(measure);
+		const mutations = new MutationObserver(measure);
+		mutations.observe(document.body, { childList: true, subtree: true });
+		measure();
+		return () => {
+			observer.disconnect();
+			mutations.disconnect();
+		};
+	}, [macCompact, mode]);
+	const g = geometry(v, look, mode, bigSize, primary, macCompact, macCompactWidth);
 	useHitRects(islandLook.blurEffect, windows, g.radius);
 	const big = mode === "expanded" || mode === "peek";
 	const hidden = !macCompact && mode === "hidden";
@@ -80,7 +105,6 @@ export function Island() {
 		[mode, ctl.tab, ctl.expand, ctl.collapse, ctl.keepOpen],
 	);
 
-	const content = islandContent(ctl, look, v, macCompact);
 	const rim = windows && !macCompact ? <Rim look={look} /> : null;
 	const bubble = { transition: v.shellSpring, rim, onOpen: ctl.expand };
 

@@ -50,7 +50,6 @@ const WINDOWS_BARE_IDLE: Geo = { width: 110, height: 30, radius: 15, ear: 0 };
 const MAC_IDLE: Geo = { width: 40, height: 24, radius: 12, ear: 0 };
 const MAC_COMPACT_WIDTH = 128;
 const MAC_COMPACT_HEIGHT = 38;
-const MAC_MUSIC: Geo = { width: MAC_COMPACT_WIDTH, height: MAC_COMPACT_HEIGHT, radius: 19, ear: 0 };
 
 /** Space for the fixed camera above activity and expanded content. */
 export const MAC_CAMERA_BAND = 22;
@@ -72,6 +71,7 @@ export function geometry(
 	bigSize: { width: number; height: number } | undefined,
 	primary: ModuleEntry | undefined,
 	macCompact = false,
+	macCompactWidth = MAC_COMPACT_WIDTH,
 ): Geo {
 	switch (mode) {
 		case "hidden":
@@ -80,10 +80,9 @@ export function geometry(
 			if (macCompact) return MAC_IDLE;
 			return look.style === "windows" && !look.idleClock ? WINDOWS_BARE_IDLE : v.idle;
 		case "compact":
-			if (macCompact && primary?.module.id === "music") return MAC_MUSIC;
 			return {
 				...v.compact,
-				width: macCompact ? MAC_COMPACT_WIDTH : (primary?.view.compact?.width ?? v.compact.width),
+				width: macCompact ? macCompactWidth : (primary?.view.compact?.width ?? v.compact.width),
 				radius: macCompact ? MAC_COMPACT_HEIGHT / 2 : v.compact.radius,
 				height: macCompact ? MAC_COMPACT_HEIGHT : v.compact.height,
 			};

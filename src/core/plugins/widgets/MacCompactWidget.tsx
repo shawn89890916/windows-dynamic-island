@@ -10,10 +10,14 @@ export function MacCompactBackground() {
 			[data-mac-compact-content] {
 				left: 0 !important;
 				margin-left: 0 !important;
-				width: 100% !important;
+				transform: none !important;
+				width: max-content !important;
+				max-width: calc(100vw - 24px) !important;
 			}
 			[data-mac-compact-content] > div {
 				display: flex !important;
+				width: max-content !important;
+				max-width: 100% !important;
 				align-items: center !important;
 				justify-content: space-between !important;
 				gap: 3px !important;
