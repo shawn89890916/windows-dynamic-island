@@ -1,5 +1,4 @@
 import { MusicIcon } from "lucide-react";
-import { motion } from "motion/react";
 import { Marquee } from "../../../components/Marquee";
 import { useT } from "../../../core/i18n";
 import { useSetting } from "../../../core/settings";
@@ -112,6 +111,7 @@ export function MusicPanel({
 				<div className="flex items-center gap-2.5">
 					<span className="min-w-9.5 text-[11px] text-text-faint">{formatTime(position)}</span>
 					<div
+						data-no-drag
 						className="relative h-1.25 flex-1 cursor-pointer overflow-hidden rounded-full bg-white/14 transition-[height] duration-200 ease-[ease] hover:h-2"
 						onClick={(e) => {
 							if (!music.durationMs) return;
@@ -119,11 +119,11 @@ export function MusicPanel({
 							musicAction("seek", Math.round(((e.clientX - r.left) / r.width) * music.durationMs));
 						}}
 					>
-						<motion.div
-							className="absolute inset-0 origin-left rounded-[inherit] bg-[linear-gradient(90deg,color-mix(in_srgb,var(--accent)_70%,#fff),#fff)]"
-							initial={false}
-							animate={{ scaleX: Math.min(1, progress) }}
-							transition={{ type: "tween", ease: "linear", duration: 0.25 }}
+						<div
+							data-playing={music.playing}
+							data-indeterminate={!music.durationMs}
+							className="music-progress absolute inset-0 origin-left rounded-[inherit] bg-[linear-gradient(90deg,color-mix(in_srgb,var(--accent)_70%,#fff),#fff)]"
+							style={music.durationMs ? { transform: `scaleX(${Math.max(0, Math.min(1, progress))})` } : undefined}
 						/>
 					</div>
 					<span className="min-w-9.5 text-[11px] text-text-faint text-right">

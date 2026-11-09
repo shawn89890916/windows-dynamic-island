@@ -8,6 +8,7 @@
 mod focus;
 mod level;
 mod smtc;
+mod timeline;
 pub mod spotify;
 pub mod volume;
 mod youtube;

@@ -151,8 +151,10 @@ export function PipApp() {
 							}}
 						>
 							<div
-								className="absolute inset-0 origin-left bg-white"
-								style={{ transform: `scaleX(${Math.min(1, progress)})` }}
+								className="music-progress absolute inset-0 origin-left bg-white"
+								data-playing={music?.playing}
+								data-indeterminate={!music?.durationMs}
+								style={music?.durationMs ? { transform: `scaleX(${Math.max(0, Math.min(1, progress))})` } : undefined}
 							/>
 						</div>
 						<span>{music?.durationMs ? formatTime(music.durationMs) : "--:--"}</span>

@@ -126,11 +126,7 @@ export function Island() {
 					className="pointer-events-none relative flex origin-center justify-center"
 					initial={false}
 					aria-hidden={hideMacCompact || undefined}
-					animate={
-						swallowed || hideMacCompact
-							? { scale: 0, opacity: 0 }
-							: { scale: 1, opacity: 1 }
-					}
+					animate={swallowed || hideMacCompact ? { scale: 0, opacity: 0 } : { scale: 1, opacity: 1 }}
 					transition={{ type: "spring", stiffness: 420, damping: 38, mass: 0.9, bounce: 0 }}
 				>
 					<motion.div

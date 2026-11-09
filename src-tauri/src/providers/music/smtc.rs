@@ -33,12 +33,13 @@ pub fn poll_loop(hub: Arc<Hub>, playing_flag: Arc<AtomicBool>, spotify: Arc<Spot
     let mut thumbnail: Option<String> = None;
     let mut thumb_attempts = 0u8;
     let youtube = super::youtube::Resolver::default();
+    let mut clock = super::timeline::TimelineClock::default();
 
     loop {
         if manager.is_none() {
             manager = SessionManager::RequestAsync().and_then(|op| op.join()).ok();
         }
-        let state = match manager.as_ref().map(read_state) {
+        let state = match manager.as_ref().map(|manager| read_state(manager, &mut clock)) {
             Some(Ok(Some((mut state, session)))) => {
                 let key = format!("{}|{}|{}|{}", state.app_id, state.title, state.artist, state.album);
                 if key != track_key {
@@ -81,6 +82,9 @@ pub fn poll_loop(hub: Arc<Hub>, playing_flag: Arc<AtomicBool>, spotify: Arc<Spot
                 MusicState::default()
             }
         };
+        if !state.available {
+            clock.reset();
+        }
         playing_flag.store(state.playing, Ordering::Relaxed);
         hub.publish(ID, &state);
         std::thread::sleep(Duration::from_millis(if state.playing { 500 } else { 1000 }));
@@ -123,7 +127,7 @@ fn pick_session(manager: &SessionManager) -> Result<Option<Session>> {
     Ok(manager.GetCurrentSession().ok())
 }
 
-fn read_state(manager: &SessionManager) -> Result<Option<(MusicState, Session)>> {
+fn read_state(manager: &SessionManager, clock: &mut super::timeline::TimelineClock) -> Result<Option<(MusicState, Session)>> {
     let Some(session) = pick_session(manager)? else {
         return Ok(None);
     };
@@ -139,26 +143,24 @@ fn read_state(manager: &SessionManager) -> Result<Option<(MusicState, Session)>>
 
     let playing = info.PlaybackStatus()? == Status::Playing;
     let duration_ms = (timeline.EndTime()?.Duration - timeline.StartTime()?.Duration).max(0) as u64 / 10_000;
-    let mut position_ms = timeline.Position()?.Duration.max(0) as u64 / 10_000;
+    let raw_ms = timeline.Position()?.Duration.max(0) as u64 / 10_000;
     let now = now_ms();
-    if playing {
-        // Timeline is only refreshed occasionally; project it to "now".
-        let updated = (timeline.LastUpdatedTime()?.UniversalTime - EPOCH_DIFF_TICKS) / 10_000;
-        if updated > 0 && (updated as u64) < now {
-            position_ms += now - updated as u64;
-        }
-    }
+    let app_id = session.SourceAppUserModelId()?.to_string();
+    let artist = props.Artist()?.to_string();
+    let album = props.AlbumTitle()?.to_string();
+    let key = format!("{app_id}|{title}|{artist}|{album}|{duration_ms}");
+    let updated = timeline.LastUpdatedTime()?.UniversalTime.saturating_sub(EPOCH_DIFF_TICKS) / 10_000;
+    let mut position_ms = clock.position(key, raw_ms, updated, playing, now);
     if duration_ms > 0 {
         position_ms = position_ms.min(duration_ms);
     }
 
-    let app_id = session.SourceAppUserModelId()?.to_string();
     let state = MusicState {
         available: true,
         playing,
         title,
-        artist: props.Artist()?.to_string(),
-        album: props.AlbumTitle()?.to_string(),
+        artist,
+        album,
         app_name: friendly_app_name(&app_id),
         app_id,
         position_ms,

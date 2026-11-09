@@ -161,3 +161,26 @@ body:has([data-settings]) {
 body.preview {
 	background: radial-gradient(120% 90% at 80% 100%, #3b3a6b 0%, #16162a 55%, #0d0d17 100%);
 }
+
+/* 未知总时长时显示播放活动，不伪造完成百分比。 */
+.music-progress[data-indeterminate="true"] {
+	width: 30%;
+	animation: music-progress 1.5s linear infinite alternate;
+	animation-play-state: paused;
+}
+.music-progress[data-indeterminate="true"][data-playing="true"] {
+	animation-play-state: running;
+}
+@keyframes music-progress {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(233.333%);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.music-progress[data-indeterminate="true"] {
+		animation: none;
+	}
+}
