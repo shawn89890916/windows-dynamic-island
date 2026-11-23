@@ -11,7 +11,7 @@ use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicU64, Ordering};
 use std::time::Duration;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, Manager, WebviewWindow};
 
 pub const ISLAND_LABEL: &str = "island";
@@ -163,6 +163,13 @@ pub fn set_dragging(state: tauri::State<DragState>, dragging: bool) {
 /// Cursor over the island (as last reported by the hit-test thread).
 static HOVERING: AtomicBool = AtomicBool::new(false);
 
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct HoverChange {
+    inside: bool,
+    cursor_moved: bool,
+}
+
 /// The user is hovering or dragging the island: don't move it away.
 pub fn is_interacting(app: &AppHandle) -> bool {
     HOVERING.load(Ordering::Relaxed) || app.state::<DragState>().0.load(Ordering::Relaxed)
@@ -172,6 +179,8 @@ pub fn spawn_hit_test(app: AppHandle) {
     std::thread::spawn(move || {
         let mut ignoring: Option<bool> = None;
         let mut hovering = false;
+        let mut last_cursor = None;
+        let mut left_without_moving = false;
         let mut fullscreen = false;
         let mut hide_in_fullscreen = true;
         let mut mac_camera_visible = false;
@@ -224,7 +233,10 @@ pub fn spawn_hit_test(app: AppHandle) {
             }
 
             let dragging = app.state::<DragState>().0.load(Ordering::Relaxed);
-            let over_island = cursor_inside(&app, &win, 0.0);
+            let cursor = cursor_pos();
+            let cursor_moved = cursor != last_cursor;
+            last_cursor = cursor;
+            let over_island = cursor_inside(&app, &win, cursor, 0.0);
             let inside = island_interactive && (dragging || over_island);
 
             // A drag that started in another app (files from Explorer…). The
@@ -237,7 +249,10 @@ pub fn spawn_hit_test(app: AppHandle) {
                 pressed_inside = over_island;
             }
             button_down = down;
-            let drop_zone = island_interactive && down && !pressed_inside && cursor_inside(&app, &win, DROP_MARGIN);
+            let drop_zone = island_interactive
+                && down
+                && !pressed_inside
+                && cursor_inside(&app, &win, cursor, DROP_MARGIN);
             let dragging_in = down && !pressed_inside && (file_drag || drop_zone);
             if dragging_in != file_drag {
                 file_drag = dragging_in;
@@ -248,10 +263,18 @@ pub fn spawn_hit_test(app: AppHandle) {
             if ignoring != Some(ignore) && win.set_ignore_cursor_events(ignore).is_ok() {
                 ignoring = Some(ignore);
             }
-            if inside != hovering {
+            // Movement after a stationary exit ends any resize grace period.
+            if inside != hovering || (left_without_moving && cursor_moved) {
                 hovering = inside;
+                left_without_moving = !inside && !cursor_moved;
                 HOVERING.store(inside, Ordering::Relaxed);
-                let _ = app.emit(HOVER_EVENT, inside);
+                let _ = app.emit(
+                    HOVER_EVENT,
+                    HoverChange {
+                        inside,
+                        cursor_moved,
+                    },
+                );
             }
         }
     });
@@ -272,8 +295,13 @@ fn left_button_down() -> bool {
 }
 
 /// Cursor over one of the frontend's rects, grown by `margin` CSS px.
-fn cursor_inside(app: &AppHandle, win: &WebviewWindow, margin: f64) -> bool {
-    let Some((cx, cy)) = cursor_pos() else {
+fn cursor_inside(
+    app: &AppHandle,
+    win: &WebviewWindow,
+    cursor: Option<(f64, f64)>,
+    margin: f64,
+) -> bool {
+    let Some((cx, cy)) = cursor else {
         return false;
     };
     let (Ok(origin), Ok(scale)) = (win.outer_position(), win.scale_factor()) else {

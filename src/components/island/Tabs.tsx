@@ -1,6 +1,6 @@
 import { LayoutGridIcon, SettingsIcon } from "lucide-react";
 import { LayoutGroup, motion, Reorder, type Transition, useReducedMotion } from "motion/react";
-import { type CSSProperties, type ReactNode, useCallback, useEffect, useId, useRef } from "react";
+import { type CSSProperties, type PointerEvent, type ReactNode, useCallback, useEffect, useId, useRef } from "react";
 import { tv } from "tailwind-variants";
 import { command } from "../../core/bridge";
 import { useT } from "../../core/i18n";
@@ -68,51 +68,47 @@ export function Tabs({
 	const s = tabs({ iconsOnly, bottom });
 	const groupId = useId();
 	const reducedMotion = useReducedMotion();
-	const hoverNavigation = useSetting(generalSettings.switchPanelsOnHover) ? navigation : null;
+	const hoverDelayMs = useSetting(generalSettings.switchPanelsOnHover) ? navigation?.hoverDelayMs : undefined;
 	const timer = useRef<number | undefined>(undefined);
 	const pending = useRef<string | null>(null);
-	const pressed = useRef(false);
 	const dragging = useRef(false);
 	const suppressClick = useRef(false);
-	const latest = useRef({ current, entries, onSelect, hoverNavigation });
-	latest.current = { current, entries, onSelect, hoverNavigation };
+	const latest = useRef({ current, entries, onSelect, hoverDelayMs });
+	latest.current = { current, entries, onSelect, hoverDelayMs };
 	const cancelHover = useCallback(() => {
 		window.clearTimeout(timer.current);
 		pending.current = null;
 	}, []);
 	useEffect(() => {
-		if (!hoverNavigation) cancelHover();
-	}, [hoverNavigation, cancelHover]);
-	useEffect(() => {
-		const release = () => {
-			pressed.current = false;
-		};
-		window.addEventListener("pointerup", release);
-		window.addEventListener("pointercancel", release);
-		return () => {
-			window.clearTimeout(timer.current);
-			window.removeEventListener("pointerup", release);
-			window.removeEventListener("pointercancel", release);
-		};
-	}, []);
+		if (hoverDelayMs !== undefined) return cancelHover;
+	}, [hoverDelayMs, cancelHover]);
 	const select = (id: string) => {
 		cancelHover();
 		if (dragging.current || suppressClick.current) return;
 		onSelect(id);
 	};
 	// 只从实际指针移动开始计时，避免面板变宽时图标经过静止鼠标而连锁切换。
-	const hover = (id: string, pointerType: string) => {
+	const hover = (id: string, event: PointerEvent) => {
+		// A mouse release outside the click-through window may never reach the WebView.
+		if (
+			hoverDelayMs === undefined ||
+			event.pointerType !== "mouse" ||
+			event.buttons ||
+			dragging.current ||
+			id === current
+		) {
+			return cancelHover();
+		}
 		if (pending.current === id) return;
 		cancelHover();
-		if (!hoverNavigation || pointerType !== "mouse" || pressed.current || dragging.current || id === current) return;
 		pending.current = id;
 		timer.current = window.setTimeout(() => {
 			pending.current = null;
 			const next = latest.current;
-			if (!next.hoverNavigation || pressed.current || dragging.current || next.current === id) return;
+			if (next.hoverDelayMs !== hoverDelayMs || dragging.current || next.current === id) return;
 			if (id !== LAUNCHER && !next.entries.some((entry) => entry.module.id === id)) return;
 			next.onSelect(id);
-		}, hoverNavigation.hoverDelayMs);
+		}, hoverDelayMs);
 	};
 	const pill = (
 		<motion.span
@@ -137,7 +133,7 @@ export function Tabs({
 				className={className}
 				title={t(module.title)}
 				style={{ "--tab-accent": view.accent ?? "#fff" } as CSSProperties}
-				onPointerMove={(event) => hover(module.id, event.pointerType)}
+				onPointerMove={(event) => hover(module.id, event)}
 				onPointerLeave={cancelHover}
 				onClick={() => select(module.id)}
 			>
@@ -163,7 +159,6 @@ export function Tabs({
 				}}
 				onPointerDownCapture={() => {
 					cancelHover();
-					pressed.current = true;
 					suppressClick.current = false;
 				}}
 			>
@@ -185,7 +180,7 @@ export function Tabs({
 								title={`${t(module.title)} · ${t("layout.drag")}`}
 								style={{ "--tab-accent": view.accent ?? "#fff" } as CSSProperties}
 								whileDrag={{ scale: 1.12, zIndex: 1, boxShadow: "0 8px 18px -8px rgba(0,0,0,0.65)" }}
-								onPointerMove={(event) => hover(module.id, event.pointerType)}
+								onPointerMove={(event) => hover(module.id, event)}
 								onPointerLeave={cancelHover}
 								onDragStart={() => {
 									cancelHover();
@@ -210,7 +205,7 @@ export function Tabs({
 					type="button"
 					className={s.tab({ active: current === LAUNCHER, launcher: true })}
 					title={t("layout.launcher")}
-					onPointerMove={(event) => hover(LAUNCHER, event.pointerType)}
+					onPointerMove={(event) => hover(LAUNCHER, event)}
 					onPointerLeave={cancelHover}
 					onClick={(e) => {
 						e.stopPropagation();

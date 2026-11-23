@@ -3,8 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 const HOVER_IN_DELAY = 220;
 const HOVER_OUT_DELAY = 200;
 /**
- * Switching tabs can shrink the island out from under the pointer: for this
- * long after a resize, leaving waits {@link RESIZE_OUT_DELAY} instead.
+ * A resize can move the island away from a stationary pointer. Give the user
+ * time to follow the panel in that case.
  */
 const RESIZE_GRACE_MS = 2000;
 const RESIZE_OUT_DELAY = 1200;
@@ -39,27 +39,27 @@ export function useIslandHover({ expandOnHover, onOpen, onClose }: Options) {
 
 	useEffect(() => () => window.clearTimeout(timer.current), []);
 
-	const transition = useCallback((inside: boolean, immediate = false) => {
+	const transition = useCallback((inside: boolean, delay = inside ? HOVER_IN_DELAY : HOVER_OUT_DELAY) => {
 		window.clearTimeout(timer.current);
 		// Back in before the island closed (or out before it opened): nothing to do.
 		if (inside === openRef.current) return;
 		const apply = () => {
+			if (inside && delay > 0 && !latest.current.expandOnHover) return;
 			openRef.current = inside;
 			setOpen(inside);
 			if (inside) latest.current.onOpen();
 			else latest.current.onClose();
 		};
-		if (immediate) return apply();
-		const justResized = Date.now() - resizedAt.current < RESIZE_GRACE_MS;
-		const delay = inside ? HOVER_IN_DELAY : justResized ? RESIZE_OUT_DELAY : HOVER_OUT_DELAY;
+		if (delay === 0) return apply();
 		timer.current = window.setTimeout(apply, delay);
 	}, []);
 
 	const onPointer = useCallback(
-		(inside: boolean) => {
+		(inside: boolean, cursorMoved = true) => {
 			pointerInside.current = inside;
 			if (locked.current || holds.current.size > 0) return;
-			if (!inside || latest.current.expandOnHover) transition(inside);
+			const resizedAway = !inside && !cursorMoved && Date.now() - resizedAt.current < RESIZE_GRACE_MS;
+			if (!inside || latest.current.expandOnHover) transition(inside, resizedAway ? RESIZE_OUT_DELAY : undefined);
 			else window.clearTimeout(timer.current);
 		},
 		[transition],
@@ -87,11 +87,11 @@ export function useIslandHover({ expandOnHover, onOpen, onClose }: Options) {
 
 	const expand = useCallback(() => {
 		resizedAt.current = Date.now();
-		transition(true, true);
+		transition(true, 0);
 	}, [transition]);
 	const collapse = useCallback(() => {
 		holds.current.clear();
-		transition(false, true);
+		transition(false, 0);
 	}, [transition]);
 
 	return { open, expand, collapse, onPointer, keepOpen, lockHover, expectResize };
