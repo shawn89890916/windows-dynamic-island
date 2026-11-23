@@ -44,6 +44,7 @@ export function Island() {
 	const windows = look.style === "windows";
 	const v = variantOf(look);
 	const effectiveTop = v.top + topMargin;
+	const attachedNotch = !windows && effectiveTop === 0;
 	useSyncLocale();
 	useIslandFileDrop(ctl);
 
@@ -159,17 +160,17 @@ export function Island() {
 							else ctl.domHover.onMouseEnter?.();
 						}}
 					>
-						{/* Concave "ears" that blend the notch into the top edge of the screen. Only when attached to screen top */}
-						{!windows && effectiveTop === 0 && (
+						{/* Overlap the sides by a pixel to cover rounding gaps at fractional display scales. */}
+						{attachedNotch && (
 							<>
 								<motion.span
-									className="pointer-events-none absolute top-0 right-full bg-[radial-gradient(circle_at_0_100%,transparent_70%,var(--island)_71%)]"
+									className="pointer-events-none absolute top-0 right-[calc(100%-1px)] bg-[radial-gradient(circle_at_0_100%,transparent_70%,var(--island)_71%)]"
 									initial={false}
 									animate={{ width: g.ear, height: g.ear }}
 									transition={v.shellSpring}
 								/>
 								<motion.span
-									className="pointer-events-none absolute top-0 left-full bg-[radial-gradient(circle_at_100%_100%,transparent_70%,var(--island)_71%)]"
+									className="pointer-events-none absolute top-0 left-[calc(100%-1px)] bg-[radial-gradient(circle_at_100%_100%,transparent_70%,var(--island)_71%)]"
 									initial={false}
 									animate={{ width: g.ear, height: g.ear }}
 									transition={v.shellSpring}
@@ -180,6 +181,7 @@ export function Island() {
 						<Surface
 							g={g}
 							big={big}
+							attachedNotch={attachedNotch}
 							look={islandLook}
 							transition={transition}
 							contentKey={content.key}

@@ -9,6 +9,7 @@ import { glowStyle } from "./Rim";
 export function Surface({
 	g,
 	big,
+	attachedNotch,
 	look,
 	transition,
 	contentKey,
@@ -20,6 +21,7 @@ export function Surface({
 }: {
 	g: Geo;
 	big: boolean;
+	attachedNotch: boolean;
 	look: Appearance;
 	transition: Transition;
 	contentKey: string;
@@ -30,12 +32,13 @@ export function Surface({
 	children: ReactNode;
 }) {
 	const windows = look.style === "windows";
+	const expandedShadow = big && !macCompact;
 	return (
 		<motion.div
 			data-island-surface
 			className={cn(
 				cn(
-					"absolute inset-0 overflow-hidden shadow-[0_16px_40px_-10px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.08)] transition-shadow duration-400 ease-[ease]",
+					"absolute inset-0 overflow-hidden transition-shadow duration-400 ease-[ease]",
 					look.blurEffect === "none"
 						? "bg-black"
 						: look.blurEffect === "subtle"
@@ -44,9 +47,13 @@ export function Surface({
 								? "bg-black/72"
 								: "bg-black/60",
 				),
-				big &&
-					!macCompact &&
-					"shadow-[0_28px_80px_-12px_rgba(0,0,0,0.95),0_10px_32px_-4px_rgba(0,0,0,0.6),inset_0_1px_1px_0_rgba(255,255,255,0.14),0_0_0_1px_rgba(255,255,255,0.1)]",
+				attachedNotch
+					? expandedShadow
+						? "shadow-[0_28px_80px_-12px_rgba(0,0,0,0.95),0_10px_32px_-4px_rgba(0,0,0,0.6)]"
+						: "shadow-[0_16px_40px_-10px_rgba(0,0,0,0.85)]"
+					: expandedShadow
+						? "shadow-[0_28px_80px_-12px_rgba(0,0,0,0.95),0_10px_32px_-4px_rgba(0,0,0,0.6),inset_0_1px_1px_0_rgba(255,255,255,0.14),0_0_0_1px_rgba(255,255,255,0.1)]"
+						: "shadow-[0_16px_40px_-10px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.08)]",
 			)}
 			style={windows ? glowStyle(look) : undefined}
 			initial={false}
