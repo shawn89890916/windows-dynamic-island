@@ -48,7 +48,19 @@ export function Island() {
 	useSyncLocale();
 	useIslandFileDrop(ctl);
 
-	const bigSize = ctl.launcher ? launcherSize(ctl.entries.length) : focused?.view.expandedSize;
+	const big = mode === "expanded" || mode === "peek";
+	const panelSize = (ctl.launcher ? launcherSize(ctl.entries.length) : focused?.view.expandedSize) ?? v.expanded;
+	// A shared width keeps the top bar in place as the body changes height and content.
+	const bigSize =
+		big && !v.tabsAtBottom
+			? {
+					height: panelSize.height,
+					width: ctl.entries.reduce((widest, { view }) => {
+						const width = view.expandedSize?.width ?? 0;
+						return Number.isFinite(width) ? Math.max(widest, width) : widest;
+					}, v.expanded.width),
+				}
+			: panelSize;
 	const content = islandContent(ctl, look, v, macCompact, navigation);
 	useEffect(() => {
 		if (!macCompact || mode !== "compact") return;
@@ -75,7 +87,6 @@ export function Island() {
 	}, [macCompact, mode]);
 	const g = geometry(v, look, mode, bigSize, primary, macCompact, macCompactWidth);
 	useHitRects(islandLook.blurEffect, windows, g.radius);
-	const big = mode === "expanded" || mode === "peek";
 	const hidden = !macCompact && mode === "hidden";
 	const swallowed = !macCompact && mode === "swallowed";
 	const hideMacCompact = macCompact && macCompactHidden;

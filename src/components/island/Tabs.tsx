@@ -12,10 +12,10 @@ import { LAUNCHER } from "../../core/useIslandController";
 const tabs = tv({
 	slots: {
 		base: "mb-2.5 flex shrink-0 items-center gap-1 overflow-x-auto overflow-y-hidden no-scrollbar max-w-full",
-		tab: "relative flex h-7.5 shrink-0 items-center gap-1.75 rounded-[15px] pr-3 pl-2 text-[13px] font-semibold text-text-dim whitespace-nowrap transition-colors duration-200 hover:text-text",
+		tab: "relative flex h-7.5 w-8 shrink-0 items-center justify-center rounded-[15px] text-text-dim transition-colors duration-200 hover:text-text",
 		pill: "absolute inset-0 rounded-[inherit] bg-white/10",
 		part: "relative flex shrink-0 items-center justify-center whitespace-nowrap",
-		dot: "relative size-1.25 shrink-0 rounded-full bg-ok",
+		dot: "absolute top-0.75 right-0.75 size-1.25 rounded-full bg-ok",
 		extra: "ml-auto flex shrink-0 items-center gap-1.5",
 		gear: "grid size-7.5 shrink-0 place-items-center rounded-full text-text-faint transition-colors duration-200 hover:bg-white/8 hover:text-text",
 	},
@@ -28,7 +28,7 @@ const tabs = tv({
 			true: {
 				tab: "w-8 shrink-0 justify-center rounded-full p-0 opacity-55 transition-opacity hover:opacity-100",
 				pill: "shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--tab-accent)_70%,transparent)]",
-				dot: "absolute top-0.75 right-0.75 shadow-[0_0_0_1.5px_#000]",
+				dot: "shadow-[0_0_0_1.5px_#000]",
 			},
 		},
 		bottom: {
@@ -139,8 +139,6 @@ export function Tabs({
 			>
 				{selected && pill}
 				<span className={s.part()}>{view.icon}</span>
-				{/* Many modules: only the open tab spells out its name. */}
-				{!iconsOnly && selected && <span className={s.part()}>{t(module.title)}</span>}
 				{view.active && !selected && <span className={s.dot()} />}
 			</button>
 		);
