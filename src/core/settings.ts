@@ -109,6 +109,12 @@ export const generalSettings = {
 		description: "settings.expandOnHover.desc",
 		default: true,
 	},
+	switchPanelsOnHover: {
+		key: "island.switchPanelsOnHover",
+		label: "settings.switchPanelsOnHover.label",
+		description: "settings.switchPanelsOnHover.desc",
+		default: true,
+	},
 } satisfies Record<string, SettingDef>;
 
 /** Whether installed builds automatically check for and install updates. */

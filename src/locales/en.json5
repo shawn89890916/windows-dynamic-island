@@ -44,6 +44,10 @@
       label: "Expand on hover",
       desc: "When off, the island only expands on click.",
     },
+    switchPanelsOnHover: {
+      label: "Switch panels on hover",
+      desc: "Hover over a panel icon to switch when Smooth Tabs is enabled. When off, click the icon to switch.",
+    },
     monitor: {
       label: "Monitor",
       desc: "Where the island lives. Automatic follows the primary monitor set in Windows.",

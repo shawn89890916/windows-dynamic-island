@@ -19,6 +19,8 @@ export type MessageKey =
 	| "settings.hideInFullscreen.desc"
 	| "settings.expandOnHover.label"
 	| "settings.expandOnHover.desc"
+	| "settings.switchPanelsOnHover.label"
+	| "settings.switchPanelsOnHover.desc"
 	| "settings.monitor.label"
 	| "settings.monitor.desc"
 	| "settings.monitor.auto"

@@ -37,6 +37,10 @@
       label: "Expandir ao passar o mouse",
       desc: "Desligado: expande só com clique.",
     },
+    switchPanelsOnHover: {
+      label: "Trocar de painel ao passar o mouse",
+      desc: "Com o Smooth Tabs ativado, passe o mouse sobre o ícone do painel para trocar. Com esta opção desativada, clique no ícone.",
+    },
     monitor: {
       label: "Monitor",
       desc: "Onde a ilha fica. Automático segue o monitor principal definido no Windows.",

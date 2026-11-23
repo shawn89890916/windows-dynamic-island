@@ -1,10 +1,11 @@
 import { LayoutGridIcon, SettingsIcon } from "lucide-react";
 import { LayoutGroup, motion, Reorder, type Transition, useReducedMotion } from "motion/react";
-import { type CSSProperties, type ReactNode, useEffect, useId, useRef } from "react";
+import { type CSSProperties, type ReactNode, useCallback, useEffect, useId, useRef } from "react";
 import { tv } from "tailwind-variants";
 import { command } from "../../core/bridge";
 import { useT } from "../../core/i18n";
 import type { TabNavigationOptions } from "../../core/island";
+import { generalSettings, useSetting } from "../../core/settings";
 import type { ModuleEntry } from "../../core/types";
 import { LAUNCHER } from "../../core/useIslandController";
 
@@ -67,17 +68,21 @@ export function Tabs({
 	const s = tabs({ iconsOnly, bottom });
 	const groupId = useId();
 	const reducedMotion = useReducedMotion();
+	const hoverNavigation = useSetting(generalSettings.switchPanelsOnHover) ? navigation : null;
 	const timer = useRef<number | undefined>(undefined);
 	const pending = useRef<string | null>(null);
 	const pressed = useRef(false);
 	const dragging = useRef(false);
 	const suppressClick = useRef(false);
-	const latest = useRef({ current, entries, onSelect, navigation });
-	latest.current = { current, entries, onSelect, navigation };
-	const cancelHover = () => {
+	const latest = useRef({ current, entries, onSelect, hoverNavigation });
+	latest.current = { current, entries, onSelect, hoverNavigation };
+	const cancelHover = useCallback(() => {
 		window.clearTimeout(timer.current);
 		pending.current = null;
-	};
+	}, []);
+	useEffect(() => {
+		if (!hoverNavigation) cancelHover();
+	}, [hoverNavigation, cancelHover]);
 	useEffect(() => {
 		const release = () => {
 			pressed.current = false;
@@ -99,15 +104,15 @@ export function Tabs({
 	const hover = (id: string, pointerType: string) => {
 		if (pending.current === id) return;
 		cancelHover();
-		if (!navigation || pointerType !== "mouse" || pressed.current || dragging.current || id === current) return;
+		if (!hoverNavigation || pointerType !== "mouse" || pressed.current || dragging.current || id === current) return;
 		pending.current = id;
 		timer.current = window.setTimeout(() => {
 			pending.current = null;
 			const next = latest.current;
-			if (!next.navigation || pressed.current || dragging.current || next.current === id) return;
+			if (!next.hoverNavigation || pressed.current || dragging.current || next.current === id) return;
 			if (id !== LAUNCHER && !next.entries.some((entry) => entry.module.id === id)) return;
 			next.onSelect(id);
-		}, navigation.hoverDelayMs);
+		}, hoverNavigation.hoverDelayMs);
 	};
 	const pill = (
 		<motion.span
