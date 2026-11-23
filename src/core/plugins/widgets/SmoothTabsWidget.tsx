@@ -19,7 +19,7 @@ export function SmoothTabsWidget() {
 }
 
 export function SmoothTabsBackground({ settings }: { settings: Record<string, unknown> }) {
-	const hoverDelayMs = Number(settings.hoverDelayMs ?? 60);
+	const hoverDelayMs = Number(settings.hoverDelayMs ?? 180);
 	const slideDurationMs = Number(settings.slideDurationMs ?? 240);
 	const fadeDurationMs = Number(settings.fadeDurationMs ?? 150);
 	useEffect(() => {

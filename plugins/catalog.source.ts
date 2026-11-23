@@ -5,7 +5,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		id: "com.island.smooth-tabs",
 		behavior: "tab-navigation",
 		name: "丝滑切换",
-		version: "1.0.0",
+		version: "1.0.1",
 		description: "悬停图标即可切换面板，选中框连续滑动，支持拖动排序与可调动画时长。需要灵动岛 v0.5.42 或更新版本。",
 		author: { name: "Island Community" },
 		category: "system",
@@ -13,7 +13,7 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 		accentColor: "#A5B4FC",
 		tags: ["悬停切换", "动画", "导航", "外观"],
 		settings: [
-			{ key: "hoverDelayMs", label: "悬停等待（毫秒，0–1000）", type: "number", default: 60 },
+			{ key: "hoverDelayMs", label: "悬停等待（毫秒，0–1000）", type: "number", default: 180 },
 			{ key: "slideDurationMs", label: "滑块时长（毫秒，100–600）", type: "number", default: 240 },
 			{ key: "fadeDurationMs", label: "面板淡入（毫秒，0–400）", type: "number", default: 150 },
 		],

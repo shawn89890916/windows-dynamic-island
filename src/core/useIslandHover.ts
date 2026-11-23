@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const HOVER_IN_DELAY = 110;
-const HOVER_OUT_DELAY = 380;
+const HOVER_IN_DELAY = 220;
+const HOVER_OUT_DELAY = 200;
 /**
  * Switching tabs can shrink the island out from under the pointer: for this
  * long after a resize, leaving waits {@link RESIZE_OUT_DELAY} instead.

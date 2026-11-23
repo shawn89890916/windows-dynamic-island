@@ -153,11 +153,21 @@ export function inspectPluginPackage(content: string): PluginPackage {
 function retainSettings(loaded: LoadedPluginPackage, source: InstalledPlugin["source"]) {
 	const old = installedPlugins.find((p) => p.manifest.id === loaded.manifest.id);
 	const defaults = Object.fromEntries((loaded.manifest.settings || []).map((s) => [s.key, s.default]));
+	const customSettings = { ...old?.customSettings };
+	// The first Smooth Tabs release saved its default as a custom value on install.
+	if (
+		loaded.manifest.id === "com.island.smooth-tabs" &&
+		old?.manifest.version === "1.0.0" &&
+		loaded.manifest.version !== "1.0.0" &&
+		customSettings.hoverDelayMs === 60
+	) {
+		delete customSettings.hoverDelayMs;
+	}
 	const next: InstalledPlugin = {
 		manifest: loaded.manifest,
 		installedAt: old?.installedAt || Date.now(),
 		enabled: old?.enabled ?? true,
-		customSettings: { ...defaults, ...old?.customSettings },
+		customSettings: { ...defaults, ...customSettings },
 		source,
 		packageSha256: loaded.sha256,
 	};

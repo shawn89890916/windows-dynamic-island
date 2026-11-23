@@ -1233,7 +1233,7 @@
       "id": "com.island.smooth-tabs",
       "behavior": "tab-navigation",
       "name": "丝滑切换",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "description": "悬停图标即可切换面板，选中框连续滑动，支持拖动排序与可调动画时长。需要灵动岛 v0.5.42 或更新版本。",
       "author": {
         "name": "Island Community"
@@ -1252,7 +1252,7 @@
           "key": "hoverDelayMs",
           "label": "悬停等待（毫秒，0–1000）",
           "type": "number",
-          "default": 60
+          "default": 180
         },
         {
           "key": "slideDurationMs",
@@ -1307,9 +1307,9 @@
         "在灵动岛窗口执行代码",
         "使用宿主提供的界面与系统接口"
       ],
-      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.smooth-tabs.island-plugin.json",
-      "sha256": "ba5adf7fbbc853f87483a10d19f62aadc292ebeb9e0fb9f74cf0d59c264e0a18",
-      "packageSize": 28972
+      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.smooth-tabs-1.0.1.island-plugin.json",
+      "sha256": "99e27a9b6e5f2c804ea7750584329c23e480bb047a43f167b8e200926da77404",
+      "packageSize": 29359
     }
   ]
 }

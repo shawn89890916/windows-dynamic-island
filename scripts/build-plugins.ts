@@ -170,12 +170,9 @@ for (const source of MARKETPLACE_CATALOG.filter((plugin) => !selectedId || plugi
 	const code = await result.outputs.find((file) => file.path.endsWith(".js"))?.text();
 	if (!code) throw Error("No plugin script emitted");
 	const content = JSON.stringify({ formatVersion: 1, manifest, code, css });
-	const filename =
-		source.id === "com.island.vpn"
-			? `${source.id}-${manifest.version}.island-plugin.json`
-			: source.id === "com.island.obsidian"
-				? `${source.id}-${manifest.version}.island-plugin.json`
-				: `${source.id}.island-plugin.json`;
+	const filename = ["com.island.vpn", "com.island.obsidian", "com.island.smooth-tabs"].includes(source.id)
+		? `${source.id}-${manifest.version}.island-plugin.json`
+		: `${source.id}.island-plugin.json`;
 	await writeFile(join(output, filename), content);
 	const descriptor = {
 		...manifest,

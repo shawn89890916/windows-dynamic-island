@@ -155,8 +155,8 @@ export function Island() {
 							if (resting || mode === "peek") ctl.expand(macMusic ? "music" : undefined);
 						}}
 						onMouseEnter={() => {
-							if (macMusic) ctl.domHover.onMouseEnter?.();
-							else if (mode === "compact" && primary) ctl.expand(primary.module.id);
+							if (macCompact && !macMusic && mode === "compact" && primary) ctl.expand(primary.module.id);
+							else ctl.domHover.onMouseEnter?.();
 						}}
 					>
 						{/* Concave "ears" that blend the notch into the top edge of the screen. Only when attached to screen top */}
