@@ -70,9 +70,7 @@ export function islandContent(
 			/>
 		);
 		return {
-			// Keep the toolbar mounted when panels change. AnimatePresence otherwise
-			// leaves an exiting toolbar over the new one, which can intercept clicks.
-			key: "big",
+			key: navigation ? "big" : ctl.launcher ? "big:launcher" : `big:${focused?.module.id}`,
 			node: (
 				<div className={cn("flex h-full flex-col px-5 pt-3.5 pb-4.5 overflow-hidden", v.tabsAtBottom && "pb-2")}>
 					{!v.tabsAtBottom && tabs}
