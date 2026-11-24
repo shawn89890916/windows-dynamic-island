@@ -95,6 +95,32 @@ export function geometry(
 	}
 }
 
+/** Apply user proportions while keeping the island inside the available screen area. */
+export function fitGeometry(
+	geo: Geo,
+	{
+		widthPercent,
+		heightPercent,
+		maxWidth,
+		maxHeight,
+	}: {
+		widthPercent: number;
+		heightPercent: number;
+		maxWidth: number;
+		maxHeight: number;
+	},
+): Geo {
+	const heightScale = heightPercent / 100;
+	const width = Math.max(1, Math.min(maxWidth, Math.round((geo.width * widthPercent) / 100)));
+	const height = Math.max(1, Math.min(maxHeight, Math.round(geo.height * heightScale)));
+	return {
+		width,
+		height,
+		radius: Math.min(geo.radius * heightScale, width / 2, height),
+		ear: Math.min(geo.ear * heightScale, height),
+	};
+}
+
 /** Width taken by the ambient bubbles left of the island. */
 export function ambientWidth(count: number) {
 	return count ? BUBBLE_GAP + count * BUBBLE + (count - 1) * AMBIENT_GAP : 0;

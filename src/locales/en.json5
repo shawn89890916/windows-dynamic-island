@@ -70,6 +70,18 @@
       label: "Return after",
       desc: "Seconds before a dragged island slides back to the middle.",
     },
+    islandWidth: {
+      label: "Island width",
+      desc: "Horizontal size as a percentage of the default.",
+    },
+    islandHeight: {
+      label: "Island height",
+      desc: "Vertical size as a percentage of the default.",
+    },
+    horizontalOffset: {
+      label: "Horizontal position",
+      desc: "Offset from the screen center. Use a negative value for left or a positive value for right.",
+    },
     topMargin: {
       label: "Top vertical offset (avoid top taskbar)",
       desc: "Additional vertical distance from the top screen edge. Set to 48 px if your Windows taskbar is placed at the top.",
