@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const HOVER_IN_DELAY = 220;
 const HOVER_OUT_DELAY = 200;
 /**
  * A resize can move the island away from a stationary pointer. Give the user
@@ -12,6 +11,7 @@ const RESIZE_OUT_DELAY = 1200;
 interface Options {
 	/** Entering expands the island; when off, only a click does. */
 	expandOnHover: boolean;
+	hoverDelay: number;
 	onOpen: () => void;
 	onClose: () => void;
 }
@@ -25,26 +25,29 @@ interface Options {
  * keep it open wherever the pointer goes; the pointer's last state applies
  * once every reason to stay open has ended.
  */
-export function useIslandHover({ expandOnHover, onOpen, onClose }: Options) {
+export function useIslandHover({ expandOnHover, hoverDelay, onOpen, onClose }: Options) {
 	const [open, setOpen] = useState(false);
 	const openRef = useRef(false);
 	const timer = useRef<number | undefined>(undefined);
-	const latest = useRef({ expandOnHover, onOpen, onClose });
-	latest.current = { expandOnHover, onOpen, onClose };
+	const latest = useRef({ expandOnHover, hoverDelay, onOpen, onClose });
+	latest.current = { expandOnHover, hoverDelay, onOpen, onClose };
 
 	const pointerInside = useRef(false);
+	const pointerEnteredAt = useRef(0);
 	const locked = useRef(false);
 	const holds = useRef(new Set<string>());
 	const resizedAt = useRef(0);
 
 	useEffect(() => () => window.clearTimeout(timer.current), []);
 
-	const transition = useCallback((inside: boolean, delay = inside ? HOVER_IN_DELAY : HOVER_OUT_DELAY) => {
+	const transition = useCallback((inside: boolean, delay = HOVER_OUT_DELAY, hover = false) => {
 		window.clearTimeout(timer.current);
 		// Back in before the island closed (or out before it opened): nothing to do.
 		if (inside === openRef.current) return;
 		const apply = () => {
-			if (inside && delay > 0 && !latest.current.expandOnHover) return;
+			if (hover && (!pointerInside.current || !latest.current.expandOnHover || locked.current || holds.current.size)) {
+				return;
+			}
 			openRef.current = inside;
 			setOpen(inside);
 			if (inside) latest.current.onOpen();
@@ -54,15 +57,36 @@ export function useIslandHover({ expandOnHover, onOpen, onClose }: Options) {
 		timer.current = window.setTimeout(apply, delay);
 	}, []);
 
-	const onPointer = useCallback(
-		(inside: boolean, cursorMoved = true) => {
-			pointerInside.current = inside;
-			if (locked.current || holds.current.size > 0) return;
-			const resizedAway = !inside && !cursorMoved && Date.now() - resizedAt.current < RESIZE_GRACE_MS;
-			if (!inside || latest.current.expandOnHover) transition(inside, resizedAway ? RESIZE_OUT_DELAY : undefined);
-			else window.clearTimeout(timer.current);
+	const scheduleOpen = useCallback(
+		(delay = latest.current.hoverDelay) => {
+			if (!pointerInside.current) return;
+			window.clearTimeout(timer.current);
+			if (openRef.current || locked.current || holds.current.size) return;
+			if (!latest.current.expandOnHover) return;
+			const elapsed = performance.now() - pointerEnteredAt.current;
+			transition(true, Math.max(0, delay - elapsed), true);
 		},
 		[transition],
+	);
+
+	useEffect(() => {
+		if (expandOnHover) scheduleOpen(hoverDelay);
+		else if (pointerInside.current && !openRef.current) window.clearTimeout(timer.current);
+	}, [expandOnHover, hoverDelay, scheduleOpen]);
+
+	const onPointer = useCallback(
+		(inside: boolean, cursorMoved = true) => {
+			if (inside && pointerInside.current) return;
+			pointerInside.current = inside;
+			if (inside) pointerEnteredAt.current = performance.now();
+			if (locked.current || holds.current.size > 0) return;
+			const resizedAway = !inside && !cursorMoved && Date.now() - resizedAt.current < RESIZE_GRACE_MS;
+			if (inside) {
+				// Re-entering also cancels any pending close.
+				scheduleOpen();
+			} else transition(false, resizedAway ? RESIZE_OUT_DELAY : undefined);
+		},
+		[scheduleOpen, transition],
 	);
 
 	const lockHover = useCallback((on: boolean) => {
