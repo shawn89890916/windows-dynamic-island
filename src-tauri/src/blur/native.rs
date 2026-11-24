@@ -38,6 +38,8 @@ struct Backdrop {
     top: SpriteVisual,
     geometry: CompositionRoundedRectangleGeometry,
     amount: f32,
+    drag_hidden: bool,
+    wanted_visible: bool,
 }
 
 pub fn setup() -> Result<()> {
@@ -48,8 +50,23 @@ pub fn setup() -> Result<()> {
 
 pub fn hide() {
     BACKDROP.with(|slot| {
-        if let Some(backdrop) = slot.borrow().as_ref() {
+        if let Some(backdrop) = slot.borrow_mut().as_mut() {
             backdrop.hide();
+        }
+    });
+}
+
+pub fn set_outgoing_drag(active: bool) {
+    BACKDROP.with(|slot| {
+        if let Some(backdrop) = slot.borrow_mut().as_mut() {
+            backdrop.drag_hidden = active;
+            unsafe {
+                if active {
+                    let _ = ShowWindow(backdrop.hwnd, SW_HIDE);
+                } else if backdrop.wanted_visible {
+                    let _ = ShowWindow(backdrop.hwnd, SW_SHOWNA);
+                }
+            }
         }
     });
 }
@@ -172,11 +189,14 @@ impl Backdrop {
                 top,
                 geometry,
                 amount: -1.0,
+                drag_hidden: false,
+                wanted_visible: false,
             })
         }
     }
 
-    fn hide(&self) {
+    fn hide(&mut self) {
+        self.wanted_visible = false;
         unsafe {
             let _ = ShowWindow(self.hwnd, SW_HIDE);
         }
@@ -234,6 +254,7 @@ impl Backdrop {
         let hwnd = island.hwnd().map_err(|e| {
             windows::core::Error::new(windows::core::HRESULT(0x80004005u32 as i32), e.to_string())
         })?;
+        let visibility = if self.drag_hidden { SWP_HIDEWINDOW } else { SWP_SHOWWINDOW };
         unsafe {
             SetWindowPos(
                 self.hwnd,
@@ -242,9 +263,10 @@ impl Backdrop {
                 origin.y + (rect.y * scale).round() as i32,
                 width as i32,
                 height as i32,
-                SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_SHOWWINDOW,
+                SWP_NOACTIVATE | SWP_NOOWNERZORDER | visibility,
             )?;
         }
+        self.wanted_visible = true;
         Ok(())
     }
 }

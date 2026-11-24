@@ -175,6 +175,82 @@ pub fn is_interacting(app: &AppHandle) -> bool {
     HOVERING.load(Ordering::Relaxed) || app.state::<DragState>().0.load(Ordering::Relaxed)
 }
 
+/// 暂时隐藏整个透明窗口，让 Windows 找到下方应用的投放目标。
+#[cfg(windows)]
+pub fn without_drop_overlay<R>(win: &WebviewWindow, drag: impl FnOnce() -> R) -> R {
+    use windows::Win32::Foundation::HWND;
+
+    without_native_drop_overlay(win.hwnd().ok().map(|hwnd| HWND(hwnd.0)), drag)
+}
+
+#[cfg(not(windows))]
+pub fn without_drop_overlay<R>(_: &WebviewWindow, drag: impl FnOnce() -> R) -> R {
+    drag()
+}
+
+#[cfg(windows)]
+fn without_native_drop_overlay<R>(
+    hwnd: Option<windows::Win32::Foundation::HWND>,
+    drag: impl FnOnce() -> R,
+) -> R {
+    use windows::Win32::Foundation::HWND;
+    use windows::Win32::UI::WindowsAndMessaging::{IsWindowVisible, SW_HIDE, SW_SHOWNA, ShowWindow};
+
+    struct Restore(Option<HWND>);
+    impl Drop for Restore {
+        fn drop(&mut self) {
+            if let Some(hwnd) = self.0 {
+                unsafe {
+                    let _ = ShowWindow(hwnd, SW_SHOWNA);
+                }
+            }
+            crate::blur::set_outgoing_drag(false);
+        }
+    }
+
+    let restore = Restore(hwnd.filter(|hwnd| unsafe { IsWindowVisible(*hwnd).as_bool() }));
+    if let Some(hwnd) = restore.0 {
+        unsafe {
+            let _ = ShowWindow(hwnd, SW_HIDE);
+        }
+    }
+    crate::blur::set_outgoing_drag(true);
+    drag()
+}
+
+#[cfg(all(test, windows))]
+mod drop_overlay_tests {
+    use super::without_native_drop_overlay;
+    use windows::Win32::UI::WindowsAndMessaging::{
+        CreateWindowExW, DestroyWindow, IsWindowVisible, SW_SHOWNA, ShowWindow, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW,
+        WS_POPUP,
+    };
+    use windows::core::w;
+
+    #[test]
+    fn drop_overlay_stays_hidden_during_drag_and_restores_only_if_visible() {
+        unsafe {
+            let hwnd = CreateWindowExW(
+                WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
+                w!("STATIC"), w!(""), WS_POPUP, -20_000, -20_000, 100, 100, None, None, None, None,
+            )
+            .unwrap();
+            without_native_drop_overlay(Some(hwnd), || assert!(!IsWindowVisible(hwnd).as_bool()));
+            assert!(!IsWindowVisible(hwnd).as_bool());
+
+            let _ = ShowWindow(hwnd, SW_SHOWNA);
+            assert!(IsWindowVisible(hwnd).as_bool());
+            let result = without_native_drop_overlay(Some(hwnd), || {
+                assert!(!IsWindowVisible(hwnd).as_bool());
+                Err::<(), _>("取消拖放")
+            });
+            assert!(IsWindowVisible(hwnd).as_bool());
+            assert!(result.is_err());
+            DestroyWindow(hwnd).unwrap();
+        }
+    }
+}
+
 pub fn spawn_hit_test(app: AppHandle) {
     std::thread::spawn(move || {
         let mut ignoring: Option<bool> = None;
@@ -192,6 +268,9 @@ pub fn spawn_hit_test(app: AppHandle) {
         let mut file_drag = false;
         loop {
             std::thread::sleep(Duration::from_millis(25));
+            if crate::file_drop::outgoing_active() {
+                continue;
+            }
             let Some(win) = app.get_webview_window(ISLAND_LABEL) else {
                 continue;
             };

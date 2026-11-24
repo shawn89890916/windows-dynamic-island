@@ -19,15 +19,24 @@ pub const EVENT: &str = "island://file-drop";
 static OUTGOING: AtomicBool = AtomicBool::new(false);
 
 /// 原生拖放调用同步阻塞到放置或取消结束，整个过程都需要屏蔽自身的拖入事件。
-pub fn outgoing<R>(drag: impl FnOnce() -> R) -> R {
-    OUTGOING.store(true, Ordering::Relaxed);
-    let result = drag();
-    OUTGOING.store(false, Ordering::Relaxed);
-    result
+pub fn outgoing<R>(drag: impl FnOnce() -> R) -> Option<R> {
+    OUTGOING.compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed).ok()?;
+    struct Reset;
+    impl Drop for Reset {
+        fn drop(&mut self) {
+            OUTGOING.store(false, Ordering::Relaxed);
+        }
+    }
+    let _reset = Reset;
+    Some(drag())
+}
+
+pub fn outgoing_active() -> bool {
+    OUTGOING.load(Ordering::Relaxed)
 }
 
 fn incoming(has_files: bool) -> bool {
-    has_files && !OUTGOING.load(Ordering::Relaxed)
+    has_files && !outgoing_active()
 }
 
 #[cfg_attr(not(windows), allow(dead_code))]
@@ -205,14 +214,15 @@ mod tests {
             assert!(!incoming(false));
             42
         });
-        assert_eq!(result, 42);
+        assert_eq!(result, Some(42));
         assert!(incoming(true));
 
-        let result: Result<(), &str> = outgoing(|| {
+        let result: Option<Result<(), &str>> = outgoing(|| {
             assert!(!incoming(true));
+            assert_eq!(outgoing(|| unreachable!()), None::<()>);
             Err("drag failed")
         });
-        assert_eq!(result, Err("drag failed"));
+        assert_eq!(result, Some(Err("drag failed")));
         // 拖放返回错误后，仍应接受下一次来自外部的文件拖入。
         assert!(incoming(true));
         assert!(!incoming(false));

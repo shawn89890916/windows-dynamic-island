@@ -167,9 +167,11 @@ pub(crate) fn start_drag(app: &tauri::AppHandle, paths: Vec<PathBuf>) {
             _ => drag::Image::Raw(vec![]),
         };
         let result = crate::file_drop::outgoing(|| {
-            drag::start_drag(&win, drag::DragItem::Files(paths), image, |_, _| {}, drag::Options::default())
+            crate::window::without_drop_overlay(&win, || {
+                drag::start_drag(&win, drag::DragItem::Files(paths), image, |_, _| {}, drag::Options::default())
+            })
         });
-        if let Err(e) = result {
+        if let Some(Err(e)) = result {
             log::warn!("drag failed: {e}");
         }
     });

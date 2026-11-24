@@ -30,6 +30,11 @@ pub fn hide(app: &AppHandle) {
     let _ = app;
 }
 
+#[cfg(windows)]
+pub fn set_outgoing_drag(active: bool) {
+    native::set_outgoing_drag(active);
+}
+
 #[tauri::command]
 pub fn set_blur_rect(app: AppHandle, rect: Option<BlurRect>, effect: String) -> Result<(), String> {
     #[cfg(windows)]
