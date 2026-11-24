@@ -13,6 +13,7 @@ mod providers;
 mod screen;
 mod settings;
 mod sound;
+mod status_ring;
 mod store;
 mod tray;
 mod updater;
@@ -56,6 +57,7 @@ pub fn run() {
                 })
                 .build(),
         )
+        .manage(status_ring::TaskbarRing::default())
         .manage(window::HitState::default())
         .manage(window::DragState::default())
         .manage(i18n::Locale::default())
@@ -81,6 +83,7 @@ pub fn run() {
             }
             window::spawn_hit_test(handle.clone());
             display::spawn_placement(handle.clone());
+            status_ring::spawn(handle.clone());
 
             tray::setup(&handle)?;
             tray::enable_autostart_on_first_run(&handle);
@@ -89,6 +92,9 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             providers::get_snapshot,
+            status_ring::status_ring_read,
+            status_ring::status_ring_set_taskbar,
+            status_ring::status_ring_taskbar,
             providers::provider_action,
             window::set_hit_rects,
             window::set_dragging,

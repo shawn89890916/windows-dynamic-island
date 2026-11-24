@@ -1,5 +1,6 @@
 import { emit, listen } from "@tauri-apps/api/event";
 import {
+	ActivityIcon,
 	CameraIcon,
 	CloudSunIcon,
 	CoffeeIcon,
@@ -35,6 +36,7 @@ export function pluginText(t: Translate, key: MessageKey | undefined, fallback: 
 export function renderPluginIcon(iconName: string, size = 14, color?: string): ReactNode {
 	const props = { size, ...(color ? { color } : {}) };
 	const icons = {
+		Activity: ActivityIcon,
 		Camera: CameraIcon,
 		Timer: TimerIcon,
 		CloudSun: CloudSunIcon,

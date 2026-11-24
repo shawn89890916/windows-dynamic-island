@@ -1,6 +1,18 @@
 import type { PluginGuide } from "../src/core/plugins/types";
 
 export const PLUGIN_GUIDES: Record<string, PluginGuide> = {
+	"com.island.status-ring": {
+		summary: "在黑色圆环中心显示状态图标，彩色刻度随 Wi-Fi 信号或电池电量更新。",
+		prerequisites: ["支持环形状态栏的 Windows 版灵动岛"],
+		steps: [
+			{ title: "安装并启用", desc: "在插件市场安装环形状态栏。" },
+			{ title: "选择显示内容", desc: "在插件配置中选择 Wi-Fi 信号或电池。" },
+			{
+				title: "选择位置",
+				desc: "灵动岛模式在主岛右侧显示小球，刘海屏样式展开后显示。任务栏模式在主任务栏旁置顶，全屏时隐藏。",
+			},
+		],
+	},
 	"com.island.smooth-tabs": {
 		summary: "为整排功能图标和九宫格提供悬停切换与连续滑动选中框。",
 		prerequisites: ["灵动岛 v0.5.42 或更新版本"],

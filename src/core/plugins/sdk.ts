@@ -21,6 +21,7 @@ import { setPluginActivity } from "./activity";
 import { MARKETPLACE_CATALOG } from "./catalog";
 import * as Registry from "./registry";
 import { registerPlugin } from "./runtime";
+import { setIslandStatusRing } from "./statusRing";
 import { useNavoPath } from "./useNavoPath";
 import { useNavoPathConnection } from "./useNavoPathConnection";
 
@@ -49,6 +50,7 @@ export function ensurePluginSDK() {
 			assets: { navopath },
 			registerPlugin,
 			setPluginActivity,
+			setIslandStatusRing,
 		},
 	});
 }

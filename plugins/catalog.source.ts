@@ -2,6 +2,43 @@ import type { PluginManifest } from "../src/core/plugins/types";
 
 export const MARKETPLACE_CATALOG: PluginManifest[] = [
 	{
+		id: "com.island.status-ring",
+		name: "环形状态栏",
+		titleKey: "statusRing.name",
+		version: "1.0.0",
+		description: "用环形刻度显示 Windows 的 Wi-Fi 信号或电池电量，可放在灵动岛或任务栏旁。需要支持环形状态栏的主程序版本。",
+		author: { name: "Island Community" },
+		category: "system",
+		icon: "Activity",
+		accentColor: "#7DD3FC",
+		tags: ["状态", "Wi-Fi", "电池", "任务栏"],
+		settings: [
+			{
+				key: "placement",
+				label: "显示位置",
+				labelKey: "statusRing.placement",
+				type: "select",
+				default: "island",
+				options: [
+					{ label: "灵动岛", labelKey: "statusRing.island", value: "island" },
+					{ label: "任务栏旁", labelKey: "statusRing.taskbar", value: "taskbar" },
+				],
+			},
+			{
+				key: "metric",
+				label: "显示内容",
+				labelKey: "statusRing.metric",
+				type: "select",
+				default: "wifi",
+				options: [
+					{ label: "Wi-Fi 信号", labelKey: "statusRing.wifi", value: "wifi" },
+					{ label: "电池", labelKey: "statusRing.battery", value: "battery" },
+				],
+			},
+		],
+		expandedSize: { width: 420, height: 170 },
+	},
+	{
 		id: "com.island.smooth-tabs",
 		behavior: "tab-navigation",
 		name: "丝滑切换",

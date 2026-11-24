@@ -1,8 +1,181 @@
 {
   "formatVersion": 1,
   "sdkVersion": 1,
-  "version": "1.1.6",
+  "version": "1.1.7",
   "plugins": [
+    {
+      "id": "com.island.status-ring",
+      "name": "环形状态栏",
+      "titleKey": "statusRing.name",
+      "version": "1.0.0",
+      "description": "用环形刻度显示 Windows 的 Wi-Fi 信号或电池电量，可放在灵动岛或任务栏旁。需要支持环形状态栏的主程序版本。",
+      "author": {
+        "name": "Island Community"
+      },
+      "category": "system",
+      "icon": "Activity",
+      "accentColor": "#7DD3FC",
+      "tags": [
+        "状态",
+        "Wi-Fi",
+        "电池",
+        "任务栏"
+      ],
+      "settings": [
+        {
+          "key": "placement",
+          "label": "显示位置",
+          "labelKey": "statusRing.placement",
+          "type": "select",
+          "default": "island",
+          "options": [
+            {
+              "label": "灵动岛",
+              "labelKey": "statusRing.island",
+              "value": "island"
+            },
+            {
+              "label": "任务栏旁",
+              "labelKey": "statusRing.taskbar",
+              "value": "taskbar"
+            }
+          ]
+        },
+        {
+          "key": "metric",
+          "label": "显示内容",
+          "labelKey": "statusRing.metric",
+          "type": "select",
+          "default": "wifi",
+          "options": [
+            {
+              "label": "Wi-Fi 信号",
+              "labelKey": "statusRing.wifi",
+              "value": "wifi"
+            },
+            {
+              "label": "电池",
+              "labelKey": "statusRing.battery",
+              "value": "battery"
+            }
+          ]
+        }
+      ],
+      "expandedSize": {
+        "width": 420,
+        "height": 170
+      },
+      "sdkVersion": 1,
+      "guide": {
+        "summary": "在黑色圆环中心显示状态图标，彩色刻度随 Wi-Fi 信号或电池电量更新。",
+        "prerequisites": [
+          "支持环形状态栏的 Windows 版灵动岛"
+        ],
+        "steps": [
+          {
+            "title": "安装并启用",
+            "desc": "在插件市场安装环形状态栏。"
+          },
+          {
+            "title": "选择显示内容",
+            "desc": "在插件配置中选择 Wi-Fi 信号或电池。"
+          },
+          {
+            "title": "选择位置",
+            "desc": "灵动岛模式在主岛右侧显示小球，刘海屏样式展开后显示。任务栏模式在主任务栏旁置顶，全屏时隐藏。"
+          }
+        ]
+      },
+      "permissions": [
+        "在灵动岛窗口执行代码",
+        "使用宿主提供的界面与系统接口"
+      ],
+      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.status-ring.island-plugin.json",
+      "sha256": "c7f528d021f441a8673e890114bad62ade7302a3cd87542770ee9c64d3295661",
+      "packageSize": 37417
+    },
+    {
+      "id": "com.island.smooth-tabs",
+      "behavior": "tab-navigation",
+      "name": "丝滑切换",
+      "version": "1.0.1",
+      "description": "悬停图标即可切换面板，选中框连续滑动，支持拖动排序与可调动画时长。需要灵动岛 v0.5.42 或更新版本。",
+      "author": {
+        "name": "Island Community"
+      },
+      "category": "system",
+      "icon": "Sparkles",
+      "accentColor": "#A5B4FC",
+      "tags": [
+        "悬停切换",
+        "动画",
+        "导航",
+        "外观"
+      ],
+      "settings": [
+        {
+          "key": "hoverDelayMs",
+          "label": "悬停等待（毫秒，0–1000）",
+          "type": "number",
+          "default": 180
+        },
+        {
+          "key": "slideDurationMs",
+          "label": "滑块时长（毫秒，100–600）",
+          "type": "number",
+          "default": 240
+        },
+        {
+          "key": "fadeDurationMs",
+          "label": "面板淡入（毫秒，0–400）",
+          "type": "number",
+          "default": 150
+        }
+      ],
+      "expandedSize": {
+        "width": 580,
+        "height": 200
+      },
+      "sdkVersion": 1,
+      "guide": {
+        "summary": "为整排功能图标和九宫格提供悬停切换与连续滑动选中框。",
+        "prerequisites": [
+          "灵动岛 v0.5.42 或更新版本"
+        ],
+        "steps": [
+          {
+            "title": "安装并启用",
+            "desc": "在插件市场安装“丝滑切换”并保持启用，无需替换图标或重新配置模块。"
+          },
+          {
+            "title": "悬停切换",
+            "desc": "展开灵动岛，将鼠标移到功能图标或九宫格上；默认停留 60 毫秒打开面板。齿轮仍需点击。"
+          },
+          {
+            "title": "调整或恢复",
+            "desc": "在插件配置中调整等待和动画时长；停用或卸载后恢复点击切换。"
+          }
+        ],
+        "features": [
+          "选中框连续滑动，快速反向时追随最新目标",
+          "拖动排序期间暂停悬停",
+          "兼容顶部和底部图标栏，遵循减少动态效果偏好"
+        ],
+        "faq": [
+          {
+            "q": "安装后没有效果？",
+            "a": "请确认主程序至少为 v0.5.42 且插件已启用；旧版缺少导航扩展接口。"
+          }
+        ]
+      },
+      "permissions": [
+        "在灵动岛窗口执行代码",
+        "使用宿主提供的界面与系统接口"
+      ],
+      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.smooth-tabs-1.0.1.island-plugin.json",
+      "sha256": "18358476c4466068c401d1519a50e403ffe4e5cd8ae6a1f5bb09afeadfb4bfca",
+      "packageSize": 29367
+    },
     {
       "id": "com.island.mac-compact",
       "name": "Mac 灵动岛",
@@ -29,8 +202,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.mac-compact.island-plugin.json",
-      "sha256": "6131bb458d45b3b4d9f8f984d1cc46667e962ed0dd79cd0421846101976ee1df",
-      "packageSize": 28723
+      "sha256": "089670364a9ca9824b432375ec6f80b593595358d3e8d3b30b7aedd2daba914c",
+      "packageSize": 29116
     },
     {
       "id": "com.island.desktop-glass",
@@ -61,8 +234,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.desktop-glass.island-plugin.json",
-      "sha256": "559af89b7f28f68c969c6f63212f39433d0fe86dc7b450f049a7d66f5b6d7fae",
-      "packageSize": 28568
+      "sha256": "0ac7a898b0d6e3675f4eb4f45b48b2d32c5dcc39a56a2845c329f877883e8aef",
+      "packageSize": 29021
     },
     {
       "id": "com.island.pomodoro",
@@ -139,8 +312,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.pomodoro.island-plugin.json",
-      "sha256": "480773d3dee10fdd98c900796a900dc9630d8c0f72efb49c6232a3980e433ccb",
-      "packageSize": 46152
+      "sha256": "f753b9df867f93a16abbbe39786205067c5ef0b1522bb772ea52d29c9a3393d0",
+      "packageSize": 46791
     },
     {
       "id": "com.island.weather",
@@ -228,8 +401,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.weather.island-plugin.json",
-      "sha256": "5189c70f7c116604f9f7c281840284b33903eeb1a213f410a4febac93e331fa8",
-      "packageSize": 49459
+      "sha256": "d25f00318db626e81a7996b47dc9a829a740bf306c71939ccc19d56e5f53de78",
+      "packageSize": 50112
     },
     {
       "id": "com.island.work-countdown",
@@ -302,8 +475,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.work-countdown.island-plugin.json",
-      "sha256": "6483847391ca9c1f871dca60528a8dfebcf5f22b437df03d44073ce110ed82c7",
-      "packageSize": 40004
+      "sha256": "11192bdb8b995dbe8f7f087538c461b2002bce1496b6ca3de84488643f3db02c",
+      "packageSize": 40608
     },
     {
       "id": "com.island.quick-memo",
@@ -381,8 +554,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.quick-memo.island-plugin.json",
-      "sha256": "94a43e014b537f7a823564c2d0e9cc029a8f61746a09d46e086522937c279dd0",
-      "packageSize": 40261
+      "sha256": "22fcd7d1f3c133fd1bc85ead6dea40580cad028a71d294a4fa7e851541dc7188",
+      "packageSize": 40895
     },
     {
       "id": "com.island.crypto-ticker",
@@ -452,8 +625,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.crypto-ticker.island-plugin.json",
-      "sha256": "e8f2394661b1dbf63d5fef52fd5a9ea41805798e1593bd6869a209a7a80f3234",
-      "packageSize": 46479
+      "sha256": "0464b33e23ce8e6af210ded0eaf5dc568e551a2caa1eca8806990afb208fe4d2",
+      "packageSize": 47122
     },
     {
       "id": "com.island.steam-friends",
@@ -535,8 +708,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.steam-friends.island-plugin.json",
-      "sha256": "dbacf99b3b0819a6d9ccb3021eb7d00aa46ade40c6c8ca6d39fe3aa4f038e8b7",
-      "packageSize": 47205
+      "sha256": "68640ca4906aae75b259835be54ff6f36eb3984c0e3e49e5bceec36f2443b13a",
+      "packageSize": 47806
     },
     {
       "id": "com.island.music-story",
@@ -654,8 +827,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.music-story.island-plugin.json",
-      "sha256": "860fc3496d740286fd68f7bc84dcc1cbca071b89f263bc1ce4c7afc39af44ebf",
-      "packageSize": 84102
+      "sha256": "3faf339dcebe6183fa0a1c076ec84e28e64ee724e03415df1edccaf4bcd5e61a",
+      "packageSize": 84692
     },
     {
       "id": "com.island.navopath",
@@ -740,8 +913,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.navopath.island-plugin.json",
-      "sha256": "400c9dd52d18b86e291d58c1bd49bf9fa39639cc0ab37e0fd00d7d31bb000071",
-      "packageSize": 51711
+      "sha256": "789ea810dfe4eed82b54dde5ff95c8a78c3bae88e9f8dbcd26b12bc5424febf6",
+      "packageSize": 52338
     },
     {
       "id": "com.island.everything",
@@ -826,8 +999,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.everything.island-plugin.json",
-      "sha256": "f9687211d54f8e0da6b481cb337622bad2e4a593e20ea6174e709ba1c74fd9a2",
-      "packageSize": 58307
+      "sha256": "0cdd75d1182ec2f6ae054bf5bebac1bd195f9ce4b446eed6f34913bf829368cd",
+      "packageSize": 58977
     },
     {
       "id": "com.island.obsidian",
@@ -939,8 +1112,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.obsidian-1.0.3.island-plugin.json",
-      "sha256": "d5a8155c55a6ffd2f0b769577f9b3490da50e311bd1d39933c7134aa5dc27f37",
-      "packageSize": 65609
+      "sha256": "eb15caad93b654ae36a8a817eebc54d7b5a4d1966dd3eef53644ef3a941ee910",
+      "packageSize": 66247
     },
     {
       "id": "com.island.ai-hub",
@@ -1019,8 +1192,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.ai-hub.island-plugin.json",
-      "sha256": "acdcc884adc948368e0ef06934c48551fcc9def9120323106a89d3c9986f56b9",
-      "packageSize": 47378
+      "sha256": "a02c8c37e0af2caecf84cec3c14d641512a912c8bae290e539a8762a1be99f23",
+      "packageSize": 48053
     },
     {
       "id": "com.island.vpn",
@@ -1152,8 +1325,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.vpn-1.0.3.island-plugin.json",
-      "sha256": "0a9e24a53acc347cdf0ccc95cf7f9769b7ca5aec0630d0aa3d696b1e986c5375",
-      "packageSize": 56442
+      "sha256": "e1fea835045034eb46a76e6f1e0e5546f0e66415d2ebc49ca55d5ebe8bfd22e9",
+      "packageSize": 57081
     },
     {
       "id": "com.island.im-notifications",
@@ -1226,90 +1399,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.im-notifications.island-plugin.json",
-      "sha256": "e44e529ac63478ec40d535099ffd3400648b098c270501e870b8102f20046a84",
-      "packageSize": 50261
-    },
-    {
-      "id": "com.island.smooth-tabs",
-      "behavior": "tab-navigation",
-      "name": "丝滑切换",
-      "version": "1.0.1",
-      "description": "悬停图标即可切换面板，选中框连续滑动，支持拖动排序与可调动画时长。需要灵动岛 v0.5.42 或更新版本。",
-      "author": {
-        "name": "Island Community"
-      },
-      "category": "system",
-      "icon": "Sparkles",
-      "accentColor": "#A5B4FC",
-      "tags": [
-        "悬停切换",
-        "动画",
-        "导航",
-        "外观"
-      ],
-      "settings": [
-        {
-          "key": "hoverDelayMs",
-          "label": "悬停等待（毫秒，0–1000）",
-          "type": "number",
-          "default": 180
-        },
-        {
-          "key": "slideDurationMs",
-          "label": "滑块时长（毫秒，100–600）",
-          "type": "number",
-          "default": 240
-        },
-        {
-          "key": "fadeDurationMs",
-          "label": "面板淡入（毫秒，0–400）",
-          "type": "number",
-          "default": 150
-        }
-      ],
-      "expandedSize": {
-        "width": 580,
-        "height": 200
-      },
-      "sdkVersion": 1,
-      "guide": {
-        "summary": "为整排功能图标和九宫格提供悬停切换与连续滑动选中框。",
-        "prerequisites": [
-          "灵动岛 v0.5.42 或更新版本"
-        ],
-        "steps": [
-          {
-            "title": "安装并启用",
-            "desc": "在插件市场安装“丝滑切换”并保持启用，无需替换图标或重新配置模块。"
-          },
-          {
-            "title": "悬停切换",
-            "desc": "展开灵动岛，将鼠标移到功能图标或九宫格上；默认停留 60 毫秒打开面板。齿轮仍需点击。"
-          },
-          {
-            "title": "调整或恢复",
-            "desc": "在插件配置中调整等待和动画时长；停用或卸载后恢复点击切换。"
-          }
-        ],
-        "features": [
-          "选中框连续滑动，快速反向时追随最新目标",
-          "拖动排序期间暂停悬停",
-          "兼容顶部和底部图标栏，遵循减少动态效果偏好"
-        ],
-        "faq": [
-          {
-            "q": "安装后没有效果？",
-            "a": "请确认主程序至少为 v0.5.42 且插件已启用；旧版缺少导航扩展接口。"
-          }
-        ]
-      },
-      "permissions": [
-        "在灵动岛窗口执行代码",
-        "使用宿主提供的界面与系统接口"
-      ],
-      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.smooth-tabs-1.0.1.island-plugin.json",
-      "sha256": "99e27a9b6e5f2c804ea7750584329c23e480bb047a43f167b8e200926da77404",
-      "packageSize": 29359
+      "sha256": "20f57d29d824fb36b0b11f41ab49f407535044364b2b62850d0f63219e43ecea",
+      "packageSize": 50953
     }
   ]
 }
