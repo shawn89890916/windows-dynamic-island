@@ -40,7 +40,7 @@ pub fn present() -> bool {
 }
 
 /// `(on AC power, battery %)`, or `None` on a desktop without a battery.
-fn read() -> Option<(bool, u8)> {
+pub(crate) fn read() -> Option<(bool, u8)> {
     let mut status = SYSTEM_POWER_STATUS::default();
     unsafe { GetSystemPowerStatus(&mut status).ok()? };
     // 128 = no system battery, 255 = unknown percentage.

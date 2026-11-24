@@ -3,12 +3,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useAppearance } from "../core/appearance";
 import { useTauriEvent } from "../core/bridge";
 import { cn } from "../core/cn";
-import { useSyncLocale } from "../core/i18n";
+import { useSyncLocale, useT } from "../core/i18n";
 import { type IslandApi, IslandContext, tabNavigation } from "../core/island";
 import { macAppearanceEnabled } from "../core/plugins/appearancePlugin";
 import { useInstalledPlugins } from "../core/plugins/registry";
 import { PluginBackgrounds } from "../core/plugins/runtime";
-import { positionSettings, readSetting, useSettings } from "../core/settings";
+import { islandStatusRing, STATUS_RING_PLUGIN } from "../core/plugins/statusRing";
+import { positionSettings, readSetting, taskCountSetting, useSettings } from "../core/settings";
 import { moduleShortcutFocus } from "../core/shortcuts";
 import { useHitRects } from "../core/useHitRects";
 import { useIslandController } from "../core/useIslandController";
@@ -16,17 +17,20 @@ import { useIslandDrag } from "../core/useIslandDrag";
 import { builtinModules } from "../modules";
 import { requestAskFocus } from "../modules/ask/store";
 import { requestFindFocus } from "../modules/find/store";
-import { AmbientBubbles, SecondaryBubble } from "./island/Bubbles";
+import { AmbientBubbles, SideBubbles } from "./island/Bubbles";
 import { islandContent } from "./island/content";
-import { ambientWidth, BUBBLE, BUBBLE_GAP, geometry, MAC_CAMERA_BAND, variantOf } from "./island/geometry";
+import { ambientWidth, BUBBLE_GAP, geometry, MAC_CAMERA_BAND, variantOf } from "./island/geometry";
 import { launcherSize } from "./island/Launcher";
 import { MacCamera } from "./island/MacCamera";
 import { Rim } from "./island/Rim";
+import { StatusRing } from "./island/StatusRing";
 import { Surface } from "./island/Surface";
 import { useIslandFileDrop } from "./island/useIslandFileDrop";
 
 export function Island() {
 	const plugins = useInstalledPlugins();
+	const t = useT();
+	const statusReading = islandStatusRing.use();
 	const navigation = tabNavigation.use();
 	const ctl = useIslandController(builtinModules);
 	const { mode, primary, secondary, focused } = ctl;
@@ -49,6 +53,16 @@ export function Island() {
 	useIslandFileDrop(ctl);
 
 	const big = mode === "expanded" || mode === "peek";
+	const resting = mode === "compact" || mode === "idle";
+	const statusPlugin = plugins.find(
+		(plugin) => plugin.manifest.id === STATUS_RING_PLUGIN && plugin.enabled && plugin.packageSha256,
+	);
+	const status = statusPlugin?.customSettings.placement !== "taskbar" && statusPlugin && statusReading && (
+		<StatusRing reading={statusReading} />
+	);
+	const expandedStatus = !windows && mode === "expanded" ? status : null;
+	const showSecondary = mode === "compact" && readSetting(s, taskCountSetting) === 2;
+	const sideCount = Number(Boolean(showSecondary && secondary)) + Number(Boolean(windows && resting && status));
 	const panelSize = (ctl.launcher ? launcherSize(ctl.entries.length) : focused?.view.expandedSize) ?? v.expanded;
 	// A shared width keeps the top bar in place as the body changes height and content.
 	const bigSize =
@@ -61,7 +75,7 @@ export function Island() {
 					}, v.expanded.width),
 				}
 			: panelSize;
-	const content = islandContent(ctl, look, v, macCompact, navigation);
+	const content = islandContent(ctl, look, v, macCompact, navigation, expandedStatus);
 	useEffect(() => {
 		if (!macCompact || mode !== "compact") return;
 		let element: HTMLElement | null = null;
@@ -85,7 +99,15 @@ export function Island() {
 			mutations.disconnect();
 		};
 	}, [macCompact, mode]);
-	const g = geometry(v, look, mode, bigSize, primary, macCompact, macCompactWidth);
+	const g = geometry(
+		v,
+		look,
+		mode,
+		expandedStatus ? { ...bigSize, height: bigSize.height + 36 } : bigSize,
+		primary,
+		macCompact,
+		macCompactWidth,
+	);
 	useHitRects(islandLook.blurEffect, windows, g.radius);
 	const hidden = !macCompact && mode === "hidden";
 	const swallowed = !macCompact && mode === "swallowed";
@@ -93,15 +115,13 @@ export function Island() {
 	const anchorOnly = macCompact && (mode === "hidden" || mode === "swallowed");
 	const macMusic = macCompact && mode === "compact" && primary?.module.id === "music";
 	const contentTop = macCompact && big ? MAC_CAMERA_BAND : 0;
-	const resting = mode === "compact" || mode === "idle";
-	const showSecondary = mode === "compact" && secondary !== undefined;
 	const transition = big ? v.expandSpring : v.shellSpring;
 
 	const drag = useIslandDrag({
 		width: g.width,
 		leftExtra:
 			(effectiveTop > 0 ? 0 : g.ear) + (resting ? ambientWidth(ctl.entries.filter((e) => e.view.ambient).length) : 0),
-		rightExtra: (effectiveTop > 0 ? 0 : g.ear) + (showSecondary ? BUBBLE_GAP + BUBBLE : 0),
+		rightExtra: (effectiveTop > 0 ? 0 : g.ear) + ambientWidth(sideCount),
 		canReturn: !big,
 		onDragChange: ctl.lockHover,
 	});
@@ -206,7 +226,14 @@ export function Island() {
 						{macCompact && <MacCamera />}
 
 						<AmbientBubbles entries={ctl.entries} visible={resting} shrunk={mode === "idle" && !windows} {...bubble} />
-						<SecondaryBubble entry={showSecondary ? secondary : undefined} {...bubble} />
+						<SideBubbles
+							entry={showSecondary && !hideMacCompact ? secondary : undefined}
+							status={windows && resting && !hideMacCompact && status ? status : null}
+							statusId={STATUS_RING_PLUGIN}
+							statusLabel={t("statusRing.name")}
+							offset={BUBBLE_GAP + (attachedNotch ? g.ear : 0)}
+							{...bubble}
+						/>
 					</motion.div>
 				</motion.div>
 			</div>

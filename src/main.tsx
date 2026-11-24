@@ -2,14 +2,16 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { Island } from "./components/Island";
+import { StatusRingTaskbar } from "./components/island/StatusRingTaskbar";
 import { isTauri, startBridge } from "./core/bridge";
 import { startSettings } from "./core/settings";
 import { PipApp } from "./pip/PipApp";
 import { SettingsApp } from "./settings/SettingsApp";
 import "./styles.css";
 
-startBridge();
-startSettings();
+const initialLabel = isTauri ? getCurrentWindow().label : location.hash.slice(1) || "island";
+if (initialLabel !== "status-ring") void startBridge();
+void startSettings();
 
 // No browser context menu (reload, inspect…) in release builds.
 if (import.meta.env.PROD) document.addEventListener("contextmenu", (e) => e.preventDefault());
@@ -42,7 +44,7 @@ class IslandErrorBoundary extends React.Component<
 }
 
 function RootApp() {
-	const [label, setLabel] = useState(isTauri ? getCurrentWindow().label : location.hash.slice(1) || "island");
+	const [label, setLabel] = useState(initialLabel);
 
 	useEffect(() => {
 		if (isTauri) return;
@@ -80,6 +82,8 @@ function RootApp() {
 				<SettingsApp />
 			) : label === "pip" ? (
 				<PipApp />
+			) : label === "status-ring" ? (
+				<StatusRingTaskbar />
 			) : (
 				<IslandErrorBoundary>
 					<Island />

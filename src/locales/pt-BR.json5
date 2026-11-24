@@ -6,6 +6,20 @@
   },
 
   // Janela de configurações
+  statusRing: {
+    placement: "Local de exibição",
+    island: "Ilha",
+    taskbar: "Ao lado da barra de tarefas",
+    metric: "Exibir status de",
+    name: "Anel de status",
+    wifi: "Sinal Wi-Fi",
+    battery: "Bateria",
+    unknown: "Leitura indisponível",
+    unavailable: "Sem conexão ou indisponível",
+    charging: "Ligado à tomada",
+    requiresHost: "Atualize o Island for Windows para uma versão compatível com o anel de status.",
+    loading: "Lendo o status do sistema…",
+  },
   settings: {
     subtitle: "Configurações",
     section: {
@@ -32,6 +46,10 @@
     hideInFullscreen: {
       label: "Ocultar em tela cheia",
       desc: "Esconde a island quando um jogo, vídeo ou app está em tela cheia.",
+    },
+    taskCount: {
+      label: "Tarefas simultâneas",
+      desc: "Mostra uma tarefa na ilha principal ou coloca a segunda em uma bolha separada.",
     },
     expandOnHover: {
       label: "Expandir ao passar o mouse",

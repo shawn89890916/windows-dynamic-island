@@ -3,7 +3,14 @@ import { Card, Row } from "../../components/ui/card";
 import { NumberField, Select } from "../../components/ui/form";
 import { command, isTauri } from "../../core/bridge";
 import { type LanguagePref, languageSetting, locales, systemLocale, useT } from "../../core/i18n";
-import { generalSettings, monitorSettings, positionSettings, readSetting, setSetting } from "../../core/settings";
+import {
+	generalSettings,
+	monitorSettings,
+	positionSettings,
+	readSetting,
+	setSetting,
+	taskCountSetting,
+} from "../../core/settings";
 import { Title } from "../components/Heading";
 import { Toggle, ToggleRow } from "../components/Toggle";
 
@@ -15,6 +22,15 @@ export function GeneralPage({ values }: { values: Record<string, unknown> }) {
 			<Card>
 				<LanguageRow value={readSetting(values, languageSetting)} />
 				<AutostartRow />
+				<Row as="label" label={t(taskCountSetting.label)} desc={t(taskCountSetting.description)}>
+					<Select
+						value={readSetting(values, taskCountSetting) === 2 ? 2 : 1}
+						onChange={(event) => setSetting(taskCountSetting, Number(event.target.value))}
+					>
+						<option value={1}>1</option>
+						<option value={2}>2</option>
+					</Select>
+				</Row>
 				{Object.values(generalSettings).map((def) => (
 					<ToggleRow key={def.key} def={def} value={readSetting(values, def)} />
 				))}

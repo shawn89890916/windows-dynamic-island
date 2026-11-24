@@ -7,6 +7,20 @@
   },
 
   // 设置窗口
+  statusRing: {
+    placement: "显示位置",
+    island: "灵动岛",
+    taskbar: "任务栏旁",
+    metric: "显示内容",
+    name: "环形状态栏",
+    wifi: "Wi-Fi 信号",
+    battery: "电池",
+    unknown: "无法读取数值",
+    unavailable: "未连接或不可用",
+    charging: "已接入电源",
+    requiresHost: "请将灵动岛更新到支持环形状态栏的版本。",
+    loading: "正在读取系统状态…",
+  },
   settings: {
     subtitle: "设置",
     // 侧边栏分组
@@ -35,6 +49,10 @@
     hideInFullscreen: {
       label: "全屏时隐藏",
       desc: "当有游戏、视频或应用全屏运行时隐藏灵动岛。",
+    },
+    taskCount: {
+      label: "同时显示的任务数",
+      desc: "选择 1 个只显示主任务；选择 2 个将次任务放在右侧分岛。",
     },
     expandOnHover: {
       label: "悬停时展开",

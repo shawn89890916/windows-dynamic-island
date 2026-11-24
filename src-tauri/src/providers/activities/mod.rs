@@ -8,7 +8,7 @@
 //! stays until it is removed (a download, a build…).
 
 mod api;
-mod battery;
+pub(crate) mod battery;
 mod bluetooth;
 mod brightness;
 mod volume;

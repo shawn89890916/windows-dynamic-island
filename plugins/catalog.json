@@ -1310,6 +1310,97 @@
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.smooth-tabs-1.0.1.island-plugin.json",
       "sha256": "99e27a9b6e5f2c804ea7750584329c23e480bb047a43f167b8e200926da77404",
       "packageSize": 29359
+    },
+    {
+      "id": "com.island.status-ring",
+      "name": "环形状态栏",
+      "titleKey": "statusRing.name",
+      "version": "1.0.0",
+      "description": "用环形刻度显示 Windows 的 Wi-Fi 信号或电池电量，可放在灵动岛或任务栏旁。需要支持环形状态栏的主程序版本。",
+      "author": {
+        "name": "Island Community"
+      },
+      "category": "system",
+      "icon": "Activity",
+      "accentColor": "#7DD3FC",
+      "tags": [
+        "状态",
+        "Wi-Fi",
+        "电池",
+        "任务栏"
+      ],
+      "settings": [
+        {
+          "key": "placement",
+          "label": "显示位置",
+          "labelKey": "statusRing.placement",
+          "type": "select",
+          "default": "island",
+          "options": [
+            {
+              "label": "灵动岛",
+              "labelKey": "statusRing.island",
+              "value": "island"
+            },
+            {
+              "label": "任务栏旁",
+              "labelKey": "statusRing.taskbar",
+              "value": "taskbar"
+            }
+          ]
+        },
+        {
+          "key": "metric",
+          "label": "显示内容",
+          "labelKey": "statusRing.metric",
+          "type": "select",
+          "default": "wifi",
+          "options": [
+            {
+              "label": "Wi-Fi 信号",
+              "labelKey": "statusRing.wifi",
+              "value": "wifi"
+            },
+            {
+              "label": "电池",
+              "labelKey": "statusRing.battery",
+              "value": "battery"
+            }
+          ]
+        }
+      ],
+      "expandedSize": {
+        "width": 420,
+        "height": 170
+      },
+      "sdkVersion": 1,
+      "guide": {
+        "summary": "在黑色圆环中心显示状态图标，彩色刻度随 Wi-Fi 信号或电池电量更新。",
+        "prerequisites": [
+          "支持环形状态栏的 Windows 版灵动岛"
+        ],
+        "steps": [
+          {
+            "title": "安装并启用",
+            "desc": "在插件市场安装环形状态栏。"
+          },
+          {
+            "title": "选择显示内容",
+            "desc": "在插件配置中选择 Wi-Fi 信号或电池。"
+          },
+          {
+            "title": "选择位置",
+            "desc": "灵动岛模式在主岛右侧显示小球，刘海屏样式展开后显示。任务栏模式在主任务栏旁置顶，全屏时隐藏。"
+          }
+        ]
+      },
+      "permissions": [
+        "在灵动岛窗口执行代码",
+        "使用宿主提供的界面与系统接口"
+      ],
+      "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.status-ring.island-plugin.json",
+      "sha256": "c7f528d021f441a8673e890114bad62ade7302a3cd87542770ee9c64d3295661",
+      "packageSize": 37417
     }
   ]
 }

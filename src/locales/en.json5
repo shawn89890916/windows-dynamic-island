@@ -11,6 +11,20 @@
   },
 
   // Settings window
+  statusRing: {
+    placement: "Display location",
+    island: "Island",
+    taskbar: "Beside the taskbar",
+    metric: "Show status for",
+    name: "Status Ring",
+    wifi: "Wi-Fi signal",
+    battery: "Battery",
+    unknown: "Reading unavailable",
+    unavailable: "Not connected or unavailable",
+    charging: "On AC power",
+    requiresHost: "Update Island for Windows to a version that supports Status Ring.",
+    loading: "Reading system status…",
+  },
   settings: {
     subtitle: "Settings",
     // Sidebar groups
@@ -39,6 +53,10 @@
     hideInFullscreen: {
       label: "Hide in fullscreen",
       desc: "Hides the island while a game, video or app is fullscreen.",
+    },
+    taskCount: {
+      label: "Simultaneous tasks",
+      desc: "Show one task in the main island, or put the second task in a separate bubble.",
     },
     expandOnHover: {
       label: "Expand on hover",
