@@ -466,7 +466,7 @@ mod hit_rect_tests {
     use super::{HitRect, module_at_point, point_in_hit_rects};
 
     #[test]
-    fn toolbar_hit_rect_covers_its_top_and_bottom_at_fractional_dpi() {
+    fn toolbar_hit_rect_covers_its_top_and_bottom_at_high_dpi() {
         let toolbar = [HitRect {
             x: 344.0,
             y: 8.0,
@@ -474,11 +474,18 @@ mod hit_rect_tests {
             height: 42.0,
             module_id: None,
         }];
-        let origin = (1920.0, -1080.0);
-        let scale = 1.5;
-
-        for y in [origin.1 + 8.0 * scale, origin.1 + 49.0 * scale] {
-            assert!(point_in_hit_rects(2880.0, y, origin.0, origin.1, scale, &toolbar, 0.0));
+        for (origin, scale) in [((1920.0, -1080.0), 1.5), ((3840.0, -2160.0), 2.0)] {
+            for y in [origin.1 + 8.0 * scale, origin.1 + 49.0 * scale] {
+                assert!(point_in_hit_rects(
+                    origin.0 + 640.0 * scale,
+                    y,
+                    origin.0,
+                    origin.1,
+                    scale,
+                    &toolbar,
+                    0.0,
+                ));
+            }
         }
     }
 
@@ -503,9 +510,13 @@ mod hit_rect_tests {
 #[cfg(windows)]
 fn cursor_pos() -> Option<(f64, f64)> {
     use windows::Win32::Foundation::POINT;
-    use windows::Win32::UI::WindowsAndMessaging::GetCursorPos;
+    use windows::Win32::UI::WindowsAndMessaging::GetPhysicalCursorPos;
     let mut p = POINT::default();
-    unsafe { GetCursorPos(&mut p).ok()? };
+    // Hit rectangles are converted from CSS pixels using the window's DPI
+    // scale and compared with physical window positions. GetCursorPos can
+    // return thread-logical coordinates; use the physical API so all three
+    // values share one coordinate space, including on high-DPI displays.
+    unsafe { GetPhysicalCursorPos(&mut p).ok()? };
     Some((p.x as f64, p.y as f64))
 }
 
