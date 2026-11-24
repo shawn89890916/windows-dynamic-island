@@ -11,6 +11,8 @@ use windows::core::Result;
 use windows::Media::Control::{
     GlobalSystemMediaTransportControlsSession as Session,
     GlobalSystemMediaTransportControlsSessionManager as SessionManager,
+    GlobalSystemMediaTransportControlsSessionMediaProperties as MediaProperties,
+    GlobalSystemMediaTransportControlsSessionPlaybackInfo as PlaybackInfo,
     GlobalSystemMediaTransportControlsSessionPlaybackStatus as Status,
 };
 use windows::Storage::Streams::DataReader;
@@ -40,7 +42,7 @@ pub fn poll_loop(hub: Arc<Hub>, playing_flag: Arc<AtomicBool>, spotify: Arc<Spot
             manager = SessionManager::RequestAsync().and_then(|op| op.join()).ok();
         }
         let state = match manager.as_ref().map(|manager| read_state(manager, &mut clock)) {
-            Some(Ok(Some((mut state, session)))) => {
+            Some(Ok(Some((mut state, properties)))) => {
                 let key = format!("{}|{}|{}|{}", state.app_id, state.title, state.artist, state.album);
                 if key != track_key {
                     track_key = key;
@@ -50,7 +52,7 @@ pub fn poll_loop(hub: Arc<Hub>, playing_flag: Arc<AtomicBool>, spotify: Arc<Spot
                 // Players often publish artwork a moment after the metadata.
                 if thumbnail.is_none() && thumb_attempts < 6 {
                     thumb_attempts += 1;
-                    thumbnail = read_thumbnail(&session).ok().flatten();
+                    thumbnail = read_thumbnail(&properties).ok().flatten();
                 }
                 state.thumbnail = thumbnail.clone();
                 let video = hub.app().state::<Settings>().get(VIDEO_KEY).and_then(|v| v.as_bool()).unwrap_or(false);
@@ -73,10 +75,7 @@ pub fn poll_loop(hub: Arc<Hub>, playing_flag: Arc<AtomicBool>, spotify: Arc<Spot
                 }
                 state
             }
-            Some(Ok(None)) => {
-                spotify.set_wanted(false);
-                MusicState::default()
-            }
+            Some(Ok(None)) => MusicState::default(),
             Some(Err(_)) | None => {
                 manager = None;
                 MusicState::default()
@@ -84,6 +83,7 @@ pub fn poll_loop(hub: Arc<Hub>, playing_flag: Arc<AtomicBool>, spotify: Arc<Spot
         };
         if !state.available {
             clock.reset();
+            spotify.set_wanted(false);
         }
         playing_flag.store(state.playing, Ordering::Relaxed);
         hub.publish(ID, &state);
@@ -93,9 +93,10 @@ pub fn poll_loop(hub: Arc<Hub>, playing_flag: Arc<AtomicBool>, spotify: Arc<Spot
 
 pub fn control(action: &str, payload: Value) -> Result<()> {
     let manager = SessionManager::RequestAsync()?.join()?;
-    let Some(session) = pick_session(&manager)? else {
+    let Some((track, _)) = pick_session(&manager)? else {
         return Ok(());
     };
+    let session = track.session;
     match action {
         "toggle" => session.TryTogglePlayPauseAsync()?.join()?,
         "play" => session.TryPlayAsync()?.join()?,
@@ -103,8 +104,7 @@ pub fn control(action: &str, payload: Value) -> Result<()> {
         "next" => session.TrySkipNextAsync()?.join()?,
         "previous" => session.TrySkipPreviousAsync()?.join()?,
         "focus" => {
-            let title = session.TryGetMediaPropertiesAsync()?.join()?.Title()?.to_string();
-            super::focus::focus(&session.SourceAppUserModelId()?.to_string(), &title);
+            super::focus::focus(&session.SourceAppUserModelId()?.to_string(), &track.title);
             true
         }
         "seek" => {
@@ -116,38 +116,59 @@ pub fn control(action: &str, payload: Value) -> Result<()> {
     Ok(())
 }
 
-/// Prefer a session that is actively playing; fall back to the system's current one.
-fn pick_session(manager: &SessionManager) -> Result<Option<Session>> {
-    let sessions = manager.GetSessions()?;
-    for session in &sessions {
-        if session.GetPlaybackInfo()?.PlaybackStatus()? == Status::Playing {
-            return Ok(Some(session));
-        }
-    }
-    Ok(manager.GetCurrentSession().ok())
+struct Track {
+    session: Session,
+    properties: MediaProperties,
+    info: PlaybackInfo,
+    title: String,
 }
 
-fn read_state(manager: &SessionManager, clock: &mut super::timeline::TimelineClock) -> Result<Option<(MusicState, Session)>> {
-    let Some(session) = pick_session(manager)? else {
-        return Ok(None);
-    };
-    let props = session.TryGetMediaPropertiesAsync()?.join()?;
-    let info = session.GetPlaybackInfo()?;
-    let controls = info.Controls()?;
-    let timeline = session.GetTimelineProperties()?;
+fn pick_session(manager: &SessionManager) -> Result<Option<(Track, bool)>> {
+    super::session::select_track(
+        manager.GetCurrentSession().ok(),
+        || manager.GetSessions(),
+        |session, playing_only| read_track(session, playing_only).ok().flatten(),
+    )
+}
 
-    let title = props.Title()?.to_string();
-    if title.is_empty() {
+fn read_track(session: &Session, playing_only: bool) -> Result<Option<(Track, bool)>> {
+    let info = session.GetPlaybackInfo()?;
+    let playing = info.PlaybackStatus()? == Status::Playing;
+    if playing_only && !playing {
         return Ok(None);
     }
+    let properties = session.TryGetMediaPropertiesAsync()?.join()?;
+    let title = properties.Title()?.to_string();
+    if title.trim().is_empty() {
+        return Ok(None);
+    }
+    Ok(Some((
+        Track {
+            session: session.clone(),
+            properties,
+            info,
+            title,
+        },
+        playing,
+    )))
+}
 
-    let playing = info.PlaybackStatus()? == Status::Playing;
+fn read_state(
+    manager: &SessionManager,
+    clock: &mut super::timeline::TimelineClock,
+) -> Result<Option<(MusicState, MediaProperties)>> {
+    let Some((track, playing)) = pick_session(manager)? else {
+        return Ok(None);
+    };
+    let Track { session, properties, info, title } = track;
+    let controls = info.Controls()?;
+    let timeline = session.GetTimelineProperties()?;
     let duration_ms = (timeline.EndTime()?.Duration - timeline.StartTime()?.Duration).max(0) as u64 / 10_000;
     let raw_ms = timeline.Position()?.Duration.max(0) as u64 / 10_000;
     let now = now_ms();
     let app_id = session.SourceAppUserModelId()?.to_string();
-    let artist = props.Artist()?.to_string();
-    let album = props.AlbumTitle()?.to_string();
+    let artist = properties.Artist()?.to_string();
+    let album = properties.AlbumTitle()?.to_string();
     let key = format!("{app_id}|{title}|{artist}|{album}|{duration_ms}");
     let updated = timeline.LastUpdatedTime()?.UniversalTime.saturating_sub(EPOCH_DIFF_TICKS) / 10_000;
     let mut position_ms = clock.position(key, raw_ms, updated, playing, now);
@@ -175,12 +196,11 @@ fn read_state(manager: &SessionManager, clock: &mut super::timeline::TimelineClo
         app_icon: None,
         app_device: None,
     };
-    Ok(Some((state, session)))
+    Ok(Some((state, properties)))
 }
 
-fn read_thumbnail(session: &Session) -> Result<Option<String>> {
-    let props = session.TryGetMediaPropertiesAsync()?.join()?;
-    let Ok(reference) = props.Thumbnail() else {
+fn read_thumbnail(properties: &MediaProperties) -> Result<Option<String>> {
+    let Ok(reference) = properties.Thumbnail() else {
         return Ok(None);
     };
     let stream = reference.OpenReadAsync()?.join()?;
