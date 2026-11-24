@@ -41,10 +41,11 @@ export function useIslandController(modules: IslandModule[]) {
 	const forcedId = entries.find((e) => e.view.forceExpanded)?.module.id ?? null;
 	const attentionId = forcedId ?? entries.find((e) => e.view.attention)?.module.id ?? null;
 	const tabMemory = useTabMemory(attentionId);
+	const expandOnHover = readSetting(settings, generalSettings.expandOnHover);
 	const shortcutModule = useRef<string | null>(null);
 	const { peekId, peek, endPeek } = usePeek(entries);
 	const hover = useIslandHover({
-		expandOnHover: readSetting(settings, generalSettings.expandOnHover),
+		expandOnHover,
 		onOpen: tabMemory.onIslandOpen,
 		onClose: tabMemory.onIslandClose,
 	});
@@ -131,8 +132,8 @@ export function useIslandController(modules: IslandModule[]) {
 	useTauriEvent<{ inside: boolean; cursorMoved: boolean; moduleId?: string | null }>(
 		"island://hover",
 		({ inside, cursorMoved, moduleId }) => {
-			if (inside && moduleId) expand(moduleId);
-			else hover.onPointer(inside, cursorMoved);
+			if (inside && moduleId && expandOnHover) tabMemory.openOn(moduleId);
+			hover.onPointer(inside, cursorMoved);
 		},
 	);
 

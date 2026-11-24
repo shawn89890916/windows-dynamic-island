@@ -148,6 +148,7 @@ export function Island() {
 							drag.dragging && "cursor-grabbing **:cursor-grabbing",
 						)}
 						{...(hidden || swallowed || anchorOnly || hideMacCompact ? {} : { "data-hit": true })}
+						data-hit-module={mode === "compact" ? primary?.module.id : undefined}
 						data-blur={islandLook.blurEffect !== "none"}
 						{...ctl.domHover}
 						style={{ ...drag.style, marginTop: effectiveTop }}
