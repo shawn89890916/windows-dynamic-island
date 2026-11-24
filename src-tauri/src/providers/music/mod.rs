@@ -7,6 +7,7 @@
 
 mod focus;
 mod level;
+mod session;
 mod smtc;
 mod timeline;
 pub mod spotify;
