@@ -136,12 +136,15 @@ pub fn is_fullscreen_active(app: AppHandle) -> bool {
 }
 
 /// Rect in CSS pixels relative to the window's top-left corner.
-#[derive(Debug, Clone, Copy, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct HitRect {
     pub x: f64,
     pub y: f64,
     pub width: f64,
     pub height: f64,
+    #[serde(default)]
+    pub module_id: Option<String>,
 }
 
 #[derive(Default)]
@@ -170,6 +173,7 @@ static HOVERING: AtomicBool = AtomicBool::new(false);
 struct HoverChange {
     inside: bool,
     cursor_moved: bool,
+    module_id: Option<String>,
 }
 
 /// The user is hovering or dragging the island: don't move it away.
@@ -257,6 +261,7 @@ pub fn spawn_hit_test(app: AppHandle) {
     std::thread::spawn(move || {
         let mut ignoring: Option<bool> = None;
         let mut hovering = false;
+        let mut hovered_module: Option<String> = None;
         let mut last_cursor = None;
         let mut left_without_moving = false;
         let mut fullscreen = false;
@@ -318,6 +323,7 @@ pub fn spawn_hit_test(app: AppHandle) {
             let cursor_moved = cursor != last_cursor;
             last_cursor = cursor;
             let over_island = cursor_inside(&app, &win, cursor, 0.0);
+            let over_module = hit_module_at(&app, &win, cursor);
             let inside = island_interactive && (dragging || over_island);
 
             // A drag that started in another app (files from Explorer…). The
@@ -345,8 +351,10 @@ pub fn spawn_hit_test(app: AppHandle) {
                 ignoring = Some(ignore);
             }
             // Movement after a stationary exit ends any resize grace period.
-            if inside != hovering || (left_without_moving && cursor_moved) {
+            let module_changed = inside && over_module != hovered_module;
+            if inside != hovering || module_changed || (left_without_moving && cursor_moved) {
                 hovering = inside;
+                hovered_module = if inside { over_module.clone() } else { None };
                 left_without_moving = !inside && !cursor_moved;
                 HOVERING.store(inside, Ordering::Relaxed);
                 let _ = app.emit(
@@ -354,6 +362,7 @@ pub fn spawn_hit_test(app: AppHandle) {
                     HoverChange {
                         inside,
                         cursor_moved,
+                        module_id: if inside { over_module } else { None },
                     },
                 );
             }
@@ -385,18 +394,110 @@ fn cursor_inside(
     let Some((cx, cy)) = cursor else {
         return false;
     };
-    let (Ok(origin), Ok(scale)) = (win.outer_position(), win.scale_factor()) else {
+    // Hit rectangles come from DOM client coordinates, so anchor them at the
+    // WebView's client origin instead of the top-level window frame origin.
+    let (Ok(origin), Ok(scale)) = (win.inner_position(), win.scale_factor()) else {
         return false;
     };
     let rects = app.state::<HitState>();
     let rects = rects.0.lock().unwrap();
+    point_in_hit_rects(cx, cy, origin.x as f64, origin.y as f64, scale, &rects, margin)
+}
+
+fn hit_module_at(
+    app: &AppHandle,
+    win: &WebviewWindow,
+    cursor: Option<(f64, f64)>,
+) -> Option<String> {
+    let (cx, cy) = cursor?;
+    let (Ok(origin), Ok(scale)) = (win.inner_position(), win.scale_factor()) else {
+        return None;
+    };
+    let rects = app.state::<HitState>();
+    let rects = rects.0.lock().unwrap();
+    module_at_point(cx, cy, origin.x as f64, origin.y as f64, scale, &rects).map(str::to_owned)
+}
+
+fn module_at_point(
+    cx: f64,
+    cy: f64,
+    origin_x: f64,
+    origin_y: f64,
+    scale: f64,
+    rects: &[HitRect],
+) -> Option<&str> {
+    rects
+        .iter()
+        .find(|rect| {
+            rect.module_id.is_some()
+                && point_in_hit_rects(
+                    cx,
+                    cy,
+                    origin_x,
+                    origin_y,
+                    scale,
+                    std::slice::from_ref(*rect),
+                    0.0,
+                )
+        })
+        .and_then(|rect| rect.module_id.as_deref())
+}
+
+fn point_in_hit_rects(
+    cx: f64,
+    cy: f64,
+    origin_x: f64,
+    origin_y: f64,
+    scale: f64,
+    rects: &[HitRect],
+    margin: f64,
+) -> bool {
     rects.iter().any(|r| {
-        let left = origin.x as f64 + (r.x - margin) * scale;
-        let top = origin.y as f64 + (r.y - margin).max(0.0) * scale;
-        let right = origin.x as f64 + (r.x + r.width + margin) * scale;
-        let bottom = origin.y as f64 + (r.y + r.height + margin) * scale;
+        let left = origin_x + (r.x - margin) * scale;
+        let top = origin_y + (r.y - margin).max(0.0) * scale;
+        let right = origin_x + (r.x + r.width + margin) * scale;
+        let bottom = origin_y + (r.y + r.height + margin) * scale;
         cx >= left && cx <= right && cy >= top && cy <= bottom
     })
+}
+
+#[cfg(test)]
+mod hit_rect_tests {
+    use super::{HitRect, module_at_point, point_in_hit_rects};
+
+    #[test]
+    fn toolbar_hit_rect_covers_its_top_and_bottom_at_fractional_dpi() {
+        let toolbar = [HitRect {
+            x: 344.0,
+            y: 8.0,
+            width: 592.0,
+            height: 42.0,
+            module_id: None,
+        }];
+        let origin = (1920.0, -1080.0);
+        let scale = 1.5;
+
+        for y in [origin.1 + 8.0 * scale, origin.1 + 49.0 * scale] {
+            assert!(point_in_hit_rects(2880.0, y, origin.0, origin.1, scale, &toolbar, 0.0));
+        }
+    }
+
+    #[test]
+    fn module_hit_rect_resolves_the_secondary_bubble_target() {
+        let bubble = [HitRect {
+            x: 784.0,
+            y: 0.0,
+            width: 50.0,
+            height: 50.0,
+            module_id: Some("music".into()),
+        }];
+        let origin = (0.0, 0.0);
+        let scale = 1.0;
+        assert_eq!(
+            module_at_point(809.0, 25.0, origin.0, origin.1, scale, &bubble),
+            Some("music")
+        );
+    }
 }
 
 #[cfg(windows)]

@@ -23,6 +23,7 @@ export function useHitRects(blurEffect: string, roundedTop: boolean, radius: num
 					y: Math.round(Math.max(0, r.top - PAD)),
 					width: Math.round(r.width + PAD * 2),
 					height: Math.round(r.height + PAD * 2),
+					moduleId: el.dataset.hitModule || null,
 				};
 			});
 			const shell = document.querySelector<HTMLElement>('[data-blur="true"][data-hit]');

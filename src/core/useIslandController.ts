@@ -128,8 +128,12 @@ export function useIslandController(modules: IslandModule[]) {
 
 	// The pinned video went back to the island: show the player for a moment.
 	useTauriEvent("pip://return", () => peek("music"));
-	useTauriEvent<{ inside: boolean; cursorMoved: boolean }>("island://hover", ({ inside, cursorMoved }) =>
-		hover.onPointer(inside, cursorMoved),
+	useTauriEvent<{ inside: boolean; cursorMoved: boolean; moduleId?: string | null }>(
+		"island://hover",
+		({ inside, cursorMoved, moduleId }) => {
+			if (inside && moduleId) expand(moduleId);
+			else hover.onPointer(inside, cursorMoved);
+		},
 	);
 
 	const onWheel = useWheelTabs(
