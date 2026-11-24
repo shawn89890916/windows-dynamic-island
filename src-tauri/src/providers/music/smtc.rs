@@ -10,7 +10,7 @@ use serde_json::Value;
 use tauri::Manager;
 use windows::ApplicationModel::AppInfo;
 use windows::Foundation::Size;
-use windows::core::{HSTRING, Result};
+use windows::core::{HSTRING, Interface, Result};
 use windows::Media::Control::{
     GlobalSystemMediaTransportControlsSession as Session,
     GlobalSystemMediaTransportControlsSessionManager as SessionManager,
@@ -18,7 +18,7 @@ use windows::Media::Control::{
     GlobalSystemMediaTransportControlsSessionPlaybackInfo as PlaybackInfo,
     GlobalSystemMediaTransportControlsSessionPlaybackStatus as Status,
 };
-use windows::Storage::Streams::{DataReader, RandomAccessStreamReference};
+use windows::Storage::Streams::{DataReader, IRandomAccessStreamReference};
 
 use super::spotify::{self, Spotify};
 use super::{MusicState, ID};
@@ -218,10 +218,11 @@ fn read_state(
 fn packaged_icon(app_id: &str) -> Option<String> {
     let app = AppInfo::GetFromAppUserModelId(&HSTRING::from(app_id)).ok()?;
     let logo = app.DisplayInfo().ok()?.GetLogo(Size { Width: 64.0, Height: 64.0 }).ok()?;
+    let logo: IRandomAccessStreamReference = logo.cast().ok()?;
     read_image(&logo)
 }
 
-fn read_image(reference: &RandomAccessStreamReference) -> Option<String> {
+fn read_image(reference: &IRandomAccessStreamReference) -> Option<String> {
     let stream = reference.OpenReadAsync().ok()?.join().ok()?;
     let size = u32::try_from(stream.Size().ok()?).ok()?;
     if size == 0 || size > 8 * 1024 * 1024 {
