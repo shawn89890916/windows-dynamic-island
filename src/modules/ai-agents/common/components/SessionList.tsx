@@ -1,7 +1,9 @@
 import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useRef } from "react";
 import { cn } from "../../../../core/cn";
 import { useT } from "../../../../core/i18n";
 import { formatAgo, formatElapsed } from "../format";
+import { scheduleHoverOpen } from "../hoverOpen";
 import type { AgentSessionRef } from "../types";
 import { StatusDot, StatusGlyph } from "./StatusGlyph";
 
@@ -12,6 +14,8 @@ import { StatusDot, StatusGlyph } from "./StatusGlyph";
  */
 export function SessionList({ items, now, showAgent }: { items: AgentSessionRef[]; now: number; showAgent: boolean }) {
 	const t = useT();
+	const cancelHover = useRef<(() => void) | null>(null);
+	useEffect(() => () => cancelHover.current?.(), []);
 	if (!items.length) {
 		return <div className="py-1.5 text-[12.5px] text-text-faint">{t("agents.noSessions")}</div>;
 	}
@@ -34,7 +38,18 @@ export function SessionList({ items, now, showAgent }: { items: AgentSessionRef[
 								agent.openSession && session.cwd && "cursor-pointer rounded-lg hover:bg-white/5",
 							)}
 							title={agent.openSession && session.cwd ? t("agents.openProject") : undefined}
+							onPointerEnter={() => {
+								if (!agent.openSession || !session.cwd) return;
+								cancelHover.current?.();
+								cancelHover.current = scheduleHoverOpen(() => agent.openSession?.(session));
+							}}
+							onPointerLeave={() => {
+								cancelHover.current?.();
+								cancelHover.current = null;
+							}}
 							onClick={(e) => {
+								cancelHover.current?.();
+								cancelHover.current = null;
 								if (!agent.openSession || !session.cwd) return;
 								e.stopPropagation();
 								agent.openSession(session);
