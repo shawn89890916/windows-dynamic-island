@@ -44,6 +44,10 @@
       label: "Expand on hover",
       desc: "When off, the island only expands on click.",
     },
+    hoverDelay: {
+      label: "Hover delay",
+      desc: "Seconds the pointer must stay inside the island or notch before it expands.",
+    },
     switchPanelsOnHover: {
       label: "Switch panels on hover",
       desc: "Hover over a panel icon to switch when Smooth Tabs is enabled. When off, click the icon to switch.",
@@ -63,12 +67,24 @@
       desc: "Moves the island to another monitor while a fullscreen app (game, video, presentation) would hide it.",
     },
     returnToCenter: {
-      label: "Return to center",
-      desc: "Drag the island left or right along the top. When off, it stays where you drop it.",
+      label: "Return to preset position",
+      desc: "After dragging, the island returns to the horizontal position set above. Turn off to leave it where you drop it.",
     },
     returnDelay: {
       label: "Return after",
-      desc: "Seconds before a dragged island slides back to the middle.",
+      desc: "Seconds before the island returns to its preset position after a drag.",
+    },
+    islandWidth: {
+      label: "Island width",
+      desc: "Horizontal size as a percentage of the default.",
+    },
+    islandHeight: {
+      label: "Island height",
+      desc: "Vertical size as a percentage of the default.",
+    },
+    horizontalOffset: {
+      label: "Horizontal position",
+      desc: "Offset from the screen center. Use a negative value for left or a positive value for right.",
     },
     topMargin: {
       label: "Top vertical offset (avoid top taskbar)",

@@ -3,10 +3,12 @@ import { command, isTauri, useTauriEvent } from "./bridge";
 import { usePluginModuleEntries } from "./plugins/registry";
 import {
 	generalSettings,
+	hoverDelaySetting,
 	ISLAND_HIDDEN_KEY,
 	inOrder,
 	layoutSettings,
 	moduleEnabled,
+	readNumberSetting,
 	readSetting,
 	type Values as Settings,
 	setSetting,
@@ -45,6 +47,7 @@ export function useIslandController(modules: IslandModule[]) {
 	const { peekId, peek, endPeek } = usePeek(entries);
 	const hover = useIslandHover({
 		expandOnHover: readSetting(settings, generalSettings.expandOnHover),
+		hoverDelay: readNumberSetting(settings, hoverDelaySetting) * 1000,
 		onOpen: tabMemory.onIslandOpen,
 		onClose: tabMemory.onIslandClose,
 	});
