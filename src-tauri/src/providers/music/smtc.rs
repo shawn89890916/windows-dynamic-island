@@ -1,13 +1,16 @@
 //! Now-playing metadata and transport controls through SMTC.
 
+use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use base64::Engine;
 use serde_json::Value;
 use tauri::Manager;
-use windows::core::Result;
+use windows::ApplicationModel::AppInfo;
+use windows::Foundation::Size;
+use windows::core::{HSTRING, Result};
 use windows::Media::Control::{
     GlobalSystemMediaTransportControlsSession as Session,
     GlobalSystemMediaTransportControlsSessionManager as SessionManager,
@@ -15,7 +18,7 @@ use windows::Media::Control::{
     GlobalSystemMediaTransportControlsSessionPlaybackInfo as PlaybackInfo,
     GlobalSystemMediaTransportControlsSessionPlaybackStatus as Status,
 };
-use windows::Storage::Streams::DataReader;
+use windows::Storage::Streams::{DataReader, RandomAccessStreamReference};
 
 use super::spotify::{self, Spotify};
 use super::{MusicState, ID};
@@ -34,6 +37,8 @@ pub fn poll_loop(hub: Arc<Hub>, playing_flag: Arc<AtomicBool>, spotify: Arc<Spot
     let mut track_key = String::new();
     let mut thumbnail: Option<String> = None;
     let mut thumb_attempts = 0u8;
+    let mut thumb_retry_at = Instant::now();
+    let mut packaged_icons = HashMap::new();
     let youtube = super::youtube::Resolver::default();
     let mut clock = super::timeline::TimelineClock::default();
 
@@ -48,11 +53,15 @@ pub fn poll_loop(hub: Arc<Hub>, playing_flag: Arc<AtomicBool>, spotify: Arc<Spot
                     track_key = key;
                     thumbnail = None;
                     thumb_attempts = 0;
+                    thumb_retry_at = Instant::now();
                 }
                 // Players often publish artwork a moment after the metadata.
-                if thumbnail.is_none() && thumb_attempts < 6 {
-                    thumb_attempts += 1;
-                    thumbnail = read_thumbnail(&properties).ok().flatten();
+                if thumbnail.is_none() && Instant::now() >= thumb_retry_at {
+                    thumbnail = properties.Thumbnail().ok().and_then(|reference| read_image(&reference));
+                    thumb_attempts = thumb_attempts.saturating_add(1);
+                    if thumb_attempts >= 6 {
+                        thumb_retry_at = Instant::now() + Duration::from_secs(5);
+                    }
                 }
                 state.thumbnail = thumbnail.clone();
                 let video = hub.app().state::<Settings>().get(VIDEO_KEY).and_then(|v| v.as_bool()).unwrap_or(false);
@@ -73,6 +82,12 @@ pub fn poll_loop(hub: Arc<Hub>, playing_flag: Arc<AtomicBool>, spotify: Arc<Spot
                     // The desktop app still runs here, just silent: its icon.
                     state.app_icon = process::find_exe("spotify").and_then(|exe| process::app_icon(&exe));
                 }
+                if state.app_icon.is_none() && state.app_id.contains('!') {
+                    state.app_icon = packaged_icons
+                        .entry(state.app_id.clone())
+                        .or_insert_with(|| packaged_icon(&state.app_id))
+                        .clone();
+                }
                 state
             }
             Some(Ok(None)) => MusicState::default(),
@@ -84,6 +99,7 @@ pub fn poll_loop(hub: Arc<Hub>, playing_flag: Arc<AtomicBool>, spotify: Arc<Spot
         if !state.available {
             clock.reset();
             spotify.set_wanted(false);
+            track_key.clear();
         }
         playing_flag.store(state.playing, Ordering::Relaxed);
         hub.publish(ID, &state);
@@ -199,23 +215,39 @@ fn read_state(
     Ok(Some((state, properties)))
 }
 
-fn read_thumbnail(properties: &MediaProperties) -> Result<Option<String>> {
-    let Ok(reference) = properties.Thumbnail() else {
-        return Ok(None);
-    };
-    let stream = reference.OpenReadAsync()?.join()?;
-    let size = stream.Size()? as u32;
-    if size == 0 {
-        return Ok(None);
+fn packaged_icon(app_id: &str) -> Option<String> {
+    let app = AppInfo::GetFromAppUserModelId(&HSTRING::from(app_id)).ok()?;
+    let logo = app.DisplayInfo().ok()?.GetLogo(Size { Width: 64.0, Height: 64.0 }).ok()?;
+    read_image(&logo)
+}
+
+fn read_image(reference: &RandomAccessStreamReference) -> Option<String> {
+    let stream = reference.OpenReadAsync().ok()?.join().ok()?;
+    let size = u32::try_from(stream.Size().ok()?).ok()?;
+    if size == 0 || size > 8 * 1024 * 1024 {
+        return None;
     }
-    let mime = stream.ContentType().map(|s| s.to_string()).unwrap_or_default();
-    let reader = DataReader::CreateDataReader(&stream.GetInputStreamAt(0)?)?;
-    reader.LoadAsync(size)?.join()?;
+    let reported_mime = stream.ContentType().unwrap_or_default().to_string();
+    let reader = DataReader::CreateDataReader(&stream.GetInputStreamAt(0).ok()?).ok()?;
+    if reader.LoadAsync(size).ok()?.join().ok()? != size {
+        return None;
+    }
     let mut buf = vec![0u8; size as usize];
-    reader.ReadBytes(&mut buf)?;
-    let mime = if mime.is_empty() { "image/png".into() } else { mime };
+    reader.ReadBytes(&mut buf).ok()?;
+    let mime = image_mime(&buf, &reported_mime)?;
     let b64 = base64::engine::general_purpose::STANDARD.encode(&buf);
-    Ok(Some(format!("data:{mime};base64,{b64}")))
+    Some(format!("data:{mime};base64,{b64}"))
+}
+
+fn image_mime<'a>(bytes: &[u8], reported: &'a str) -> Option<&'a str> {
+    match bytes {
+        [0xff, 0xd8, 0xff, ..] => Some("image/jpeg"),
+        [0x89, b'P', b'N', b'G', 0x0d, 0x0a, 0x1a, 0x0a, ..] => Some("image/png"),
+        [b'G', b'I', b'F', b'8', _, b'a', ..] => Some("image/gif"),
+        [b'R', b'I', b'F', b'F', _, _, _, _, b'W', b'E', b'B', b'P', ..] => Some("image/webp"),
+        [b'B', b'M', ..] => Some("image/bmp"),
+        _ => reported.strip_prefix("image/").filter(|subtype| !subtype.is_empty()).map(|_| reported),
+    }
 }
 
 fn friendly_app_name(app_id: &str) -> String {
@@ -244,4 +276,22 @@ fn friendly_app_name(app_id: &str) -> String {
         .unwrap_or(app_id)
         .trim_end_matches(".exe")
         .to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::image_mime;
+
+    #[test]
+    fn recognizes_artwork_when_windows_omits_or_mislabels_the_mime_type() {
+        assert_eq!(image_mime(&[0xff, 0xd8, 0xff, 0xe0], "application/octet-stream"), Some("image/jpeg"));
+        assert_eq!(image_mime(b"\x89PNG\r\n\x1a\n", "image/jpeg"), Some("image/png"));
+        assert_eq!(image_mime(b"RIFF\0\0\0\0WEBP", ""), Some("image/webp"));
+    }
+
+    #[test]
+    fn rejects_an_unrecognized_stream_without_an_image_type() {
+        assert_eq!(image_mime(b"not an image", "application/octet-stream"), None);
+        assert_eq!(image_mime(b"ftypavif", "image/avif"), Some("image/avif"));
+    }
 }
