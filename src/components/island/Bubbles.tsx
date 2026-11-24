@@ -88,7 +88,7 @@ function Bubble({
 			transition={transition}
 			whileHover={{ scale: (scale ?? 1) * 1.14, transition: { type: "spring", stiffness: 450, damping: 25 } }}
 			whileTap={{ scale: (scale ?? 1) * 0.94 }}
-			onMouseEnter={() => {
+			onPointerEnter={() => {
 				onOpen(id);
 			}}
 			onClick={(e) => {

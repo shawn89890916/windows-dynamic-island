@@ -148,6 +148,7 @@ export function Tabs({
 			<div
 				className={s.base()}
 				data-no-drag
+				data-hit
 				onPointerLeave={cancelHover}
 				onKeyDownCapture={(event) => {
 					if (event.key === "Enter" || event.key === " ") {

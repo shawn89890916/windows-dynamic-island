@@ -19,6 +19,8 @@ pub const HOVER_EVENT: &str = "island://hover";
 pub const FULLSCREEN_EVENT: &str = "island://fullscreen";
 /// Tray "Recenter": the frontend snaps the island back to the middle.
 pub const RECENTER_EVENT: &str = "island://recenter";
+/// Sample quickly enough that pointer movement across the thin top toolbar is not skipped.
+const HIT_TEST_INTERVAL: Duration = Duration::from_millis(10);
 
 /// Strip height in logical pixels (fits the tallest expanded panel + shadow + top margin).
 pub const STRIP_HEIGHT: f64 = 760.0;
@@ -267,7 +269,7 @@ pub fn spawn_hit_test(app: AppHandle) {
         let mut pressed_inside = false;
         let mut file_drag = false;
         loop {
-            std::thread::sleep(Duration::from_millis(25));
+            std::thread::sleep(HIT_TEST_INTERVAL);
             if crate::file_drop::outgoing_active() {
                 continue;
             }

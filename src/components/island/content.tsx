@@ -70,7 +70,8 @@ export function islandContent(
 			/>
 		);
 		return {
-			key: navigation ? "big" : ctl.launcher ? "big:launcher" : `big:${focused?.module.id}`,
+			// Keep the toolbar mounted while the panel content changes underneath it.
+			key: "big",
 			node: (
 				<div className={cn("flex h-full flex-col px-5 pt-3.5 pb-4.5 overflow-hidden", v.tabsAtBottom && "pb-2")}>
 					{!v.tabsAtBottom && tabs}
