@@ -3,7 +3,17 @@ import { Card, Row } from "../../components/ui/card";
 import { NumberField, Select } from "../../components/ui/form";
 import { command, isTauri } from "../../core/bridge";
 import { type LanguagePref, languageSetting, locales, systemLocale, useT } from "../../core/i18n";
-import { generalSettings, monitorSettings, positionSettings, readSetting, setSetting } from "../../core/settings";
+import {
+	generalSettings,
+	monitorSettings,
+	type NumberSettingDef,
+	positionSettings,
+	readHorizontalOffset,
+	readNumberSetting,
+	readSetting,
+	setSetting,
+	sizeSettings,
+} from "../../core/settings";
 import { Title } from "../components/Heading";
 import { Toggle, ToggleRow } from "../components/Toggle";
 
@@ -24,12 +34,17 @@ export function GeneralPage({ values }: { values: Record<string, unknown> }) {
 				<ToggleRow def={monitorSettings.avoidMaximized} value={readSetting(values, monitorSettings.avoidMaximized)} />
 			</Card>
 			<Card>
+				<NumberSettingRow def={sizeSettings.width} value={readNumberSetting(values, sizeSettings.width)} unit="%" />
+				<NumberSettingRow def={sizeSettings.height} value={readNumberSetting(values, sizeSettings.height)} unit="%" />
+				<NumberSettingRow def={positionSettings.horizontalOffset} value={readHorizontalOffset(values)} unit="px" />
+				<TopMarginRow value={readNumberSetting(values, positionSettings.topMargin)} />
 				<ToggleRow def={positionSettings.returnToCenter} value={readSetting(values, positionSettings.returnToCenter)} />
-				<SecondsRow
-					value={readSetting(values, positionSettings.returnDelay)}
+				<NumberSettingRow
+					def={positionSettings.returnDelay}
+					value={readNumberSetting(values, positionSettings.returnDelay)}
+					unit="s"
 					disabled={!readSetting(values, positionSettings.returnToCenter)}
 				/>
-				<TopMarginRow value={Number(readSetting(values, positionSettings.topMargin) || 0)} />
 			</Card>
 		</>
 	);
@@ -128,24 +143,39 @@ function AutostartRow() {
 	);
 }
 
-function SecondsRow({ value, disabled }: { value: number; disabled: boolean }) {
+function NumberSettingRow({
+	def,
+	value,
+	unit,
+	disabled,
+}: {
+	def: NumberSettingDef;
+	value: number;
+	unit: string;
+	disabled?: boolean;
+}) {
 	const t = useT();
-	const def = positionSettings.returnDelay;
 	const [draft, setDraft] = useState(String(value));
 	useEffect(() => setDraft(String(value)), [value]);
 	const commit = () => {
-		const n = Math.round(Number(draft));
-		if (Number.isFinite(n) && n >= 1 && n <= 3600) setSetting(def, n);
-		else setDraft(String(value));
+		const n = Number.parseFloat(draft);
+		if (!Number.isFinite(n) || n < def.min || n > def.max) {
+			setDraft(String(value));
+			return;
+		}
+		const step = def.step ?? 1;
+		const next = Number((Math.round(n / step) * step).toFixed(2));
+		setDraft(String(next));
+		if (next !== value) setSetting(def, next);
 	};
 
 	return (
-		<Row as="label" label={t(def.label)} desc={t(def.description)} disabled={disabled}>
+		<Row as="label" label={t(def.label)} desc={def.description && t(def.description)} disabled={disabled}>
 			<NumberField
-				unit="s"
-				min={1}
-				max={3600}
-				step={1}
+				unit={unit}
+				min={def.min}
+				max={def.max}
+				step={def.step ?? 1}
 				value={draft}
 				disabled={disabled}
 				onChange={(e) => setDraft(e.target.value)}

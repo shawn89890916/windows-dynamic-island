@@ -22,6 +22,12 @@ export interface SettingDef<T = boolean> {
 	default: T;
 }
 
+export interface NumberSettingDef extends SettingDef<number> {
+	min: number;
+	max: number;
+	step?: number;
+}
+
 export type Values = Record<string, unknown>;
 
 let values: Values = {};
@@ -59,6 +65,13 @@ export async function startSettings() {
 
 export function readSetting<T>(all: Values, def: SettingDef<T>): T {
 	return (def.key in all ? all[def.key] : def.default) as T;
+}
+
+export function readNumberSetting(all: Values, def: NumberSettingDef): number {
+	const value = readSetting(all, def);
+	return typeof value === "number" && Number.isFinite(value)
+		? Math.min(def.max, Math.max(def.min, value))
+		: def.default;
 }
 
 /** Whole settings map (re-renders on any change). */
@@ -191,13 +204,46 @@ export const positionSettings = {
 		label: "settings.returnDelay.label",
 		description: "settings.returnDelay.desc",
 		default: 5,
-	} satisfies SettingDef<number>,
+		min: 1,
+		max: 3600,
+	} satisfies NumberSettingDef,
+	horizontalOffset: {
+		key: "island.horizontalOffset",
+		label: "settings.horizontalOffset.label",
+		description: "settings.horizontalOffset.desc",
+		default: 0,
+		min: -4000,
+		max: 4000,
+	} satisfies NumberSettingDef,
 	topMargin: {
 		key: "island.topMargin",
-		label: "settings.topMargin.label" as unknown as MessageKey,
-		description: "settings.topMargin.desc" as unknown as MessageKey,
+		label: "settings.topMargin.label",
+		description: "settings.topMargin.desc",
 		default: 0,
-	} satisfies SettingDef<number>,
+		min: 0,
+		max: 240,
+		step: 2,
+	} satisfies NumberSettingDef,
+};
+
+/** Width and height of the island relative to their current style and state. */
+export const sizeSettings = {
+	width: {
+		key: "island.widthPercent",
+		label: "settings.islandWidth.label",
+		description: "settings.islandWidth.desc",
+		default: 100,
+		min: 75,
+		max: 150,
+	} satisfies NumberSettingDef,
+	height: {
+		key: "island.heightPercent",
+		label: "settings.islandHeight.label",
+		description: "settings.islandHeight.desc",
+		default: 100,
+		min: 80,
+		max: 150,
+	} satisfies NumberSettingDef,
 };
 
 /**
@@ -220,8 +266,14 @@ export const monitorSettings = {
 	} satisfies SettingDef,
 };
 
-/** Last drag offset from the center in CSS px (kept only when not returning). */
-export const ISLAND_OFFSET_KEY = "island.offset";
+/** Use the saved drag offset from older versions until the new position is saved. */
+export function readHorizontalOffset(all: Values) {
+	const setting = positionSettings.horizontalOffset;
+	if (!(setting.key in all) && !readSetting(all, positionSettings.returnToCenter)) {
+		return readNumberSetting(all, { ...setting, key: "island.offset" });
+	}
+	return readNumberSetting(all, setting);
+}
 
 /** Swallowed by the tray's black hole; written by the backend (`tray.rs`). */
 export const ISLAND_HIDDEN_KEY = "island.hidden";

@@ -1,7 +1,14 @@
 import { useMotionValue, useMotionValueEvent, useSpring, useTransform, useVelocity } from "motion/react";
 import { type MouseEvent, type PointerEvent, useCallback, useEffect, useRef, useState } from "react";
 import { command, useTauriEvent } from "./bridge";
-import { ISLAND_OFFSET_KEY, positionSettings, readSetting, setSetting, useSettings } from "./settings";
+import {
+	positionSettings,
+	readHorizontalOffset,
+	readNumberSetting,
+	readSetting,
+	setSetting,
+	useSettings,
+} from "./settings";
 
 /** Pixels the pointer must travel before a press becomes a drag (not a click). */
 const DRAG_THRESHOLD = 5;
@@ -46,10 +53,10 @@ interface Options {
 export function useIslandDrag({ width, leftExtra, rightExtra, canReturn, onDragChange }: Options) {
 	const settings = useSettings();
 	const returnToCenter = readSetting(settings, positionSettings.returnToCenter);
-	const returnDelay = readSetting(settings, positionSettings.returnDelay);
-	const stored = Number(settings[ISLAND_OFFSET_KEY]) || 0;
+	const returnDelay = readNumberSetting(settings, { ...positionSettings.returnDelay, min: 1, max: 3600 });
+	const home = readHorizontalOffset(settings);
 
-	const target = useMotionValue(0);
+	const target = useMotionValue(home);
 	const x = useSpring(target, follow);
 	const liveWidth = useMotionValue(width);
 	const stageWidth = useMotionValue(typeof window === "undefined" ? 0 : window.innerWidth);
@@ -110,30 +117,32 @@ export function useIslandDrag({ width, leftExtra, rightExtra, canReturn, onDragC
 			if (!moving.get()) x.jump(offset.get());
 			moving.set(1);
 			target.set(to);
-			setParked(to !== 0);
+			setParked(to !== home);
 		},
-		[moving, x, offset, target],
+		[home, moving, x, offset, target],
 	);
 
-	const recenter = useCallback(() => {
+	const returnHome = useCallback(() => {
+		glideTo(home);
+	}, [glideTo, home]);
+	useTauriEvent("island://recenter", () => {
 		glideTo(0);
-		setSetting(ISLAND_OFFSET_KEY, 0);
-	}, [glideTo]);
-	useTauriEvent("island://recenter", recenter);
+		setSetting(positionSettings.horizontalOffset, 0);
+	});
 
 	// Return to the middle after a while (only once collapsed).
 	const [isDragging, setIsDragging] = useState(false);
 	useEffect(() => {
 		if (!returnToCenter || !parked || isDragging || !canReturn) return;
-		const id = window.setTimeout(recenter, Math.max(0, returnDelay) * 1000);
+		const id = window.setTimeout(returnHome, returnDelay * 1000);
 		return () => window.clearTimeout(id);
-	}, [returnToCenter, returnDelay, parked, isDragging, canReturn, recenter]);
+	}, [returnToCenter, returnDelay, parked, isDragging, canReturn, returnHome]);
 
 	// Staying put: restore the saved spot (on launch, or changed by another window).
 	useEffect(() => {
-		if (returnToCenter || dragging.current || Math.abs(stored - target.get()) < 0.5) return;
-		glideTo(stored);
-	}, [stored, returnToCenter, glideTo, target]);
+		if (dragging.current || Math.abs(home - target.get()) < 0.5) return;
+		glideTo(home);
+	}, [home, glideTo, target]);
 
 	// --- pointer -----------------------------------------------------------------
 	const suppressClick = useRef(false);
@@ -202,11 +211,14 @@ export function useIslandDrag({ width, leftExtra, rightExtra, canReturn, onDragC
 				if (performance.now() - lastT > 80) speed = 0;
 
 				const { min, max } = limits(liveWidth.get());
-				let to = clamp(origin + (lastX - startX) + speed * FLING, min, max);
-				if (Math.abs(to) < CENTER_SNAP) to = 0;
-				target.set(to);
-				setParked(to !== 0);
-				setSetting(ISLAND_OFFSET_KEY, Math.round(to));
+				const to = clamp(origin + (lastX - startX) + speed * FLING, min, max);
+				const snapTarget = returnToCenter ? home : 0;
+				const visibleSnap = clamp(snapTarget, min, max);
+				const nearSnap = Math.abs(to - visibleSnap) < CENTER_SNAP;
+				const destination = nearSnap ? snapTarget : to;
+				target.set(destination);
+				setParked(returnToCenter && !nearSnap);
+				if (!returnToCenter) setSetting(positionSettings.horizontalOffset, Math.round(destination));
 
 				// The click that follows pointerup must not expand / press buttons.
 				suppressClick.current = true;
@@ -217,7 +229,7 @@ export function useIslandDrag({ width, leftExtra, rightExtra, canReturn, onDragC
 			window.addEventListener("pointerup", end);
 			window.addEventListener("pointercancel", end);
 		},
-		[limits, liveWidth, moving, offset, target, x],
+		[home, limits, liveWidth, moving, offset, returnToCenter, target, x],
 	);
 
 	const onClickCapture = useCallback((e: MouseEvent) => {

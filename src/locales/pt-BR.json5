@@ -61,6 +61,18 @@
       label: "Voltar depois de",
       desc: "Segundos até a ilha arrastada deslizar de volta ao meio.",
     },
+    islandWidth: {
+      label: "Largura da ilha",
+      desc: "Tamanho horizontal como porcentagem do padrão.",
+    },
+    islandHeight: {
+      label: "Altura da ilha",
+      desc: "Tamanho vertical como porcentagem do padrão.",
+    },
+    horizontalOffset: {
+      label: "Posição horizontal",
+      desc: "Deslocamento em relação ao centro da tela. Use um valor negativo para a esquerda ou positivo para a direita.",
+    },
     about: {
       title: "Sobre",
       version: "Versão {version}",

@@ -8,7 +8,7 @@ import { type IslandApi, IslandContext, tabNavigation } from "../core/island";
 import { macAppearanceEnabled } from "../core/plugins/appearancePlugin";
 import { useInstalledPlugins } from "../core/plugins/registry";
 import { PluginBackgrounds } from "../core/plugins/runtime";
-import { positionSettings, readSetting, useSettings } from "../core/settings";
+import { positionSettings, readNumberSetting, sizeSettings, useSettings } from "../core/settings";
 import { moduleShortcutFocus } from "../core/shortcuts";
 import { useHitRects } from "../core/useHitRects";
 import { useIslandController } from "../core/useIslandController";
@@ -18,7 +18,7 @@ import { requestAskFocus } from "../modules/ask/store";
 import { requestFindFocus } from "../modules/find/store";
 import { AmbientBubbles, SecondaryBubble } from "./island/Bubbles";
 import { islandContent } from "./island/content";
-import { ambientWidth, BUBBLE, BUBBLE_GAP, geometry, MAC_CAMERA_BAND, variantOf } from "./island/geometry";
+import { ambientWidth, BUBBLE, BUBBLE_GAP, fitGeometry, geometry, MAC_CAMERA_BAND, variantOf } from "./island/geometry";
 import { launcherSize } from "./island/Launcher";
 import { MacCamera } from "./island/MacCamera";
 import { Rim } from "./island/Rim";
@@ -34,16 +34,22 @@ export function Island() {
 	const macCompact = macAppearanceEnabled(plugins);
 	const [macCompactWidth, setMacCompactWidth] = useState(128);
 	const [macCompactHidden, setMacCompactHidden] = useState(false);
+	const [viewport, setViewport] = useState(() => ({ width: window.innerWidth, height: window.innerHeight }));
+	useEffect(() => {
+		const resize = () => setViewport({ width: window.innerWidth, height: window.innerHeight });
+		window.addEventListener("resize", resize);
+		return () => window.removeEventListener("resize", resize);
+	}, []);
 	const look = macCompact ? { ...baseLook, style: "windows" as const, idleClock: false, rim: [] } : baseLook;
 	const glassPluginEnabled = plugins.some(
 		(plugin) => plugin.manifest.id === "com.island.desktop-glass" && plugin.enabled && Boolean(plugin.packageSha256),
 	);
 	const islandLook = glassPluginEnabled && !macCompact ? look : { ...look, blurEffect: "none" as const };
 	const s = useSettings();
-	const topMargin = Math.max(0, Number(readSetting(s, positionSettings.topMargin)) || 0);
+	const topMargin = readNumberSetting(s, positionSettings.topMargin);
 	const windows = look.style === "windows";
 	const v = variantOf(look);
-	const effectiveTop = v.top + topMargin;
+	const effectiveTop = Math.min(v.top + topMargin, Math.max(0, viewport.height - 64));
 	const attachedNotch = !windows && effectiveTop === 0;
 	useSyncLocale();
 	useIslandFileDrop(ctl);
@@ -85,7 +91,13 @@ export function Island() {
 			mutations.disconnect();
 		};
 	}, [macCompact, mode]);
-	const g = geometry(v, look, mode, bigSize, primary, macCompact, macCompactWidth);
+	const baseGeometry = geometry(v, look, mode, bigSize, primary, macCompact, macCompactWidth);
+	const g = fitGeometry(baseGeometry, {
+		widthPercent: readNumberSetting(s, sizeSettings.width),
+		heightPercent: readNumberSetting(s, sizeSettings.height),
+		maxWidth: viewport.width - 24 - (attachedNotch ? 3 * baseGeometry.ear : 0),
+		maxHeight: viewport.height - effectiveTop,
+	});
 	useHitRects(islandLook.blurEffect, windows, g.radius);
 	const hidden = !macCompact && mode === "hidden";
 	const swallowed = !macCompact && mode === "swallowed";
