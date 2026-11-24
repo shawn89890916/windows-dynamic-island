@@ -37,6 +37,10 @@
       label: "Expandir ao passar o mouse",
       desc: "Desligado: expande só com clique.",
     },
+    hoverDelay: {
+      label: "Tempo para expandir",
+      desc: "Segundos que o ponteiro precisa ficar dentro da ilha ou do recorte para expandir.",
+    },
     switchPanelsOnHover: {
       label: "Trocar de painel ao passar o mouse",
       desc: "Com o Smooth Tabs ativado, passe o mouse sobre o ícone do painel para trocar. Com esta opção desativada, clique no ícone.",
@@ -54,12 +58,28 @@
       desc: "Leva a ilha para outro monitor enquanto um app em tela cheia (jogo, vídeo, apresentação) a esconderia.",
     },
     returnToCenter: {
-      label: "Voltar ao centro",
-      desc: "Arraste a ilha para a esquerda ou direita no topo. Desligado: ela fica onde você soltar.",
+      label: "Voltar à posição predefinida",
+      desc: "Após arrastar, a ilha volta à posição horizontal definida acima. Desative para deixá-la onde soltar.",
     },
     returnDelay: {
       label: "Voltar depois de",
-      desc: "Segundos até a ilha arrastada deslizar de volta ao meio.",
+      desc: "Segundos até a ilha voltar à posição predefinida após ser arrastada.",
+    },
+    islandWidth: {
+      label: "Largura da ilha",
+      desc: "Tamanho horizontal como porcentagem do padrão.",
+    },
+    islandHeight: {
+      label: "Altura da ilha",
+      desc: "Tamanho vertical como porcentagem do padrão.",
+    },
+    horizontalOffset: {
+      label: "Posição horizontal",
+      desc: "Deslocamento em relação ao centro da tela. Use um valor negativo para a esquerda ou positivo para a direita.",
+    },
+    topMargin: {
+      label: "Distância do topo",
+      desc: "Distância adicional em relação ao topo da tela. Use 48 px se a barra de tarefas estiver no topo.",
     },
     about: {
       title: "Sobre",

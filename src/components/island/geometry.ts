@@ -56,6 +56,7 @@ export const MAC_CAMERA_BAND = 22;
 
 export const BUBBLE = 38;
 export const BUBBLE_GAP = 10;
+export const SECONDARY_SLOT_WIDTH = 40;
 /** Gap between ambient bubbles (px). */
 const AMBIENT_GAP = 8;
 
@@ -71,7 +72,6 @@ export function geometry(
 	bigSize: { width: number; height: number } | undefined,
 	primary: ModuleEntry | undefined,
 	macCompact = false,
-	macCompactWidth = MAC_COMPACT_WIDTH,
 ): Geo {
 	switch (mode) {
 		case "hidden":
@@ -82,7 +82,7 @@ export function geometry(
 		case "compact":
 			return {
 				...v.compact,
-				width: macCompact ? macCompactWidth : (primary?.view.compact?.width ?? v.compact.width),
+				width: macCompact ? MAC_COMPACT_WIDTH : (primary?.view.compact?.width ?? v.compact.width),
 				radius: macCompact ? MAC_COMPACT_HEIGHT / 2 : v.compact.radius,
 				height: macCompact ? MAC_COMPACT_HEIGHT : v.compact.height,
 			};
@@ -93,6 +93,34 @@ export function geometry(
 			return { ...v.expanded, width: size.width, height: size.height + extra + (macCompact ? MAC_CAMERA_BAND : 0) };
 		}
 	}
+}
+
+/** Apply user proportions without growing past the available window area. */
+export function fitGeometry(
+	geo: Geo,
+	{
+		widthPercent,
+		heightPercent,
+		maxWidth,
+		maxHeight,
+		extraWidth,
+	}: {
+		widthPercent: number;
+		heightPercent: number;
+		maxWidth: number;
+		maxHeight: number;
+		extraWidth: number;
+	},
+): Geo {
+	const heightScale = heightPercent / 100;
+	const width = Math.max(1, Math.min(maxWidth, Math.round((geo.width * widthPercent) / 100) + extraWidth));
+	const height = Math.max(1, Math.min(maxHeight, Math.round(geo.height * heightScale)));
+	return {
+		width,
+		height,
+		radius: Math.min(geo.radius * heightScale, width / 2, height),
+		ear: Math.min(geo.ear * heightScale, height),
+	};
 }
 
 /** Width taken by the ambient bubbles left of the island. */
