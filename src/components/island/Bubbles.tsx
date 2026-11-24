@@ -1,5 +1,6 @@
 import { AnimatePresence, motion, type Transition } from "motion/react";
 import type { ReactNode } from "react";
+import { tv } from "tailwind-variants";
 import type { ModuleEntry } from "../../core/types";
 
 interface BubbleProps {
@@ -26,7 +27,7 @@ export function AmbientBubbles({
 					entries
 						.filter((e) => e.view.ambient)
 						.map(({ module, view }) => (
-							<Bubble key={module.id} id={module.id} scale={shrunk ? 0.84 : 1} {...bubble}>
+							<Bubble key={module.id} id={module.id} ambient from={40} scale={shrunk ? 0.84 : 1} layout {...bubble}>
 								{view.ambient}
 							</Bubble>
 						))}
@@ -35,29 +36,58 @@ export function AmbientBubbles({
 	);
 }
 
+/** The second busiest module, as a bubble right of the compact island. */
+export function SecondaryBubble({ entry, ...bubble }: BubbleProps & { entry: ModuleEntry | undefined }) {
+	return (
+		<AnimatePresence>
+			{entry && (
+				<Bubble key={entry.module.id} id={entry.module.id} from={-40} {...bubble}>
+					{entry.view.icon}
+				</Bubble>
+			)}
+		</AnimatePresence>
+	);
+}
+
+const bubble = tv({
+	base: "absolute top-0 left-[calc(100%+10px)] grid size-9.5 place-items-center rounded-full bg-black shadow-[0_12px_28px_-10px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.08)] cursor-pointer select-none",
+	variants: {
+		ambient: { true: "pointer-events-auto relative left-auto flex-none origin-top" },
+	},
+});
+
 function Bubble({
 	id,
-	scale,
+	ambient,
+	from,
+	scale = 1,
+	layout,
 	transition,
 	rim,
 	onOpen,
 	children,
 }: BubbleProps & {
 	id: string;
-	scale: number;
+	/** In the row of persistent bubbles, rather than placed right of the island. */
+	ambient?: boolean;
+	/** Horizontal offset it slides in from and out to. */
+	from: number;
+	scale?: number;
+	layout?: boolean;
 	children: ReactNode;
 }) {
 	return (
 		<motion.button
-			className="pointer-events-auto relative grid size-9.5 flex-none origin-top cursor-pointer select-none place-items-center rounded-full bg-black shadow-[0_12px_28px_-10px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.08)]"
+			className={bubble({ ambient })}
+			data-island-secondary-bubble={!ambient || undefined}
 			data-hit
-			layout
-			initial={{ opacity: 0, scale: 0.3, x: 40 }}
+			layout={layout}
+			initial={{ opacity: 0, scale: 0.3, x: from }}
 			animate={{ opacity: 1, scale, x: 0 }}
-			exit={{ opacity: 0, scale: 0.3, x: 40 }}
+			exit={{ opacity: 0, scale: 0.3, x: from }}
 			transition={transition}
-			whileHover={{ scale: scale * 1.14, transition: { type: "spring", stiffness: 450, damping: 25 } }}
-			whileTap={{ scale: scale * 0.94 }}
+			whileHover={{ scale: (scale ?? 1) * 1.14, transition: { type: "spring", stiffness: 450, damping: 25 } }}
+			whileTap={{ scale: (scale ?? 1) * 0.94 }}
 			onMouseEnter={() => {
 				onOpen(id);
 			}}

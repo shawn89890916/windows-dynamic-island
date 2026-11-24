@@ -8,7 +8,7 @@ import { type IslandApi, IslandContext, tabNavigation } from "../core/island";
 import { macAppearanceEnabled } from "../core/plugins/appearancePlugin";
 import { useInstalledPlugins } from "../core/plugins/registry";
 import { PluginBackgrounds } from "../core/plugins/runtime";
-import { positionSettings, readNumberSetting, sizeSettings, useSettings } from "../core/settings";
+import { positionSettings, readSetting, useSettings } from "../core/settings";
 import { moduleShortcutFocus } from "../core/shortcuts";
 import { useHitRects } from "../core/useHitRects";
 import { useIslandController } from "../core/useIslandController";
@@ -16,16 +16,9 @@ import { useIslandDrag } from "../core/useIslandDrag";
 import { builtinModules } from "../modules";
 import { requestAskFocus } from "../modules/ask/store";
 import { requestFindFocus } from "../modules/find/store";
-import { AmbientBubbles } from "./island/Bubbles";
+import { AmbientBubbles, SecondaryBubble } from "./island/Bubbles";
 import { islandContent } from "./island/content";
-import {
-	ambientWidth,
-	fitGeometry,
-	geometry,
-	MAC_CAMERA_BAND,
-	SECONDARY_SLOT_WIDTH,
-	variantOf,
-} from "./island/geometry";
+import { ambientWidth, BUBBLE, BUBBLE_GAP, geometry, MAC_CAMERA_BAND, variantOf } from "./island/geometry";
 import { launcherSize } from "./island/Launcher";
 import { MacCamera } from "./island/MacCamera";
 import { Rim } from "./island/Rim";
@@ -39,23 +32,18 @@ export function Island() {
 	const { mode, primary, secondary, focused } = ctl;
 	const baseLook = useAppearance();
 	const macCompact = macAppearanceEnabled(plugins);
+	const [macCompactWidth, setMacCompactWidth] = useState(128);
 	const [macCompactHidden, setMacCompactHidden] = useState(false);
-	const [viewport, setViewport] = useState(() => ({ width: window.innerWidth, height: window.innerHeight }));
-	useEffect(() => {
-		const resize = () => setViewport({ width: window.innerWidth, height: window.innerHeight });
-		window.addEventListener("resize", resize);
-		return () => window.removeEventListener("resize", resize);
-	}, []);
 	const look = macCompact ? { ...baseLook, style: "windows" as const, idleClock: false, rim: [] } : baseLook;
 	const glassPluginEnabled = plugins.some(
 		(plugin) => plugin.manifest.id === "com.island.desktop-glass" && plugin.enabled && Boolean(plugin.packageSha256),
 	);
 	const islandLook = glassPluginEnabled && !macCompact ? look : { ...look, blurEffect: "none" as const };
 	const s = useSettings();
-	const topMargin = readNumberSetting(s, positionSettings.topMargin);
+	const topMargin = Math.max(0, Number(readSetting(s, positionSettings.topMargin)) || 0);
 	const windows = look.style === "windows";
 	const v = variantOf(look);
-	const effectiveTop = Math.min(v.top + topMargin, Math.max(0, viewport.height - 64));
+	const effectiveTop = v.top + topMargin;
 	const attachedNotch = !windows && effectiveTop === 0;
 	useSyncLocale();
 	useIslandFileDrop(ctl);
@@ -74,15 +62,30 @@ export function Island() {
 				}
 			: panelSize;
 	const content = islandContent(ctl, look, v, macCompact, navigation);
-	const baseGeometry = geometry(v, look, mode, bigSize, primary, macCompact);
-	const showSecondary = mode === "compact" && secondary;
-	const g = fitGeometry(baseGeometry, {
-		widthPercent: readNumberSetting(s, sizeSettings.width),
-		heightPercent: readNumberSetting(s, sizeSettings.height),
-		maxWidth: viewport.width - 24 - (attachedNotch ? 3 * baseGeometry.ear : 0),
-		maxHeight: viewport.height - effectiveTop,
-		extraWidth: showSecondary ? SECONDARY_SLOT_WIDTH * (macCompact ? 2 : 1) : 0,
-	});
+	useEffect(() => {
+		if (!macCompact || mode !== "compact") return;
+		let element: HTMLElement | null = null;
+		const measure = () => {
+			const next = document.querySelector<HTMLElement>("[data-mac-compact-content]");
+			if (next !== element) {
+				if (element) observer.unobserve(element);
+				element = next;
+				if (element) observer.observe(element);
+			}
+			if (!element) return;
+			const width = Math.max(88, Math.min(window.innerWidth - 24, element.offsetWidth));
+			setMacCompactWidth((current) => (current === width ? current : width));
+		};
+		const observer = new ResizeObserver(measure);
+		const mutations = new MutationObserver(measure);
+		mutations.observe(document.body, { childList: true, subtree: true });
+		measure();
+		return () => {
+			observer.disconnect();
+			mutations.disconnect();
+		};
+	}, [macCompact, mode]);
+	const g = geometry(v, look, mode, bigSize, primary, macCompact, macCompactWidth);
 	useHitRects(islandLook.blurEffect, windows, g.radius);
 	const hidden = !macCompact && mode === "hidden";
 	const swallowed = !macCompact && mode === "swallowed";
@@ -91,13 +94,14 @@ export function Island() {
 	const macMusic = macCompact && mode === "compact" && primary?.module.id === "music";
 	const contentTop = macCompact && big ? MAC_CAMERA_BAND : 0;
 	const resting = mode === "compact" || mode === "idle";
+	const showSecondary = mode === "compact" && secondary !== undefined;
 	const transition = big ? v.expandSpring : v.shellSpring;
 
 	const drag = useIslandDrag({
 		width: g.width,
 		leftExtra:
 			(effectiveTop > 0 ? 0 : g.ear) + (resting ? ambientWidth(ctl.entries.filter((e) => e.view.ambient).length) : 0),
-		rightExtra: effectiveTop > 0 ? 0 : g.ear,
+		rightExtra: (effectiveTop > 0 ? 0 : g.ear) + (showSecondary ? BUBBLE_GAP + BUBBLE : 0),
 		canReturn: !big,
 		onDragChange: ctl.lockHover,
 	});
@@ -162,6 +166,10 @@ export function Island() {
 						onClick={() => {
 							if (resting || mode === "peek") ctl.expand(macMusic ? "music" : undefined);
 						}}
+						onMouseEnter={() => {
+							if (macCompact && !macMusic && mode === "compact" && primary) ctl.expand(primary.module.id);
+							else ctl.domHover.onMouseEnter?.();
+						}}
 					>
 						{/* Overlap the sides by a pixel to cover rounding gaps at fractional display scales. */}
 						{attachedNotch && (
@@ -198,6 +206,7 @@ export function Island() {
 						{macCompact && <MacCamera />}
 
 						<AmbientBubbles entries={ctl.entries} visible={resting} shrunk={mode === "idle" && !windows} {...bubble} />
+						<SecondaryBubble entry={showSecondary ? secondary : undefined} {...bubble} />
 					</motion.div>
 				</motion.div>
 			</div>

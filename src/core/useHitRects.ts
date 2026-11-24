@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { command, isTauri } from "./bridge";
 
+const PAD = 6;
+
 /**
  * Keeps the backend informed about which parts of the transparent window are
  * interactive. Every element marked with `data-hit` counts; the rects follow
@@ -17,10 +19,10 @@ export function useHitRects(blurEffect: string, roundedTop: boolean, radius: num
 			const rects = Array.from(document.querySelectorAll<HTMLElement>("[data-hit]")).map((el) => {
 				const r = el.getBoundingClientRect();
 				return {
-					x: Math.round(r.left),
-					y: Math.round(r.top),
-					width: Math.round(r.width),
-					height: Math.round(r.height),
+					x: Math.round(r.left - PAD),
+					y: Math.round(Math.max(0, r.top - PAD)),
+					width: Math.round(r.width + PAD * 2),
+					height: Math.round(r.height + PAD * 2),
 				};
 			});
 			const shell = document.querySelector<HTMLElement>('[data-blur="true"][data-hit]');
