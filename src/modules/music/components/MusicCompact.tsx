@@ -2,15 +2,18 @@ import { AudioLinesIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { Marquee } from "../../../components/Marquee";
 import { cn } from "../../../core/cn";
+import { useSetting } from "../../../core/settings";
 import { formatTime, type MusicState, useLivePosition } from "../hooks/useMusic";
+import { musicSettings } from "../settings";
 import { Artwork } from "./Artwork";
 import { Visualizer } from "./Visualizer";
 
 export function MusicCompactArtwork({ music, size }: { music: MusicState; size: number }) {
+	const rotateArtwork = useSetting(musicSettings.rotateArtwork);
 	return (
 		<span
-			className="inline-flex shrink-0 motion-safe:animate-[spin_18s_linear_infinite]"
-			style={{ animationPlayState: music.playing ? "running" : "paused" }}
+			className={cn("inline-flex shrink-0", rotateArtwork && "motion-safe:animate-[spin_18s_linear_infinite]")}
+			style={rotateArtwork ? { animationPlayState: music.playing ? "running" : "paused" } : undefined}
 		>
 			<Artwork src={music.thumbnail} size={size} radius={size / 2} trackKey={music.title} />
 		</span>

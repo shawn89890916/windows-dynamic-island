@@ -13,6 +13,12 @@ export const musicSettings = {
 		description: "music.visualizer.desc",
 		default: true,
 	},
+	rotateArtwork: {
+		key: "music.rotateArtwork.label",
+		label: "music.rotateArtwork.label",
+		description: "music.rotateArtwork.desc",
+		default: true,
+	},
 	// Read by the backend too (`smtc.rs`): off means no YouTube lookups at all.
 	video: {
 		key: "music.video.label",

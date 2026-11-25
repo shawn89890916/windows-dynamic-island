@@ -593,6 +593,10 @@
       label: "音频可视化频谱",
       desc: "随音乐律动的动画音频条。",
     },
+    rotateArtwork: {
+      label: "旋转音乐封面",
+      desc: "音乐播放时缓慢旋转封面图标，可在此关闭。",
+    },
     video: {
       label: "在灵动岛中播放 YouTube 视频",
       desc: "在封面位置静音播放浏览器中的 YouTube 视频。每首曲目会自动搜索 youtube.com。",

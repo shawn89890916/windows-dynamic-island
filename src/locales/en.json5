@@ -597,6 +597,10 @@
       label: "Audio visualizer",
       desc: "Animated bars that follow the music.",
     },
+    rotateArtwork: {
+      label: "Rotate music artwork",
+      desc: "Slowly rotate the album artwork while music is playing.",
+    },
     video: {
       label: "YouTube video in the island",
       desc: "Plays the browser's YouTube video muted in place of the artwork. Searches youtube.com for each track.",
