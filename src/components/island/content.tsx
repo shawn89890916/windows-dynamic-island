@@ -46,10 +46,10 @@ export function islandContent(
 			node: (
 				<div className={cn("flex h-full items-center justify-between", macCompact ? "gap-1 px-0" : "gap-1 pr-2 pl-2")}>
 					<div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-						<div className={cn("flex min-w-0 items-center", macCompact ? "gap-1" : "gap-2")}>
+						<div className={cn("flex min-w-0 flex-1 items-center", macCompact ? "gap-1" : "gap-2")}>
 							{primary.view.compact.left}
 						</div>
-						<div className={cn("flex min-w-0 items-center justify-end", macCompact ? "gap-1" : "gap-2")}>
+						<div className={cn("flex shrink-0 items-center justify-end", macCompact ? "gap-1" : "gap-2")}>
 							{primary.view.compact.right}
 						</div>
 					</div>
@@ -61,7 +61,7 @@ export function islandContent(
 							data-no-drag
 							data-hit
 							data-hit-module={secondaryTask.module.id}
-							className="grid size-8 shrink-0 place-items-center border-l border-white/15 pl-2 text-white/85"
+							className="grid size-8 shrink-0 place-items-center border-l border-white/15 pl-1.5 text-white/85"
 							initial={{ opacity: 0, x: 5 }}
 							animate={{ opacity: 1, x: 0 }}
 							transition={{ duration: 0.2 }}
@@ -70,7 +70,9 @@ export function islandContent(
 								ctl.expand(secondaryTask.module.id);
 							}}
 						>
-							<span className="grid size-6 shrink-0 place-items-center [&_svg]:size-5">{secondaryTask.view.icon}</span>
+							<span className="grid size-6 shrink-0 place-items-center [&_svg]:size-5">
+								{secondaryTask.view.compact?.icon ?? secondaryTask.view.icon}
+							</span>
 						</motion.button>
 					)}
 				</div>

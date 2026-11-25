@@ -82,12 +82,12 @@
       desc: "Segundos até a ilha arrastada deslizar de volta ao meio.",
     },
     islandWidth: {
-      label: "Largura da ilha",
-      desc: "Tamanho horizontal como porcentagem do padrão.",
+      label: "Largura quando recolhida",
+      desc: "Largura da ilha ou do recorte recolhido como porcentagem do padrão.",
     },
     islandHeight: {
-      label: "Altura da ilha",
-      desc: "Tamanho vertical como porcentagem do padrão.",
+      label: "Altura quando recolhida",
+      desc: "Altura da ilha ou do recorte recolhido como porcentagem do padrão.",
     },
     horizontalOffset: {
       label: "Posição horizontal",

@@ -91,12 +91,12 @@
       desc: "Seconds before a dragged island slides back to the middle.",
     },
     islandWidth: {
-      label: "Island width",
-      desc: "Horizontal size as a percentage of the default.",
+      label: "Collapsed width",
+      desc: "Width of the collapsed island or notch as a percentage of its default.",
     },
     islandHeight: {
-      label: "Island height",
-      desc: "Vertical size as a percentage of the default.",
+      label: "Collapsed height",
+      desc: "Height of the collapsed island or notch as a percentage of its default.",
     },
     horizontalOffset: {
       label: "Horizontal position",

@@ -2,7 +2,7 @@ import { AnimatePresence, motion, type Transition } from "motion/react";
 import type { ReactNode } from "react";
 import type { Appearance } from "../../core/appearance";
 import { cn } from "../../core/cn";
-import { cornerRadius, type Geo } from "./geometry";
+import { cornerRadius, type FittedGeo } from "./geometry";
 import { glowStyle } from "./Rim";
 
 const tints = {
@@ -30,7 +30,7 @@ export function Surface({
 	rim,
 	children,
 }: {
-	g: Geo;
+	g: FittedGeo;
 	big: boolean;
 	attachedNotch: boolean;
 	look: Appearance;

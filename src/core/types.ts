@@ -9,12 +9,14 @@ export interface ModuleView {
 	active: boolean;
 	/** Higher wins the main compact slot; the runner-up becomes the side bubble. */
 	priority: number;
-	/** Small glyph used for the side bubble and the tab bar. */
+	/** Small glyph used in the tab bar and as the default activity icon. */
 	icon: ReactNode;
 	/** Compact pill content. Required when `active`. */
 	compact?: {
 		left: ReactNode;
 		right: ReactNode;
+		/** Optional icon when the activity is shown without its compact text. */
+		icon?: ReactNode;
 		/** Pill width in px (default 300). */
 		width?: number;
 	};

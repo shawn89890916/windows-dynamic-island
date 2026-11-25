@@ -21,7 +21,8 @@ use windows_numerics::Vector2;
 pub(super) struct BackdropShape {
     width: f32,
     pub height: f32,
-    radius: f32,
+    radius_x: f32,
+    radius_y: f32,
     rounded_top: bool,
     pub ear_width: f32,
     ear_height: f32,
@@ -44,11 +45,19 @@ impl BackdropShape {
         } else {
             height - ear_height
         };
-        let radius = ((rect.radius * scale) as f32).clamp(0.0, (width / 2.0).min(height_limit));
+        let mut radius_x = ((rect.radius_x * scale) as f32).max(0.0);
+        let mut radius_y = ((rect.radius_y * scale) as f32).max(0.0);
+        // CSS scales both axes by the same factor when adjacent corners would overlap.
+        if radius_x > width / 2.0 || radius_y > height_limit {
+            let factor = (width / (2.0 * radius_x)).min(height_limit / radius_y);
+            radius_x *= factor;
+            radius_y *= factor;
+        }
         Self {
             width,
             height,
-            radius,
+            radius_x,
+            radius_y,
             rounded_top: rect.rounded_top,
             ear_width,
             ear_height,
@@ -72,14 +81,19 @@ impl BackdropShape {
         let left = self.ear_width;
         let right = left + self.width;
         let h = self.height;
-        let r = self.radius;
-        let top_radius = if self.rounded_top { r } else { 0.0 };
+        let rx = self.radius_x;
+        let ry = self.radius_y;
+        let (tx, ty) = if self.rounded_top {
+            (rx, ry)
+        } else {
+            (0.0, 0.0)
+        };
         let point = |x, y| Vector2 { X: x, Y: y };
         unsafe {
             let path = factory.CreatePathGeometry()?;
             let sink = path.Open()?;
-            sink.BeginFigure(point(top_radius, 0.0), D2D1_FIGURE_BEGIN_FILLED);
-            sink.AddLine(point(self.total_width() - top_radius, 0.0));
+            sink.BeginFigure(point(tx, 0.0), D2D1_FIGURE_BEGIN_FILLED);
+            sink.AddLine(point(self.total_width() - tx, 0.0));
             // The CSS tint follows the same quarter ellipses at the top edge.
             if left > 0.0 {
                 arc(
@@ -90,24 +104,18 @@ impl BackdropShape {
                     true,
                 );
             } else {
-                arc(
-                    &sink,
-                    point(right, top_radius),
-                    top_radius,
-                    top_radius,
-                    false,
-                );
+                arc(&sink, point(right, ty), tx, ty, false);
             }
-            sink.AddLine(point(right, h - r));
-            arc(&sink, point(right - r, h), r, r, false);
-            sink.AddLine(point(left + r, h));
-            arc(&sink, point(left, h - r), r, r, false);
+            sink.AddLine(point(right, h - ry));
+            arc(&sink, point(right - rx, h), rx, ry, false);
+            sink.AddLine(point(left + rx, h));
+            arc(&sink, point(left, h - ry), rx, ry, false);
             if left > 0.0 {
                 sink.AddLine(point(left, self.ear_height));
                 arc(&sink, point(0.0, 0.0), left, self.ear_height, true);
             } else {
-                sink.AddLine(point(0.0, top_radius));
-                arc(&sink, point(top_radius, 0.0), top_radius, top_radius, false);
+                sink.AddLine(point(0.0, ty));
+                arc(&sink, point(tx, 0.0), tx, ty, false);
             }
             sink.EndFigure(D2D1_FIGURE_END_CLOSED);
             sink.Close()?;

@@ -79,7 +79,7 @@ export function SideBubbles({
 						layout
 						{...props}
 					>
-						{entry.view.icon}
+						{entry.view.compact?.icon ?? entry.view.icon}
 					</Bubble>
 				))}
 				{status && (

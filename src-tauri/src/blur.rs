@@ -16,7 +16,8 @@ pub struct BlurRect {
     width: f64,
     height: f64,
     rounded_top: bool,
-    radius: f64,
+    radius_x: f64,
+    radius_y: f64,
     ear_width: f64,
     ear_height: f64,
 }

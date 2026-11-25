@@ -19,7 +19,15 @@ import { requestAskFocus } from "../modules/ask/store";
 import { requestFindFocus } from "../modules/find/store";
 import { AmbientBubbles, SideBubbles } from "./island/Bubbles";
 import { islandContent } from "./island/content";
-import { ambientWidth, BUBBLE_GAP, fitGeometry, geometry, MAC_CAMERA_BAND, variantOf } from "./island/geometry";
+import {
+	ambientWidth,
+	BUBBLE_GAP,
+	fitGeometry,
+	geometry,
+	MAC_CAMERA_BAND,
+	SECONDARY_TASK_WIDTH,
+	variantOf,
+} from "./island/geometry";
 import { launcherSize } from "./island/Launcher";
 import { MacCamera } from "./island/MacCamera";
 import { Rim } from "./island/Rim";
@@ -113,13 +121,14 @@ export function Island() {
 		};
 	}, [macCompact, mode]);
 	const ringSize = expandedStatus ? { ...bigSize, height: bigSize.height + 36 } : bigSize;
-	const baseGeometry = geometry(v, look, mode, ringSize, primary, macCompact, macCompactWidth, secondaryTask ? 94 : 0);
+	const baseGeometry = geometry(v, look, mode, ringSize, primary, macCompact, macCompactWidth);
 	const g = fitGeometry(baseGeometry, {
-		widthPercent: readNumberSetting(s, sizeSettings.width),
-		heightPercent: readNumberSetting(s, sizeSettings.height),
+		widthPercent: big ? 100 : readNumberSetting(s, sizeSettings.width),
+		heightPercent: big ? 100 : readNumberSetting(s, sizeSettings.height),
 		maxWidth: viewport.width - 24 - (attachedNotch ? 3 * baseGeometry.ear : 0),
 		maxHeight: viewport.height - effectiveTop,
 		attachedNotch,
+		extraWidth: secondaryTask && !macCompact ? SECONDARY_TASK_WIDTH : 0,
 	});
 	useHitRects(islandLook.blurEffect, windows);
 	const hidden = !macCompact && mode === "hidden";
@@ -214,7 +223,7 @@ export function Island() {
 										background: `radial-gradient(ellipse farthest-side at 0 100%, transparent 99%, ${tint} 100%)`,
 									}}
 									initial={false}
-									animate={{ width: g.ear, height: g.ear }}
+									animate={{ width: g.ear, height: g.earHeight }}
 									transition={transition}
 								/>
 								<motion.span
@@ -223,7 +232,7 @@ export function Island() {
 										background: `radial-gradient(ellipse farthest-side at 100% 100%, transparent 99%, ${tint} 100%)`,
 									}}
 									initial={false}
-									animate={{ width: g.ear, height: g.ear }}
+									animate={{ width: g.ear, height: g.earHeight }}
 									transition={transition}
 								/>
 							</>

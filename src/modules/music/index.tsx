@@ -9,7 +9,13 @@ import { useInstalledPlugins } from "../../core/plugins/registry";
 import { useSetting } from "../../core/settings";
 import type { IslandModule, ModuleView } from "../../core/types";
 import { Artwork } from "./components/Artwork";
-import { MusicCompactLeft, MusicCompactRight, MusicCover, MusicWaveform } from "./components/MusicCompact";
+import {
+	MusicCompactArtwork,
+	MusicCompactLeft,
+	MusicCompactRight,
+	MusicCover,
+	MusicWaveform,
+} from "./components/MusicCompact";
 import { MusicPanel } from "./components/MusicPanel";
 import { SpotifySettings } from "./components/SpotifySettings";
 import { useAccentColor } from "./hooks/useAccentColor";
@@ -34,6 +40,7 @@ export const musicModule: IslandModule = {
 			priority: music?.playing ? 50 : 10,
 			icon: <Artwork src={music?.thumbnail} size={22} radius={11} />,
 			compact: music && {
+				icon: <MusicCompactArtwork music={music} size={22} />,
 				left: macCompact ? <MusicCover music={music} /> : <MusicCompactLeft music={music} />,
 				right: macCompact ? (
 					<MusicWaveform music={music} accent={accent} showVisualizer={showVisualizer} />

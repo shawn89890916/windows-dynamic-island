@@ -47,6 +47,9 @@ export function useHitRects(blurEffect: string, roundedTop: boolean) {
 			const surface = shell?.querySelector<HTMLElement>("[data-island-surface]");
 			const bounds = surface?.getBoundingClientRect();
 			const ear = shell?.querySelector<HTMLElement>("[data-notch-ear]")?.getBoundingClientRect();
+			const [radiusX, radiusY = radiusX] = surface
+				? getComputedStyle(surface).borderBottomLeftRadius.split(" ").map(Number.parseFloat)
+				: [0];
 			const blurRect =
 				surface && bounds
 					? {
@@ -55,7 +58,8 @@ export function useHitRects(blurEffect: string, roundedTop: boolean) {
 							width: bounds.width,
 							height: bounds.height,
 							roundedTop,
-							radius: Number.parseFloat(getComputedStyle(surface).borderBottomLeftRadius),
+							radiusX,
+							radiusY,
 							earWidth: ear?.width ?? 0,
 							earHeight: ear?.height ?? 0,
 						}

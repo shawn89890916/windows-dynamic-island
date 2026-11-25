@@ -6,10 +6,21 @@ import { formatTime, type MusicState, useLivePosition } from "../hooks/useMusic"
 import { Artwork } from "./Artwork";
 import { Visualizer } from "./Visualizer";
 
+export function MusicCompactArtwork({ music, size }: { music: MusicState; size: number }) {
+	return (
+		<span
+			className="inline-flex shrink-0 motion-safe:animate-[spin_18s_linear_infinite]"
+			style={{ animationPlayState: music.playing ? "running" : "paused" }}
+		>
+			<Artwork src={music.thumbnail} size={size} radius={size / 2} trackKey={music.title} />
+		</span>
+	);
+}
+
 export function MusicCover({ music }: { music: MusicState }) {
 	return (
 		<>
-			<Artwork src={music.thumbnail} size={20} radius={5} trackKey={music.title} />
+			<MusicCompactArtwork music={music} size={20} />
 			<span className="sr-only">{[music.title, music.artist].filter(Boolean).join(" · ")}</span>
 		</>
 	);
@@ -35,7 +46,7 @@ export function MusicWaveform({
 export function MusicCompactLeft({ music }: { music: MusicState }) {
 	return (
 		<>
-			<Artwork src={music.thumbnail} size={24} radius={7} trackKey={music.title} />
+			<MusicCompactArtwork music={music} size={24} />
 			<AnimatePresence mode="popLayout" initial={false}>
 				<motion.div
 					key={`${music.title}|${music.artist}`}

@@ -240,7 +240,7 @@ export function topMarginSetting(style: IslandStyle): typeof positionSettings.to
 	return style === "windows" ? { ...positionSettings.topMargin, min: -16 } : positionSettings.topMargin;
 }
 
-/** Width and height of the island relative to their current style and state. */
+/** Width and height of the island while it is collapsed. */
 export const sizeSettings = {
 	width: {
 		key: "island.widthPercent",

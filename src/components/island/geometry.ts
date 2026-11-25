@@ -9,6 +9,11 @@ export interface Geo {
 	ear: number;
 }
 
+export interface FittedGeo extends Geo {
+	radiusY: number;
+	earHeight: number;
+}
+
 /** Everything that differs between the two looks (see `IslandStyle`). */
 export interface Variant {
 	idle: Geo;
@@ -24,7 +29,7 @@ export interface Variant {
 
 /** Hangs from the top edge, notch-like, with concave ears. */
 const DYNAMIC: Variant = {
-	idle: { width: 150, height: 8, radius: 8, ear: 6 },
+	idle: { width: 150, height: 8, radius: 10, ear: 6 },
 	compact: { width: 265, height: 38, radius: 19, ear: 10 },
 	expanded: { width: 560, height: 190, radius: 32, ear: 14 },
 	tabBar: 46,
@@ -56,6 +61,8 @@ export const MAC_CAMERA_BAND = 22;
 
 export const BUBBLE = 38;
 export const BUBBLE_GAP = 10;
+/** 32 px for the second task icon and its divider, plus the 4 px row gap. */
+export const SECONDARY_TASK_WIDTH = 36;
 /** Gap between ambient bubbles (px). */
 const AMBIENT_GAP = 8;
 
@@ -72,7 +79,6 @@ export function geometry(
 	primary: ModuleEntry | undefined,
 	macCompact = false,
 	macCompactWidth = MAC_COMPACT_WIDTH,
-	compactExtraWidth = 0,
 ): Geo {
 	switch (mode) {
 		case "hidden":
@@ -83,7 +89,7 @@ export function geometry(
 		case "compact":
 			return {
 				...v.compact,
-				width: macCompact ? macCompactWidth : (primary?.view.compact?.width ?? v.compact.width) + compactExtraWidth,
+				width: macCompact ? macCompactWidth : (primary?.view.compact?.width ?? v.compact.width),
 				radius: macCompact ? MAC_COMPACT_HEIGHT / 2 : v.compact.radius,
 				height: macCompact ? MAC_COMPACT_HEIGHT : v.compact.height,
 			};
@@ -105,23 +111,30 @@ export function fitGeometry(
 		maxWidth,
 		maxHeight,
 		attachedNotch,
+		extraWidth = 0,
 	}: {
 		widthPercent: number;
 		heightPercent: number;
 		maxWidth: number;
 		maxHeight: number;
 		attachedNotch: boolean;
+		extraWidth?: number;
 	},
-): Geo {
+): FittedGeo {
 	const heightScale = heightPercent / 100;
-	const width = Math.max(1, Math.min(maxWidth, Math.round((geo.width * widthPercent) / 100)));
+	const width = Math.max(1, Math.min(maxWidth, Math.round((geo.width * widthPercent) / 100) + extraWidth));
 	const height = Math.max(1, Math.min(maxHeight, Math.round(geo.height * heightScale)));
 	const ear = Math.min(geo.ear * heightScale, height);
+	// Keep room for the bottom curve when the notch is only a few pixels tall.
+	const earHeight = attachedNotch ? Math.min(ear, height / 2) : 0;
+	const radiusY = Math.min(geo.radius * heightScale, width / 2, height - earHeight);
 	return {
 		width,
 		height,
-		radius: Math.min(geo.radius * heightScale, width / 2, attachedNotch ? height - ear : height),
+		radius: geo.ear > 0 ? Math.min(geo.radius * heightScale, width / 2) : radiusY,
+		radiusY,
 		ear,
+		earHeight,
 	};
 }
 
@@ -131,12 +144,13 @@ export function ambientWidth(count: number) {
 }
 
 /** CSS corner radii: the notch-like look hangs from the top, so only its bottom is round. */
-export function cornerRadius(g: Geo, windows: boolean) {
-	const top = windows ? g.radius : 0;
+export function cornerRadius(g: FittedGeo, windows: boolean) {
+	const bottom = `${g.radius}px ${g.radiusY}px`;
+	const top = windows ? bottom : "0px 0px";
 	return {
 		borderTopLeftRadius: top,
 		borderTopRightRadius: top,
-		borderBottomLeftRadius: g.radius,
-		borderBottomRightRadius: g.radius,
+		borderBottomLeftRadius: bottom,
+		borderBottomRightRadius: bottom,
 	};
 }
