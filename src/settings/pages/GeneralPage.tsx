@@ -13,6 +13,7 @@ import {
 	readSetting,
 	setSetting,
 	sizeSettings,
+	taskCountSetting,
 } from "../../core/settings";
 import { Title } from "../components/Heading";
 import { Toggle, ToggleRow } from "../components/Toggle";
@@ -25,6 +26,21 @@ export function GeneralPage({ values }: { values: Record<string, unknown> }) {
 			<Card>
 				<LanguageRow value={readSetting(values, languageSetting)} />
 				<AutostartRow />
+				<Row as="label" label={t(taskCountSetting.label)} desc={t(taskCountSetting.description)}>
+					<Select
+						value={readNumberSetting(values, taskCountSetting)}
+						onChange={(event) => setSetting(taskCountSetting, Number(event.target.value))}
+					>
+						{Array.from({ length: taskCountSetting.max - taskCountSetting.min + 1 }, (_, index) => {
+							const count = taskCountSetting.min + index;
+							return (
+								<option key={count} value={count}>
+									{count}
+								</option>
+							);
+						})}
+					</Select>
+				</Row>
 				{Object.values(generalSettings).map((def) => (
 					<ToggleRow key={def.key} def={def} value={readSetting(values, def)} />
 				))}

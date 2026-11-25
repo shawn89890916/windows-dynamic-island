@@ -32,6 +32,7 @@ export function islandContent(
 	v: Variant,
 	macCompact = false,
 	navigation: TabNavigationOptions | null = null,
+	status: ReactNode = null,
 ): { key: string; node: ReactNode } {
 	const { mode, primary, focused } = ctl;
 	const windows = look.style === "windows";
@@ -75,6 +76,7 @@ export function islandContent(
 			node: (
 				<div className={cn("flex h-full flex-col px-5 pt-3.5 pb-4.5 overflow-hidden", v.tabsAtBottom && "pb-2")}>
 					{!v.tabsAtBottom && tabs}
+					{status && <div className="flex h-9 shrink-0 items-center justify-end">{status}</div>}
 					<Panel key={ctl.launcher ? "launcher" : focused?.module.id} duration={navigation?.fadeDurationMs ?? 0}>
 						{ctl.launcher ? <Launcher entries={ctl.entries} onSelect={ctl.setTab} /> : focused?.view.expanded}
 					</Panel>

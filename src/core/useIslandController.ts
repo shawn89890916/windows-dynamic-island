@@ -50,7 +50,7 @@ export function useIslandController(modules: IslandModule[]) {
 		onClose: tabMemory.onIslandClose,
 	});
 
-	const { primary, secondary } = useBusiest(entries);
+	const { activeTasks, primary, secondary } = useBusiest(entries);
 	const forceExpanded = forcedId !== null;
 	const enabled = useCallback((id: string) => entries.some((e) => e.module.id === id), [entries]);
 	const mode = islandMode({
@@ -146,6 +146,7 @@ export function useIslandController(modules: IslandModule[]) {
 
 	return {
 		entries,
+		activeTasks,
 		tabs,
 		reorderTabs,
 		launcher: mode === "expanded" && focusedId === LAUNCHER,
@@ -192,7 +193,7 @@ function useModuleEntries(builtinModules: IslandModule[], settings: Settings): M
 	);
 }
 
-/** The two active modules with the highest priority. */
+/** Active modules ordered by priority, with current entries for every task. */
 function useBusiest(entries: ModuleEntry[]) {
 	// biome-ignore lint/correctness/useExhaustiveDependencies: keyed on a signature so a new entries array with the same views keeps the memo
 	const active = useMemo(
@@ -201,7 +202,8 @@ function useBusiest(entries: ModuleEntry[]) {
 	);
 	// Looked up again so the views are this render's, not the memoized ones.
 	const fresh = (e?: ModuleEntry) => (e ? entries.find((x) => x.module.id === e.module.id) : undefined);
-	return { primary: fresh(active[0]), secondary: fresh(active[1]) };
+	const activeTasks = active.map((entry) => fresh(entry)).filter((entry): entry is ModuleEntry => Boolean(entry));
+	return { activeTasks, primary: activeTasks[0], secondary: activeTasks[1] };
 }
 
 /** Fullscreen apps hide the island. */

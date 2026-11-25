@@ -526,13 +526,13 @@ fn cursor_pos() -> Option<(f64, f64)> {
 }
 
 #[cfg(windows)]
-fn foreground_window() -> isize {
+pub(crate) fn foreground_window() -> isize {
     use windows::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
     unsafe { GetForegroundWindow().0 as isize }
 }
 
 #[cfg(not(windows))]
-fn foreground_window() -> isize {
+pub(crate) fn foreground_window() -> isize {
     0
 }
 
@@ -543,7 +543,7 @@ fn foreground_window() -> isize {
 /// goes missing, and on `force` (foreground change) so another topmost window
 /// that just got activated doesn't stay above it.
 #[cfg(windows)]
-fn ensure_topmost(win: &WebviewWindow, force: bool) {
+pub(crate) fn ensure_topmost(win: &WebviewWindow, force: bool) {
     use windows::Win32::Foundation::HWND;
     use windows::Win32::UI::WindowsAndMessaging::{
         GWL_EXSTYLE, GetWindowLongPtrW, HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOOWNERZORDER, SWP_NOSIZE,
@@ -572,7 +572,7 @@ fn ensure_topmost(win: &WebviewWindow, force: bool) {
 }
 
 #[cfg(not(windows))]
-fn ensure_topmost(_: &WebviewWindow, _: bool) {}
+pub(crate) fn ensure_topmost(_: &WebviewWindow, _: bool) {}
 
 /// The island is an overlay, not an app window: it must never look or act
 /// like one.
@@ -689,7 +689,7 @@ unsafe extern "system" fn overlay_proc(
 ///   taskbar, so they never match — but browsers in fullscreen stay flagged as
 ///   "maximized", which is why `IsZoomed` can't be used to rule them out.
 #[cfg(windows)]
-fn fullscreen_app_active(island: &WebviewWindow) -> bool {
+pub(crate) fn fullscreen_app_active(island: &WebviewWindow) -> bool {
     use windows::Win32::Foundation::{HWND, RECT};
     use windows::Win32::Graphics::Gdi::{GetMonitorInfoW, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST};
     use windows::Win32::UI::Shell::{
@@ -743,6 +743,6 @@ fn fullscreen_app_active(island: &WebviewWindow) -> bool {
 }
 
 #[cfg(not(windows))]
-fn fullscreen_app_active(_: &WebviewWindow) -> bool {
+pub(crate) fn fullscreen_app_active(_: &WebviewWindow) -> bool {
     false
 }

@@ -130,6 +130,15 @@ export const generalSettings = {
 	},
 } satisfies Record<string, SettingDef>;
 
+export const taskCountSetting = {
+	key: "island.taskCount",
+	label: "settings.taskCount.label",
+	description: "settings.taskCount.desc",
+	default: 1,
+	min: 1,
+	max: 8,
+} satisfies NumberSettingDef;
+
 /** Whether installed builds automatically check for and install updates. */
 export const updateSettings = {
 	automatic: {
