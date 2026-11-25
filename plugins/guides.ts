@@ -6,7 +6,7 @@ export const PLUGIN_GUIDES: Record<string, PluginGuide> = {
 		prerequisites: ["支持环形状态栏的 Windows 版灵动岛"],
 		steps: [
 			{ title: "安装并启用", desc: "在插件市场安装环形状态栏。" },
-			{ title: "选择显示内容", desc: "在插件配置中选择 Wi-Fi 信号或电池。" },
+			{ title: "查看组合状态", desc: "环形同时显示电量、Wi-Fi 连接和蜂窝信号；点击任务栏上的圆环可打开详细状态页。" },
 			{
 				title: "选择位置",
 				desc: "灵动岛模式在主岛右侧显示小球，刘海屏样式展开后显示。任务栏模式在主任务栏旁置顶，全屏时隐藏。",

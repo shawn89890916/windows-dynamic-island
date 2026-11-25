@@ -3,10 +3,11 @@ import type { PluginManifest } from "../src/core/plugins/types";
 export const MARKETPLACE_CATALOG: PluginManifest[] = [
 	{
 		id: "com.island.status-ring",
+		sdkVersion: 2,
 		name: "环形状态栏",
 		titleKey: "statusRing.name",
-		version: "1.0.0",
-		description: "用环形刻度显示 Windows 的 Wi-Fi 信号或电池电量，可放在灵动岛或任务栏旁。需要支持环形状态栏的主程序版本。",
+		version: "1.1.0",
+		description: "以 iPhone Duo 风格的组合圆环同时显示电量、Wi-Fi 与蜂窝信号，可放在灵动岛或任务栏。需要支持环形状态栏的主程序版本。",
 		author: { name: "Island Community" },
 		category: "system",
 		icon: "Activity",
@@ -22,17 +23,6 @@ export const MARKETPLACE_CATALOG: PluginManifest[] = [
 				options: [
 					{ label: "灵动岛", labelKey: "statusRing.island", value: "island" },
 					{ label: "任务栏旁", labelKey: "statusRing.taskbar", value: "taskbar" },
-				],
-			},
-			{
-				key: "metric",
-				label: "显示内容",
-				labelKey: "statusRing.metric",
-				type: "select",
-				default: "wifi",
-				options: [
-					{ label: "Wi-Fi 信号", labelKey: "statusRing.wifi", value: "wifi" },
-					{ label: "电池", labelKey: "statusRing.battery", value: "battery" },
 				],
 			},
 		],

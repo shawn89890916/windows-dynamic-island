@@ -1,20 +1,28 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { command, useTauriEvent } from "../../core/bridge";
 import { useSyncLocale } from "../../core/i18n";
-import type { StatusRingReading } from "../../core/plugins/statusRing";
+import {
+	normalizeStatusRingReading,
+	type StatusRingInput,
+	type StatusRingReading,
+} from "../../core/plugins/statusRing";
 import { StatusRing } from "./StatusRing";
 
 export function StatusRingTaskbar() {
 	const [reading, setReading] = useState<StatusRingReading | null>(null);
 	useSyncLocale();
-	useTauriEvent<StatusRingReading | null>("status-ring://changed", setReading);
+	const applyReading = useCallback(
+		(value: StatusRingInput | null) => setReading(value ? normalizeStatusRingReading(value) : null),
+		[],
+	);
+	useTauriEvent<StatusRingInput | null>("status-ring://changed", applyReading);
 	useEffect(() => {
 		let disposed = false;
 		let timer: ReturnType<typeof setTimeout>;
 		const refresh = async () => {
 			try {
-				const current = await command<StatusRingReading | null>("status_ring_taskbar");
-				if (!disposed) setReading(current);
+				const current = await command<StatusRingInput | null>("status_ring_taskbar");
+				if (!disposed) applyReading(current);
 			} catch (error) {
 				console.error("Could not read taskbar status ring:", error);
 			}
@@ -25,10 +33,13 @@ export function StatusRingTaskbar() {
 			disposed = true;
 			clearTimeout(timer);
 		};
-	}, []);
+	}, [applyReading]);
 	return reading ? (
-		<div className="grid size-full place-items-center rounded-full border border-white/12 bg-[#10131b]/95">
-			<StatusRing reading={reading} size={32} />
-		</div>
+		<StatusRing
+			reading={reading}
+			size={40}
+			className="size-full"
+			onClick={() => void command("status_ring_open_island")}
+		/>
 	) : null;
 }

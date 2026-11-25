@@ -72,6 +72,7 @@ export function geometry(
 	primary: ModuleEntry | undefined,
 	macCompact = false,
 	macCompactWidth = MAC_COMPACT_WIDTH,
+	compactExtraWidth = 0,
 ): Geo {
 	switch (mode) {
 		case "hidden":
@@ -82,7 +83,7 @@ export function geometry(
 		case "compact":
 			return {
 				...v.compact,
-				width: macCompact ? macCompactWidth : (primary?.view.compact?.width ?? v.compact.width),
+				width: macCompact ? macCompactWidth : (primary?.view.compact?.width ?? v.compact.width) + compactExtraWidth,
 				radius: macCompact ? MAC_COMPACT_HEIGHT / 2 : v.compact.radius,
 				height: macCompact ? MAC_COMPACT_HEIGHT : v.compact.height,
 			};

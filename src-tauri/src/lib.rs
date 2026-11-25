@@ -93,8 +93,11 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             providers::get_snapshot,
             status_ring::status_ring_read,
+            status_ring::status_ring_read_all,
             status_ring::status_ring_set_taskbar,
+            status_ring::status_ring_set_taskbar_all,
             status_ring::status_ring_taskbar,
+            status_ring::status_ring_open_island,
             providers::provider_action,
             window::set_hit_rects,
             window::set_dragging,

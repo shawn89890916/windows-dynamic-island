@@ -10,10 +10,12 @@
     placement: "Local de exibição",
     island: "Ilha",
     taskbar: "Ao lado da barra de tarefas",
-    metric: "Exibir status de",
     name: "Anel de status",
     wifi: "Sinal Wi-Fi",
     battery: "Bateria",
+    cellular: "Sinal de celular",
+    connected: "Conectado",
+    disconnected: "Desconectado",
     unknown: "Leitura indisponível",
     unavailable: "Sem conexão ou indisponível",
     charging: "Ligado à tomada",
@@ -49,7 +51,7 @@
     },
     taskCount: {
       label: "Quantidade de atividades visíveis",
-      desc: "A atividade de maior prioridade fica na ilha principal; cada tarefa adicional ganha sua própria ilha lateral. Defina 1 para ocultar as ilhas laterais.",
+      desc: "Defina o máximo de tarefas ativas visíveis. As duas primeiras ficam na ilha principal; as próximas aparecem em ilhas laterais.",
     },
     expandOnHover: {
       label: "Expandir ao passar o mouse",

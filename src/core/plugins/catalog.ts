@@ -33,7 +33,7 @@ export function refreshCatalog(): Promise<void> {
 				});
 		if (index.formatVersion !== 1 || !Array.isArray(index.plugins)) throw Error("插件目录格式无效");
 		MARKETPLACE_CATALOG = index.plugins.filter(
-			(p: PluginManifest) => p.id && p.sdkVersion === 1 && p.packageUrl && p.sha256,
+			(p: PluginManifest) => p.id && (p.sdkVersion === 1 || p.sdkVersion === 2) && p.packageUrl && p.sha256,
 		);
 		localStorage.setItem(CACHE, JSON.stringify(MARKETPLACE_CATALOG));
 	})()

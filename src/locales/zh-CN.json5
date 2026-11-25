@@ -11,10 +11,12 @@
     placement: "显示位置",
     island: "灵动岛",
     taskbar: "任务栏旁",
-    metric: "显示内容",
     name: "环形状态栏",
     wifi: "Wi-Fi 信号",
     battery: "电池",
+    cellular: "蜂窝信号",
+    connected: "已连接",
+    disconnected: "未连接",
     unknown: "无法读取数值",
     unavailable: "未连接或不可用",
     charging: "已接入电源",
@@ -52,7 +54,7 @@
     },
     taskCount: {
       label: "同时显示的任务数",
-      desc: "优先级最高的任务显示在主岛，其余任务依次显示为右侧分岛。设为 1 可隐藏分岛。",
+      desc: "设置最多显示的任务数。前两个任务同显在主岛，第三个起显示为右侧分岛。",
     },
     expandOnHover: {
       label: "悬停时展开",

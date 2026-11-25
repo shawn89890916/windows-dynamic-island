@@ -144,7 +144,7 @@ export function inspectPluginPackage(content: string): PluginPackage {
 	const pkg = JSON.parse(content) as PluginPackage;
 	if (
 		pkg.formatVersion !== 1 ||
-		pkg.manifest?.sdkVersion !== 1 ||
+		(pkg.manifest?.sdkVersion !== 1 && pkg.manifest?.sdkVersion !== 2) ||
 		!pkg.manifest?.id ||
 		!pkg.manifest?.version ||
 		!pkg.code
