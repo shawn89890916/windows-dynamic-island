@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { command, isTauri } from "./bridge";
 
-const PAD = 6;
+// Give Windows a generous native hit target around the toolbar. The overlay
+// must leave click-through mode before the pointer reaches the DOM controls.
+const PAD = 16;
 
 /**
  * Keeps the backend informed about which parts of the transparent window are
@@ -18,11 +20,13 @@ export function useHitRects(blurEffect: string, roundedTop: boolean, radius: num
 			raf = requestAnimationFrame(tick);
 			const rects = Array.from(document.querySelectorAll<HTMLElement>("[data-hit]")).map((el) => {
 				const r = el.getBoundingClientRect();
+				const x = Math.floor(r.left - PAD);
+				const y = Math.floor(Math.max(0, r.top - PAD));
 				return {
-					x: Math.round(r.left - PAD),
-					y: Math.round(Math.max(0, r.top - PAD)),
-					width: Math.round(r.width + PAD * 2),
-					height: Math.round(r.height + PAD * 2),
+					x,
+					y,
+					width: Math.ceil(r.right + PAD) - x,
+					height: Math.ceil(r.bottom + PAD) - y,
 					moduleId: el.dataset.hitModule || null,
 				};
 			});
