@@ -104,7 +104,7 @@
     },
     topMargin: {
       label: "Top vertical offset",
-      desc: "Adds space above the island. The island automatically clears a top taskbar.",
+      desc: "Adds space between the top edge of the screen and the island.",
     },
     about: {
       title: "About",

@@ -117,15 +117,11 @@ fn target(app: &AppHandle, win: &WebviewWindow) -> Option<Monitor> {
     Some(screens.swap_remove(preferred).monitor)
 }
 
-/// Keep the island below a taskbar or app bar that reserves the top of the monitor.
+/// Stretch the overlay across the physical top edge, including any taskbar there.
 fn strip_rect(monitor: &Monitor) -> (PhysicalPosition<i32>, PhysicalSize<u32>) {
-    let mut position = *monitor.position();
     let size = monitor.size();
-    let top_inset = (monitor.work_area().position.y - position.y).max(0) as u32;
-    let top_inset = top_inset.min(size.height.saturating_sub(1));
-    position.y += top_inset as i32;
     let height = (STRIP_HEIGHT * monitor.scale_factor()).round() as u32;
-    (position, PhysicalSize::new(size.width, height.min(size.height - top_inset)))
+    (*monitor.position(), PhysicalSize::new(size.width, height.min(size.height)))
 }
 
 fn apply(win: &WebviewWindow, monitor: &Monitor) -> tauri::Result<()> {

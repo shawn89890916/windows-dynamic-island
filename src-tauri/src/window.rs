@@ -282,9 +282,10 @@ pub fn spawn_hit_test(app: AppHandle) {
                 continue;
             };
 
-            // Fullscreen check is cheaper to run a few times per second.
+            // Poll native window state less often than cursor position.
             let mut fullscreen_left = false;
-            if tick.is_multiple_of(12) {
+            let poll_window_state = tick.is_multiple_of(12);
+            if poll_window_state {
                 hide_in_fullscreen = app
                     .state::<crate::settings::Settings>()
                     .get("island.hideInFullscreen")
@@ -312,10 +313,16 @@ pub fn spawn_hit_test(app: AppHandle) {
             let visible = island_interactive || mac_camera_visible;
             let visibility_changed = visible != was_visible;
             was_visible = visible;
-            // Keep the island's topmost state while settings is open, but do
-            // not reorder it above the settings window on foreground changes.
-            if visible && !crate::settings::is_open() {
-                ensure_topmost(&win, fg_changed || fullscreen_left || visibility_changed);
+            if visible {
+                // Explorer can raise the taskbar without changing the foreground window.
+                let taskbar_above = poll_window_state && top_taskbar_above(&win);
+                // Keep the taskbar overlay visible even when our settings window is open.
+                if taskbar_above || !crate::settings::is_open() {
+                    ensure_topmost(
+                        &win,
+                        fg_changed || fullscreen_left || visibility_changed || taskbar_above,
+                    );
+                }
             }
 
             let dragging = app.state::<DragState>().0.load(Ordering::Relaxed);
@@ -536,6 +543,66 @@ pub(crate) fn foreground_window() -> isize {
     0
 }
 
+/// Check the actual Z order: both Explorer's taskbar and the island can be topmost.
+#[cfg(windows)]
+fn top_taskbar_above(win: &WebviewWindow) -> bool {
+    use windows::Win32::Foundation::{HWND, RECT};
+    use windows::Win32::Graphics::Gdi::{
+        GetMonitorInfoW, MONITOR_DEFAULTTONULL, MONITORINFO, MonitorFromWindow,
+    };
+    use windows::Win32::UI::WindowsAndMessaging::{
+        GW_HWNDPREV, GetClassNameW, GetWindow, GetWindowRect, IsWindowVisible,
+    };
+
+    let Ok(hwnd) = win.hwnd() else {
+        return false;
+    };
+    let mut current = HWND(hwnd.0);
+    unsafe {
+        let monitor = MonitorFromWindow(current, MONITOR_DEFAULTTONULL);
+        let mut info = MONITORINFO {
+            cbSize: size_of::<MONITORINFO>() as u32,
+            ..Default::default()
+        };
+        if monitor.is_invalid() || !GetMonitorInfoW(monitor, &mut info).as_bool() {
+            return false;
+        }
+        let screen = info.rcMonitor;
+        // Bound the walk in case windows are moved or destroyed during the scan.
+        for _ in 0..128 {
+            let Ok(previous) = GetWindow(current, GW_HWNDPREV) else {
+                break;
+            };
+            current = previous;
+            let mut class = [0u16; 32];
+            let len = GetClassNameW(current, &mut class) as usize;
+            let class = &class[..len];
+            let primary = windows::core::w!("Shell_TrayWnd");
+            let secondary = windows::core::w!("Shell_SecondaryTrayWnd");
+            if class != primary.as_wide() && class != secondary.as_wide() {
+                continue;
+            }
+            let mut bounds = RECT::default();
+            if IsWindowVisible(current).as_bool()
+                && GetWindowRect(current, &mut bounds).is_ok()
+                && bounds.left < screen.right
+                && bounds.right > screen.left
+                && bounds.top <= screen.top
+                && bounds.bottom > screen.top
+                && bounds.right - bounds.left > bounds.bottom - bounds.top
+            {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+#[cfg(not(windows))]
+fn top_taskbar_above(_: &WebviewWindow) -> bool {
+    false
+}
+
 /// `alwaysOnTop` is only applied once at creation, and Windows can drop the
 /// island out of the topmost band afterwards (typically right after boot, when
 /// autostart runs before the shell settles): it then sits under whatever app
@@ -546,7 +613,7 @@ pub(crate) fn foreground_window() -> isize {
 pub(crate) fn ensure_topmost(win: &WebviewWindow, force: bool) {
     use windows::Win32::Foundation::HWND;
     use windows::Win32::UI::WindowsAndMessaging::{
-        GWL_EXSTYLE, GetWindowLongPtrW, HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOOWNERZORDER, SWP_NOSIZE,
+        GWL_EXSTYLE, GetWindowLongPtrW, HWND_TOP, HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOOWNERZORDER, SWP_NOSIZE,
         SetWindowPos, WS_EX_TOPMOST,
     };
 
@@ -559,15 +626,18 @@ pub(crate) fn ensure_topmost(win: &WebviewWindow, force: bool) {
         if topmost && !force {
             return;
         }
-        let _ = SetWindowPos(
+        let raised = SetWindowPos(
             hwnd,
-            Some(HWND_TOPMOST),
+            Some(if topmost { HWND_TOP } else { HWND_TOPMOST }),
             0,
             0,
             0,
             0,
             SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER,
         );
+        if raised.is_ok() && win.label() == ISLAND_LABEL {
+            crate::blur::restack(win);
+        }
     }
 }
 

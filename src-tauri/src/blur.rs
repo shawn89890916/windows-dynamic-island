@@ -39,6 +39,12 @@ pub fn set_outgoing_drag(active: bool) {
     native::set_outgoing_drag(active);
 }
 
+#[cfg(windows)]
+pub fn restack(win: &tauri::WebviewWindow) {
+    let island = win.clone();
+    let _ = win.run_on_main_thread(move || native::restack(&island));
+}
+
 #[tauri::command]
 pub fn set_blur_rect(app: AppHandle, rect: Option<BlurRect>, effect: String) -> Result<(), String> {
     #[cfg(windows)]

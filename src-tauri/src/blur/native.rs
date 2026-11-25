@@ -4,7 +4,7 @@ use super::{
     shape::{BackdropShape, create_factory},
 };
 use std::{cell::RefCell, ffi::c_void};
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, WebviewWindow};
 use windows::{
     Graphics::Effects::IGraphicsEffect,
     System::{DispatcherQueue, DispatcherQueueController},
@@ -72,6 +72,31 @@ pub fn set_outgoing_drag(active: bool) {
                 } else if backdrop.wanted_visible {
                     let _ = ShowWindow(backdrop.hwnd, SW_SHOWNA);
                 }
+            }
+        }
+    });
+}
+
+pub fn restack(island: &WebviewWindow) {
+    let Ok(hwnd) = island.hwnd() else {
+        return;
+    };
+    BACKDROP.with(|slot| {
+        if let Some(backdrop) = slot.borrow().as_ref()
+            && backdrop.wanted_visible
+            && !backdrop.drag_hidden
+        {
+            // Keep the blurred taskbar pixels between the island and the taskbar.
+            unsafe {
+                let _ = SetWindowPos(
+                    backdrop.hwnd,
+                    Some(HWND(hwnd.0)),
+                    0,
+                    0,
+                    0,
+                    0,
+                    SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER,
+                );
             }
         }
     });
