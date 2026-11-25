@@ -8,7 +8,6 @@ const rim = tv({
 	variants: {
 		classic: { true: "bg-white/9" },
 		animated: { true: "animate-rim-spin" },
-		openTop: { true: "[clip-path:inset(var(--rim-w)_0_0_0)]" },
 	},
 });
 
@@ -26,8 +25,16 @@ export function RimRing({
 }) {
 	return (
 		<span
-			className={rim({ classic: !background, animated: !!background && animate, openTop })}
-			style={{ "--rim-bg": background, "--rim-w": `${width}px` } as CSSProperties}
+			className={rim({ classic: !background, animated: !!background && animate })}
+			style={
+				{
+					"--rim-bg": background,
+					"--rim-w": `${width}px`,
+					clipPath: openTop
+						? "polygon(0 0, var(--rim-w) 0, var(--rim-w) var(--rim-w), calc(100% - var(--rim-w)) var(--rim-w), calc(100% - var(--rim-w)) 0, 100% 0, 100% 100%, 0 100%)"
+						: undefined,
+				} as CSSProperties
+			}
 		/>
 	);
 }

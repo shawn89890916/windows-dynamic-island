@@ -172,7 +172,7 @@ export function Island() {
 		[mode, ctl.tab, ctl.expand, ctl.collapse, ctl.keepOpen],
 	);
 
-	const rim = !macCompact ? <Rim look={look} openTop={!windows} /> : null;
+	const rim = !macCompact && big ? <Rim look={look} openTop={!windows} /> : null;
 	const bubble = { transition: v.shellSpring, rim, onOpen: ctl.expand };
 
 	return (
