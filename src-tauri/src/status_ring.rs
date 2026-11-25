@@ -157,10 +157,10 @@ pub fn status_ring_set_taskbar(
     if window.label() != crate::window::ISLAND_LABEL {
         return;
     }
-    if let Some(reading) = reading.as_mut() {
-        if let Some(percent) = reading.percent.as_mut() {
-            *percent = (*percent).min(100);
-        }
+    if let Some(reading) = reading.as_mut()
+        && let Some(percent) = reading.percent.as_mut()
+    {
+        *percent = (*percent).min(100);
     }
     update_taskbar_reading(&state, reading.map(TaskbarReading::Legacy));
 }
@@ -174,16 +174,20 @@ pub fn status_ring_set_taskbar_all(
     if window.label() != crate::window::ISLAND_LABEL {
         return;
     }
-    if let Some(reading) = reading.as_mut() {
-        if let Some(percent) = reading.battery_percent.as_mut() {
-            *percent = (*percent).min(100);
-        }
-        if let Some(bars) = reading.wifi_signal_bars.as_mut() {
-            *bars = (*bars).min(5);
-        }
-        if let Some(bars) = reading.cellular_signal_bars.as_mut() {
-            *bars = (*bars).min(5);
-        }
+    if let Some(reading) = reading.as_mut()
+        && let Some(percent) = reading.battery_percent.as_mut()
+    {
+        *percent = (*percent).min(100);
+    }
+    if let Some(reading) = reading.as_mut()
+        && let Some(bars) = reading.wifi_signal_bars.as_mut()
+    {
+        *bars = (*bars).min(5);
+    }
+    if let Some(reading) = reading.as_mut()
+        && let Some(bars) = reading.cellular_signal_bars.as_mut()
+    {
+        *bars = (*bars).min(5);
     }
     update_taskbar_reading(&state, reading.map(TaskbarReading::Combined));
 }
