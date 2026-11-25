@@ -3,7 +3,10 @@ import { Card, Row } from "../../components/ui/card";
 import { NumberField, Select } from "../../components/ui/form";
 import { command, isTauri } from "../../core/bridge";
 import { type LanguagePref, languageSetting, locales, systemLocale, useT } from "../../core/i18n";
+import { macAppearanceEnabled } from "../../core/plugins/appearancePlugin";
+import { useInstalledPlugins } from "../../core/plugins/registry";
 import {
+	appearanceSettings,
 	generalSettings,
 	monitorSettings,
 	type NumberSettingDef,
@@ -14,12 +17,16 @@ import {
 	setSetting,
 	sizeSettings,
 	taskCountSetting,
+	topMarginSetting,
 } from "../../core/settings";
 import { Title } from "../components/Heading";
 import { Toggle, ToggleRow } from "../components/Toggle";
 
 export function GeneralPage({ values }: { values: Record<string, unknown> }) {
 	const t = useT();
+	const plugins = useInstalledPlugins();
+	const style = macAppearanceEnabled(plugins) ? "windows" : readSetting(values, appearanceSettings.style);
+	const topMargin = topMarginSetting(style);
 	return (
 		<>
 			<Title>{t("settings.general")}</Title>
@@ -53,7 +60,7 @@ export function GeneralPage({ values }: { values: Record<string, unknown> }) {
 				<NumberSettingRow def={sizeSettings.width} value={readNumberSetting(values, sizeSettings.width)} unit="%" />
 				<NumberSettingRow def={sizeSettings.height} value={readNumberSetting(values, sizeSettings.height)} unit="%" />
 				<NumberSettingRow def={positionSettings.horizontalOffset} value={readHorizontalOffset(values)} unit="px" />
-				<TopMarginRow value={readNumberSetting(values, positionSettings.topMargin)} />
+				<TopMarginRow def={topMargin} value={readNumberSetting(values, topMargin)} />
 				<ToggleRow def={positionSettings.returnToCenter} value={readSetting(values, positionSettings.returnToCenter)} />
 				<NumberSettingRow
 					def={positionSettings.returnDelay}
@@ -202,14 +209,13 @@ function NumberSettingRow({
 	);
 }
 
-function TopMarginRow({ value }: { value: number }) {
+function TopMarginRow({ def, value }: { def: ReturnType<typeof topMarginSetting>; value: number }) {
 	const t = useT();
-	const def = positionSettings.topMargin;
 	const [draft, setDraft] = useState(String(value));
 	useEffect(() => setDraft(String(value)), [value]);
 	const commit = (num?: number) => {
-		const n = num ?? Math.round(Number(draft));
-		if (Number.isFinite(n) && n >= 0 && n <= 240) {
+		const n = num ?? Math.round(Number.parseFloat(draft));
+		if (Number.isFinite(n) && n >= def.min && n <= def.max) {
 			setSetting(def, n);
 			setDraft(String(n));
 		} else {
@@ -247,9 +253,9 @@ function TopMarginRow({ value }: { value: number }) {
 				</div>
 				<NumberField
 					unit="px"
-					min={0}
-					max={240}
-					step={2}
+					min={def.min}
+					max={def.max}
+					step={def.step}
 					value={draft}
 					onChange={(e) => setDraft(e.target.value)}
 					onBlur={() => commit()}

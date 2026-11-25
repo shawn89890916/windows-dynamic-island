@@ -27,7 +27,7 @@ use windows::{
     },
     core::{BOOL, Interface, Result, s, w},
 };
-use windows_numerics::Vector2;
+use windows_numerics::{Vector2, Vector3};
 
 thread_local! {
     static BACKDROP: RefCell<Option<Backdrop>> = const { RefCell::new(None) };
@@ -240,6 +240,18 @@ impl Backdrop {
         let scale = island.scale_factor().unwrap_or(1.0);
         let origin = island.outer_position().unwrap_or_default();
         let shape = BackdropShape::from_rect(&rect, scale);
+        let y = (rect.y * scale).round() as i32;
+        // Match the WebView's top clipping, including when there is a monitor above it.
+        let clipped_top = y.saturating_neg().max(0);
+        if clipped_top as f32 >= shape.height {
+            self.hide();
+            return Ok(());
+        }
+        self.visual.SetOffset(Vector3 {
+            X: 0.0,
+            Y: -(clipped_top as f32),
+            Z: 0.0,
+        })?;
         if self.shape != Some(shape) {
             self.geometry.SetPath(&shape.composition_path(&self.factory)?)?;
             self.visual.SetSize(Vector2 {
@@ -274,9 +286,9 @@ impl Backdrop {
                 self.hwnd,
                 Some(HWND(hwnd.0)),
                 origin.x + (rect.x * scale).round() as i32 - shape.ear_width as i32,
-                origin.y + (rect.y * scale).round() as i32,
+                origin.y + y.max(0),
                 shape.total_width().ceil() as i32,
-                shape.height.ceil() as i32,
+                shape.height.ceil() as i32 - clipped_top,
                 SWP_NOACTIVATE | SWP_NOOWNERZORDER | visibility,
             )?;
         }

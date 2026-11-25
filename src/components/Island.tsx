@@ -9,7 +9,7 @@ import { macAppearanceEnabled } from "../core/plugins/appearancePlugin";
 import { useInstalledPlugins } from "../core/plugins/registry";
 import { PluginBackgrounds } from "../core/plugins/runtime";
 import { islandStatusRing, STATUS_RING_PLUGIN } from "../core/plugins/statusRing";
-import { positionSettings, readNumberSetting, sizeSettings, taskCountSetting, useSettings } from "../core/settings";
+import { readNumberSetting, sizeSettings, taskCountSetting, topMarginSetting, useSettings } from "../core/settings";
 import { moduleShortcutFocus } from "../core/shortcuts";
 import { useHitRects } from "../core/useHitRects";
 import { useIslandController } from "../core/useIslandController";
@@ -51,7 +51,7 @@ export function Island() {
 	const islandLook = glassPluginEnabled && !macCompact ? look : { ...look, blurEffect: "none" as const };
 	const tint = surfaceTint(islandLook.blurEffect);
 	const s = useSettings();
-	const topMargin = readNumberSetting(s, positionSettings.topMargin);
+	const topMargin = readNumberSetting(s, topMarginSetting(look.style));
 	const windows = look.style === "windows";
 	const v = variantOf(look);
 	const effectiveTop = Math.min(v.top + topMargin, Math.max(0, viewport.height - 64));

@@ -235,6 +235,11 @@ export const positionSettings = {
 	} satisfies NumberSettingDef,
 };
 
+/** Leave the floating island reachable even at the smallest supported size. */
+export function topMarginSetting(style: IslandStyle): typeof positionSettings.topMargin {
+	return style === "windows" ? { ...positionSettings.topMargin, min: -16 } : positionSettings.topMargin;
+}
+
 /** Width and height of the island relative to their current style and state. */
 export const sizeSettings = {
 	width: {

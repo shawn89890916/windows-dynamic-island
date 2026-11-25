@@ -104,7 +104,7 @@
     },
     topMargin: {
       label: "Top vertical offset",
-      desc: "Adds space between the top edge of the screen and the island.",
+      desc: "Adjusts the island’s distance from the top of the screen. In Windows Island mode, negative values move it up.",
     },
     about: {
       title: "About",
