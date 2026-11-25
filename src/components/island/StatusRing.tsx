@@ -35,6 +35,7 @@ function RingVisual({ reading, size }: { reading: StatusRingReading; size: numbe
 		batteryPercent !== null && batteryPercent <= 20 ? "#fb7185" : reading.charging ? "#86efac" : "#8dd7ff";
 	const signalBars = reading.cellularSignalBars === null ? 0 : Math.ceil((reading.cellularSignalBars * 4) / 5);
 	const dots = [14, 18, 22, 26];
+	const batteryArc = batteryPercent === null ? 0 : (Math.max(0, Math.min(100, batteryPercent)) * 80) / 100;
 	return (
 		<svg
 			viewBox="0 0 40 40"
@@ -43,8 +44,20 @@ function RingVisual({ reading, size }: { reading: StatusRingReading; size: numbe
 			className="block shrink-0 overflow-visible text-[var(--text)]"
 			aria-hidden="true"
 		>
-			<circle cx="20" cy="20" r="17.5" fill="none" stroke="currentColor" strokeOpacity=".2" strokeWidth="2.4" />
-			{batteryPercent !== null && (
+			<circle
+				cx="20"
+				cy="20"
+				r="17.5"
+				fill="none"
+				pathLength="100"
+				stroke="currentColor"
+				strokeOpacity=".2"
+				strokeWidth="2.4"
+				strokeDasharray="80 20"
+				strokeLinecap="round"
+				transform="rotate(126 20 20)"
+			/>
+			{batteryArc > 0 && (
 				<circle
 					cx="20"
 					cy="20"
@@ -54,8 +67,8 @@ function RingVisual({ reading, size }: { reading: StatusRingReading; size: numbe
 					stroke={batteryColor}
 					strokeWidth="2.8"
 					strokeLinecap="round"
-					strokeDasharray={`${Math.max(0, Math.min(100, batteryPercent))} 100`}
-					transform="rotate(-90 20 20)"
+					strokeDasharray={`${batteryArc} 100`}
+					transform="rotate(126 20 20)"
 					style={{ transition: "stroke-dasharray 550ms cubic-bezier(.2,.8,.2,1), stroke 300ms ease" }}
 				/>
 			)}
@@ -78,8 +91,8 @@ function RingVisual({ reading, size }: { reading: StatusRingReading; size: numbe
 				<circle
 					key={x}
 					cx={x}
-					cy="31.8"
-					r="1.25"
+					cy="34"
+					r="1.15"
 					fill={index < signalBars ? "#8dd7ff" : "currentColor"}
 					opacity={index < signalBars ? 1 : 0.22}
 					style={{ transition: "fill 240ms ease, opacity 240ms ease" }}
