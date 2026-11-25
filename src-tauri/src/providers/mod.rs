@@ -15,6 +15,7 @@ pub mod ask;
 pub mod claude;
 pub mod calendar;
 pub mod clipboard;
+mod clock;
 pub mod codex;
 pub mod credentials;
 pub mod find;
@@ -63,6 +64,7 @@ pub fn registry() -> Vec<Arc<dyn Provider>> {
         Arc::new(github::GithubProvider::default()),
         Arc::new(monitor::MonitorProvider::default()),
         Arc::new(calendar::CalendarProvider::default()),
+        Arc::new(clock::ClockProvider),
         Arc::new(shortcuts::ShortcutsProvider::default()),
     ]
 }

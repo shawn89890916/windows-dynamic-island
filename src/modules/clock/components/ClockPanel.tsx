@@ -1,4 +1,4 @@
-import { CircleIcon, LoaderCircleIcon, PlusIcon, RefreshCwIcon, SlidersIcon } from "lucide-react";
+import { CircleIcon, LoaderCircleIcon, PlusIcon, RefreshCwIcon, SlidersIcon, TimerIcon } from "lucide-react";
 import { useEffect, useMemo, useState, type WheelEvent } from "react";
 import navopathLogo from "../../../assets/navopath.png";
 import { command } from "../../../core/bridge";
@@ -55,7 +55,15 @@ const openLink = (url: string | null) => {
 };
 
 /** Clock, the focused day's events, and the month with a dot per calendar on busy days. */
-export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; highlight?: string }) {
+export function ClockPanel({
+	calendar,
+	highlight,
+	timer,
+}: {
+	calendar?: CalendarState;
+	highlight?: string;
+	timer?: string | null;
+}) {
 	const t = useT();
 	const locale = useLocale();
 	const { keepOpen } = useIsland();
@@ -255,6 +263,19 @@ export function ClockPanel({ calendar, highlight }: { calendar?: CalendarState; 
 						</span>
 					</div>
 				</div>
+
+				{timer && (
+					<button
+						type="button"
+						className="flex w-fit shrink-0 items-center gap-2 rounded-lg bg-white/6 px-2 py-1 text-xs text-warn hover:bg-white/10"
+						aria-label={t("clock.openTimer", { time: timer })}
+						onClick={() => void command("open_external", { url: "ms-clock:" }).catch(console.error)}
+					>
+						<TimerIcon size={14} />
+						<span>{t("clock.timer")}</span>
+						<span className="font-semibold tabular-nums">{timer}</span>
+					</button>
+				)}
 
 				{/* Center Content: NavoPath Tasks OR Calendar Events */}
 				{activeTab === "navopath" && navopathEnabled ? (

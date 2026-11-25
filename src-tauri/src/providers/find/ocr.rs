@@ -66,6 +66,12 @@ fn bitmap(bgra: &[u8], width: u32, height: u32) -> windows::core::Result<Softwar
     SoftwareBitmap::CreateCopyFromBuffer(&writer.DetachBuffer()?, BitmapPixelFormat::Bgra8, width as i32, height as i32)
 }
 
+/// Read a single picture which already fits within the engine's image limit.
+pub(crate) fn recognize(engine: &OcrEngine, image: &Image) -> windows::core::Result<windows::Media::Ocr::OcrResult> {
+    let picture = bitmap(&image.bgra, image.width, image.height)?;
+    engine.RecognizeAsync(&picture)?.join()
+}
+
 /// Reads every monitor's picture; lines come back in reading order. Fails
 /// with `noOcr` (no OCR for the profile's languages) or `failed` (nothing
 /// could be read).
@@ -117,8 +123,7 @@ fn read_tile(
     let Some(tile) = shot.image.crop(tx.start as i32, ty.start as i32, tx.size as i32, ty.size as i32) else {
         return Ok(());
     };
-    let picture = bitmap(&tile.bgra, tile.width, tile.height)?;
-    let result = engine.RecognizeAsync(&picture)?.join()?;
+    let result = recognize(engine, &tile)?;
     for line in result.Lines()? {
         let mut words = Vec::new();
         for word in line.Words()? {

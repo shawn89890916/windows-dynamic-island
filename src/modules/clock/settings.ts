@@ -1,5 +1,12 @@
 import type { SettingDef } from "../../core/settings";
 
+export const windowsTimerSetting: SettingDef = {
+	key: "clock.windowsTimer",
+	label: "clock.windowsTimer.label",
+	description: "clock.windowsTimer.desc",
+	default: false,
+};
+
 export const calendarSettings = {
 	remind: {
 		key: "calendar.remind",

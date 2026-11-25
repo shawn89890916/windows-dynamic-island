@@ -1,4 +1,4 @@
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, TimerIcon } from "lucide-react";
 /**
  * Clock — the time, and a month calendar to look up dates, as a tab of the
  * open island. (In the Windows Island style the resting pill also shows the
@@ -19,11 +19,24 @@ import { useNow } from "../ai-agents/common/format";
 import { CalendarSettings } from "./components/CalendarSettings";
 import { ClockPanel } from "./components/ClockPanel";
 import { dueReminder, type LeadsOf, reminderSoon } from "./events";
-import { calendarSettings, eventReminders, leadList, navopathSettings, remindMinutes, remindSound } from "./settings";
+import {
+	calendarSettings,
+	eventReminders,
+	leadList,
+	navopathSettings,
+	remindMinutes,
+	remindSound,
+	windowsTimerSetting,
+} from "./settings";
 import { CALENDAR_PROVIDER, type CalEvent, type CalendarState, CLOCK_RED } from "./types";
 
 /** Panel height with the day's event list under the date. */
 const HEIGHT_WITH_EVENTS = 236;
+
+function countdownText(seconds: number) {
+	const parts = [Math.floor(seconds / 3600), Math.floor(seconds / 60) % 60, seconds % 60];
+	return (parts[0] ? parts : parts.slice(1)).map((part) => String(part).padStart(2, "0")).join(":");
+}
 
 function ReminderLeft({ event, color }: { event: CalEvent; color: string }) {
 	const t = useT();
@@ -59,10 +72,14 @@ export const clockModule: IslandModule = {
 	id: "clock",
 	title: "clock.title",
 	settingsIcon: <CalendarIcon size={14} />,
-	settings: [calendarSettings.remind, navopathSettings.enabled],
+	settings: [windowsTimerSetting, calendarSettings.remind, navopathSettings.enabled],
 	SettingsSection: CalendarSettings,
 	useView(): ModuleView {
 		const calendar = useProvider<CalendarState>(CALENDAR_PROVIDER);
+		const windowsTimerEnabled = useSetting(windowsTimerSetting);
+		const windowsTimer = useProvider<{ seconds: number } | null>("windows-clock");
+		const timer = windowsTimerEnabled && windowsTimer ? countdownText(windowsTimer.seconds) : null;
+		const t = useT();
 		const remind = useSetting(calendarSettings.remind);
 		const minutes = useSetting(remindMinutes);
 		const ownReminders = useSetting(eventReminders);
@@ -92,17 +109,38 @@ export const clockModule: IslandModule = {
 		}, [activityKey, sound]);
 
 		return {
-			active: !!due,
+			active: !!due || timer !== null,
 			// A meeting about to start beats music, under Ask Claude and the system alerts.
-			priority: 55,
+			priority: timer !== null ? 65 : 55,
 			accent: CLOCK_RED,
 			icon: <CalendarIcon size={14} />,
-			compact: due && {
-				left: <ReminderLeft event={due} color={color} />,
-				right: <ReminderRight event={due} now={now} color={color} />,
-				width: 320,
-			},
-			expanded: <ClockPanel calendar={calendar} highlight={due?.id} />,
+			compact:
+				timer !== null
+					? {
+							left: (
+								<>
+									<TimerIcon size={16} className="shrink-0 text-warn" />
+									<span className="truncate text-[13px] font-semibold">{t("clock.timer")}</span>
+								</>
+							),
+							right: (
+								<span
+									role="timer"
+									aria-label={t("clock.remaining", { time: timer })}
+									className="text-[12px] font-semibold tabular-nums text-warn"
+								>
+									{timer}
+								</span>
+							),
+							icon: <TimerIcon size={16} className="text-warn" />,
+							width: 200,
+						}
+					: due && {
+							left: <ReminderLeft event={due} color={color} />,
+							right: <ReminderRight event={due} now={now} color={color} />,
+							width: 320,
+						},
+			expanded: <ClockPanel calendar={calendar} highlight={due?.id} timer={timer} />,
 			expandedSize: { width: 580, height: HEIGHT_WITH_EVENTS },
 			// Peeks at each reminder, and again when the event starts.
 			activityKey,
