@@ -139,6 +139,16 @@ export const taskCountSetting = {
 	max: 8,
 } satisfies NumberSettingDef;
 
+/** Number of active tasks shown together in the main island before side bubbles begin. */
+export const mainTaskCountSetting = {
+	key: "island.mainTaskCount",
+	label: "settings.mainTaskCount.label",
+	description: "settings.mainTaskCount.desc",
+	default: 2,
+	min: 1,
+	max: 2,
+} satisfies NumberSettingDef;
+
 /** Whether installed builds automatically check for and install updates. */
 export const updateSettings = {
 	automatic: {

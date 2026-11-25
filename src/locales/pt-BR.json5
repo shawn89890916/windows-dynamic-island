@@ -51,7 +51,13 @@
     },
     taskCount: {
       label: "Quantidade de atividades visíveis",
-      desc: "Defina o máximo de tarefas ativas visíveis. As duas primeiras ficam na ilha principal; as próximas aparecem em ilhas laterais.",
+      desc: "Defina o número máximo de atividades ativas exibidas.",
+    },
+    mainTaskCount: {
+      label: "Atividades na ilha principal",
+      desc: "Escolha quantas atividades ficam juntas na ilha principal. Cada ajuste mostra uma prévia breve.",
+      optionSingle: "Uma junta; depois, ilhas laterais",
+      optionPair: "Duas juntas; depois, ilhas laterais",
     },
     expandOnHover: {
       label: "Expandir ao passar o mouse",
@@ -876,7 +882,7 @@
     windowsOnly: "Disponível no estilo Windows Island.",
     border: {
       label: "Borda",
-      desc: "A ilha continua preta; só a borda muda de cor.",
+      desc: "Escolha uma borda colorida para os dois estilos. O entalhe mantém a borda superior aberta quando recolhido ou expandido.",
     },
     preset: {
       none: "Clássica",
@@ -887,6 +893,11 @@
       claude: "Claude",
       neon: "Neon",
       mono: "Prata",
+      cottonCandy: "Algodão-doce",
+      forest: "Floresta",
+      ice: "Gelo",
+      ember: "Brasa",
+      citrus: "Cítrico",
       custom: "Personalizada",
     },
     custom: {

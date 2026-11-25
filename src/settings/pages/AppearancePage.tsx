@@ -57,7 +57,7 @@ export function AppearancePage({ values }: { values: Record<string, unknown> }) 
 								)}
 								onClick={() => setSetting(appearanceSettings.style, s.id)}
 							>
-								<StylePreview style={s.id} rim={s.id === "windows" ? rim : []} />
+								<StylePreview style={s.id} rim={rim} />
 								<span className="mt-1.5 w-full min-w-0 text-[13.5px] font-[650]">{t(s.name)}</span>
 								<Desc className="block w-full min-w-0 whitespace-normal break-words">{t(s.desc)}</Desc>
 							</button>
@@ -66,17 +66,9 @@ export function AppearancePage({ values }: { values: Record<string, unknown> }) 
 				</Block>
 			</Card>
 
-			<motion.section
-				className={card()}
-				initial={false}
-				animate={{ opacity: windows ? 1 : 0.4 }}
-				style={{ pointerEvents: windows ? "auto" : "none" }}
-			>
+			<motion.section className={card()} initial={false} animate={{ opacity: 1 }}>
 				<Block>
-					<Row
-						label={t("appearance.border.label")}
-						desc={windows ? t("appearance.border.desc") : t("appearance.windowsOnly")}
-					>
+					<Row label={t("appearance.border.label")} desc={t("appearance.border.desc")}>
 						<span className="text-[13px] text-text-dim">
 							{border === "custom"
 								? t("appearance.preset.custom")
@@ -121,6 +113,18 @@ export function AppearancePage({ values }: { values: Record<string, unknown> }) 
 											}}
 										/>
 									))}
+									<input
+										type="color"
+										aria-label={t(index ? "appearance.custom.end" : "appearance.custom.start")}
+										value={custom[index] ?? (index ? PALETTE[4] : PALETTE[7])}
+										title={t(index ? "appearance.custom.end" : "appearance.custom.start")}
+										className="size-8 cursor-pointer rounded-full border border-white/10 bg-transparent p-0.5"
+										onChange={(event) => {
+											const next = [custom[0] ?? PALETTE[7], custom[1] ?? PALETTE[4]];
+											next[index] = event.target.value;
+											setSetting(appearanceSettings.customColors, next);
+										}}
+									/>
 								</div>
 							</div>
 						))}
@@ -182,7 +186,7 @@ function StylePreview({ style, rim }: { style: IslandStyle; rim: string[] }) {
 						: "top-2 w-20 rounded-[11px]",
 				)}
 			>
-				{style === "windows" && <RimRing background={background} width={1.5} />}
+				<RimRing background={background} width={1.5} openTop={style === "dynamic"} />
 				{style === "windows" && <span className="text-[9.5px] font-[650] text-white">9:41</span>}
 			</div>
 		</div>

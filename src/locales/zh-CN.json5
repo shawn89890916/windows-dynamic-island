@@ -54,7 +54,13 @@
     },
     taskCount: {
       label: "同时显示的任务数",
-      desc: "设置最多显示的任务数。前两个任务同显在主岛，第三个起显示为右侧分岛。",
+      desc: "设置最多同时显示多少个活动任务。",
+    },
+    mainTaskCount: {
+      label: "主岛内并排的任务数",
+      desc: "选择有多少个任务合并显示在主岛内；每次调整都会短暂演示布局。",
+      optionSingle: "1 个在主岛，其余分岛",
+      optionPair: "2 个在主岛，第三个起分岛",
     },
     expandOnHover: {
       label: "悬停时展开",
@@ -912,7 +918,7 @@
     windowsOnly: "仅在 Windows 灵动岛样式下可用。",
     border: {
       label: "边框",
-      desc: "灵动岛主体保持黑色，仅边缘光圈变换颜色。",
+      desc: "灵动岛和刘海样式都可以使用彩色边框；刘海收起或展开时都不绘制顶边。",
     },
     preset: {
       none: "经典黑",
@@ -923,6 +929,11 @@
       claude: "Claude",
       neon: "霓虹",
       mono: "银灰",
+      cottonCandy: "棉花糖",
+      forest: "森林",
+      ice: "冰川",
+      ember: "余烬",
+      citrus: "柑橘",
       custom: "自定义",
     },
     custom: {

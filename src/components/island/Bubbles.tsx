@@ -83,7 +83,7 @@ export function SideBubbles({
 					</Bubble>
 				))}
 				{status && (
-					<Bubble key={statusId} id={statusId} label={statusLabel} side from={-40} layout {...props}>
+					<Bubble key={statusId} id={statusId} label={statusLabel} side statusBubble from={-40} layout {...props}>
 						{status}
 					</Bubble>
 				)}
@@ -97,6 +97,9 @@ const bubble = tv({
 	variants: {
 		ambient: { true: "pointer-events-auto relative left-auto flex-none origin-top" },
 		side: { true: "pointer-events-auto relative top-auto left-auto flex-none origin-top" },
+		statusBubble: {
+			true: "size-8 bg-black/75 shadow-[0_8px_18px_-10px_rgba(0,0,0,0.8)] ring-1 ring-white/5",
+		},
 		clickOnly: { true: "pointer-events-none cursor-default" },
 	},
 });
@@ -107,6 +110,7 @@ function Bubble({
 	clickOnly,
 	ambient,
 	side,
+	statusBubble,
 	from,
 	scale = 1,
 	layout,
@@ -121,6 +125,7 @@ function Bubble({
 	/** In the row of persistent bubbles, rather than placed right of the island. */
 	ambient?: boolean;
 	side?: boolean;
+	statusBubble?: boolean;
 	/** Horizontal offset it slides in from and out to. */
 	from: number;
 	scale?: number;
@@ -133,7 +138,7 @@ function Bubble({
 			aria-label={label}
 			title={label}
 			data-no-drag
-			className={bubble({ ambient, side, clickOnly })}
+			className={bubble({ ambient, side, statusBubble, clickOnly })}
 			data-island-secondary-bubble={(!ambient && !clickOnly) || undefined}
 			data-hit-module={!ambient && !clickOnly ? id : undefined}
 			data-hit={!clickOnly || undefined}

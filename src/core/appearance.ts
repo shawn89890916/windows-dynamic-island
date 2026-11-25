@@ -22,6 +22,11 @@ export const BORDER_PRESETS: BorderPreset[] = [
 	{ id: "claude", name: "appearance.preset.claude", colors: ["#D97757", "#F2B880"] },
 	{ id: "neon", name: "appearance.preset.neon", colors: ["#FF00CC", "#3333FF"] },
 	{ id: "mono", name: "appearance.preset.mono", colors: ["#FFFFFF", "#6E6E73"] },
+	{ id: "cottonCandy", name: "appearance.preset.cottonCandy", colors: ["#F472B6", "#A78BFA"] },
+	{ id: "forest", name: "appearance.preset.forest", colors: ["#34D399", "#0F766E"] },
+	{ id: "ice", name: "appearance.preset.ice", colors: ["#A5F3FC", "#3B82F6"] },
+	{ id: "ember", name: "appearance.preset.ember", colors: ["#F97316", "#DC2626"] },
+	{ id: "citrus", name: "appearance.preset.citrus", colors: ["#FDE047", "#22C55E"] },
 ];
 
 /** Colors offered for the custom two-color gradient. */
@@ -30,11 +35,20 @@ export const PALETTE = [
 	"#FF9F0A",
 	"#FFD60A",
 	"#30D158",
+	"#22C55E",
+	"#34D399",
+	"#06B6D4",
 	"#64D2FF",
+	"#A5F3FC",
 	"#0A84FF",
+	"#3B82F6",
 	"#5E5CE6",
 	"#BF5AF2",
+	"#A78BFA",
+	"#F472B6",
 	"#FF375F",
+	"#F97316",
+	"#DC2626",
 	"#FFFFFF",
 ];
 

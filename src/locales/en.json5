@@ -58,7 +58,13 @@
     },
     taskCount: {
       label: "Visible activity count",
-      desc: "Show up to this many active tasks. The first two share the main island; later tasks appear in side islands.",
+      desc: "Set the maximum number of active tasks to show.",
+    },
+    mainTaskCount: {
+      label: "Tasks inside the main island",
+      desc: "Choose how many tasks share the main island. Changing this briefly previews the layout.",
+      optionSingle: "One together, then side islands",
+      optionPair: "Two together, then side islands",
     },
     expandOnHover: {
       label: "Expand on hover",
@@ -916,7 +922,7 @@
     windowsOnly: "Available in the Windows Island style.",
     border: {
       label: "Border",
-      desc: "The island stays black; only its rim changes color.",
+      desc: "Choose a colored rim for either island style. The notch keeps its top edge open when collapsed and expanded.",
     },
     preset: {
       none: "Classic",
@@ -927,6 +933,11 @@
       claude: "Claude",
       neon: "Neon",
       mono: "Silver",
+      cottonCandy: "Cotton candy",
+      forest: "Forest",
+      ice: "Ice",
+      ember: "Ember",
+      citrus: "Citrus",
       custom: "Custom",
     },
     custom: {

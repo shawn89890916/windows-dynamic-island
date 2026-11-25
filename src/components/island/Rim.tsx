@@ -8,6 +8,7 @@ const rim = tv({
 	variants: {
 		classic: { true: "bg-white/9" },
 		animated: { true: "animate-rim-spin" },
+		openTop: { true: "[clip-path:inset(var(--rim-w)_0_0_0)]" },
 	},
 });
 
@@ -16,23 +17,27 @@ export function RimRing({
 	background,
 	width,
 	animate,
+	openTop,
 }: {
 	background: string | undefined;
 	width: number;
 	animate?: boolean;
+	openTop?: boolean;
 }) {
 	return (
 		<span
-			className={rim({ classic: !background, animated: !!background && animate })}
+			className={rim({ classic: !background, animated: !!background && animate, openTop })}
 			style={{ "--rim-bg": background, "--rim-w": `${width}px` } as CSSProperties}
 		/>
 	);
 }
 
-/** The colored rim of the Windows Island style (a hairline when "classic"). */
-export function Rim({ look }: { look: Appearance }) {
+/** A colored rim, with the top edge open for the Dynamic Island notch. */
+export function Rim({ look, openTop = false }: { look: Appearance; openTop?: boolean }) {
 	const background = rimBackground(look.rim);
-	return <RimRing background={background} width={background ? look.thickness : 1} animate={look.animate} />;
+	return (
+		<RimRing background={background} width={background ? look.thickness : 1} animate={look.animate} openTop={openTop} />
+	);
 }
 
 /** A glow in the rim's middle color, when turned on. */

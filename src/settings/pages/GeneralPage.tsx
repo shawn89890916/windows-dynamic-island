@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { Activity, Download, Music2 } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import { Card, Row } from "../../components/ui/card";
 import { NumberField, Select } from "../../components/ui/form";
 import { command, isTauri } from "../../core/bridge";
@@ -8,6 +10,7 @@ import { useInstalledPlugins } from "../../core/plugins/registry";
 import {
 	appearanceSettings,
 	generalSettings,
+	mainTaskCountSetting,
 	monitorSettings,
 	type NumberSettingDef,
 	positionSettings,
@@ -48,6 +51,7 @@ export function GeneralPage({ values }: { values: Record<string, unknown> }) {
 						})}
 					</Select>
 				</Row>
+				<TaskArrangementSetting value={readNumberSetting(values, mainTaskCountSetting)} />
 				{Object.values(generalSettings).map((def) => (
 					<ToggleRow key={def.key} def={def} value={readSetting(values, def)} />
 				))}
@@ -69,6 +73,86 @@ export function GeneralPage({ values }: { values: Record<string, unknown> }) {
 					disabled={!readSetting(values, positionSettings.returnToCenter)}
 				/>
 			</Card>
+		</>
+	);
+}
+
+function TaskArrangementSetting({ value }: { value: number }) {
+	const t = useT();
+	const [preview, setPreview] = useState<{ revision: number; mainCount: number } | null>(null);
+	const revision = useRef(0);
+	const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+	useEffect(
+		() => () => {
+			if (timer.current) clearTimeout(timer.current);
+		},
+		[],
+	);
+
+	const change = (next: number) => {
+		if (next === value) return;
+		setSetting(mainTaskCountSetting, next);
+		revision.current += 1;
+		setPreview({ revision: revision.current, mainCount: next });
+		if (timer.current) clearTimeout(timer.current);
+		timer.current = setTimeout(() => setPreview(null), 1600);
+	};
+
+	const icons = [
+		{ key: "activity", Icon: Activity },
+		{ key: "music", Icon: Music2 },
+		{ key: "download", Icon: Download },
+	];
+	return (
+		<>
+			<Row label={t(mainTaskCountSetting.label)} desc={t(mainTaskCountSetting.description)}>
+				<Select value={value} onChange={(event) => change(Number(event.target.value))}>
+					<option value={1}>{t("settings.mainTaskCount.optionSingle")}</option>
+					<option value={2}>{t("settings.mainTaskCount.optionPair")}</option>
+				</Select>
+			</Row>
+			<AnimatePresence mode="wait">
+				{preview && (
+					<motion.div
+						key={preview.revision}
+						aria-hidden="true"
+						className="overflow-hidden"
+						initial={{ opacity: 0, height: 0, y: -4 }}
+						animate={{ opacity: 1, height: 48, y: 0 }}
+						exit={{ opacity: 0, height: 0, y: -4 }}
+						transition={{ duration: 0.2 }}
+					>
+						<div className="flex h-12 items-center justify-center gap-2">
+							<motion.div
+								layout
+								className="flex h-8 items-center justify-center gap-2 rounded-full bg-black px-3 shadow-[0_5px_14px_-8px_rgba(0,0,0,0.8)]"
+								transition={{ type: "spring", stiffness: 420, damping: 28 }}
+							>
+								{icons.slice(0, preview.mainCount).map(({ key, Icon }, index) => (
+									<span key={key} className="flex items-center gap-2">
+										{index > 0 && <span className="h-4 w-px bg-white/20" />}
+										<Icon size={15} strokeWidth={2.1} className="text-white" />
+									</span>
+								))}
+							</motion.div>
+							<div className="flex items-center gap-2">
+								{icons.slice(preview.mainCount).map(({ key, Icon }, index) => (
+									<motion.div
+										key={key}
+										initial={{ opacity: 0, scale: 0.45, x: -8 }}
+										animate={{ opacity: 1, scale: 1, x: 0 }}
+										exit={{ opacity: 0, scale: 0.45, x: -8 }}
+										transition={{ type: "spring", stiffness: 420, damping: 26, delay: index * 0.06 }}
+										className="grid size-8 place-items-center rounded-full bg-black shadow-[0_5px_14px_-8px_rgba(0,0,0,0.8)] ring-1 ring-white/10"
+									>
+										<Icon size={14} strokeWidth={2.1} className="text-white" />
+									</motion.div>
+								))}
+							</div>
+						</div>
+					</motion.div>
+				)}
+			</AnimatePresence>
 		</>
 	);
 }

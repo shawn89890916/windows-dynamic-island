@@ -9,7 +9,14 @@ import { macAppearanceEnabled } from "../core/plugins/appearancePlugin";
 import { useInstalledPlugins } from "../core/plugins/registry";
 import { PluginBackgrounds } from "../core/plugins/runtime";
 import { islandStatusRing, STATUS_RING_PLUGIN } from "../core/plugins/statusRing";
-import { readNumberSetting, sizeSettings, taskCountSetting, topMarginSetting, useSettings } from "../core/settings";
+import {
+	mainTaskCountSetting,
+	readNumberSetting,
+	sizeSettings,
+	taskCountSetting,
+	topMarginSetting,
+	useSettings,
+} from "../core/settings";
 import { moduleShortcutFocus } from "../core/shortcuts";
 import { useHitRects } from "../core/useHitRects";
 import { useIslandController } from "../core/useIslandController";
@@ -73,16 +80,17 @@ export function Island() {
 		(plugin) => plugin.manifest.id === STATUS_RING_PLUGIN && plugin.enabled && Boolean(plugin.packageSha256),
 	);
 	const status = statusPlugin?.customSettings.placement !== "taskbar" && statusPlugin && statusReading && (
-		<StatusRing reading={statusReading} />
+		<StatusRing reading={statusReading} size={26} />
 	);
 	const toolbarStatus =
 		big && statusPlugin && statusPlugin.customSettings.placement !== "taskbar" && statusReading ? (
 			<StatusRing reading={statusReading} size={24} onClick={() => ctl.expand(STATUS_RING_PLUGIN)} />
 		) : null;
 	const taskCount = readNumberSetting(s, taskCountSetting);
-	const secondaryTask = mode === "compact" && taskCount > 1 ? ctl.activeTasks[1] : undefined;
-	const sideTasks = mode === "compact" ? ctl.activeTasks.slice(2, taskCount) : [];
-	const sideStatus = windows && resting && !(macCompact && macCompactHidden) && status ? status : null;
+	const mainTaskCount = Math.min(taskCount, readNumberSetting(s, mainTaskCountSetting));
+	const secondaryTask = mode === "compact" && mainTaskCount > 1 ? ctl.activeTasks[1] : undefined;
+	const sideTasks = mode === "compact" ? ctl.activeTasks.slice(mainTaskCount, taskCount) : [];
+	const sideStatus = resting && !(macCompact && macCompactHidden) && status ? status : null;
 	const sideCount = sideTasks.length + Number(Boolean(sideStatus));
 	const panelSize = (ctl.launcher ? launcherSize(ctl.entries.length) : focused?.view.expandedSize) ?? v.expanded;
 	// A shared width keeps the top bar in place as the body changes height and content.
@@ -164,7 +172,7 @@ export function Island() {
 		[mode, ctl.tab, ctl.expand, ctl.collapse, ctl.keepOpen],
 	);
 
-	const rim = windows && !macCompact ? <Rim look={look} /> : null;
+	const rim = !macCompact ? <Rim look={look} openTop={!windows} /> : null;
 	const bubble = { transition: v.shellSpring, rim, onOpen: ctl.expand };
 
 	return (
