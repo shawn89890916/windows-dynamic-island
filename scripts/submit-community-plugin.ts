@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -211,6 +211,7 @@ if (previous) entries = entries.map((item) => (item.id === manifest.id ? catalog
 else entries.push(catalogEntry);
 await writeFile(communityPath, `${JSON.stringify(entries, null, 2)}\n`, "utf8");
 const packagePath = join(root, "plugins/dist", filename);
+await mkdir(dirname(packagePath), { recursive: true });
 await writeFile(packagePath, bytes);
 await writeFile(
 	outputPath,
