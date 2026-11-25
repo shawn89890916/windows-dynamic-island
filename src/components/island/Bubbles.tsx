@@ -83,7 +83,7 @@ export function SideBubbles({
 					</Bubble>
 				))}
 				{status && (
-					<Bubble key={statusId} id={statusId} label={statusLabel} side clickOnly from={-40} layout {...props}>
+					<Bubble key={statusId} id={statusId} label={statusLabel} side from={-40} layout {...props}>
 						{status}
 					</Bubble>
 				)}

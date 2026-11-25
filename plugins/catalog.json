@@ -1,14 +1,15 @@
 {
   "formatVersion": 1,
   "sdkVersion": 1,
-  "version": "1.1.7",
+  "version": "1.1.8",
   "plugins": [
     {
       "id": "com.island.status-ring",
+      "sdkVersion": 2,
       "name": "环形状态栏",
       "titleKey": "statusRing.name",
-      "version": "1.0.0",
-      "description": "用环形刻度显示 Windows 的 Wi-Fi 信号或电池电量，可放在灵动岛或任务栏旁。需要支持环形状态栏的主程序版本。",
+      "version": "1.1.0",
+      "description": "以 iPhone Duo 风格的组合圆环同时显示电量、Wi-Fi 与蜂窝信号，可放在灵动岛或任务栏。需要支持环形状态栏的主程序版本。",
       "author": {
         "name": "Island Community"
       },
@@ -40,32 +41,12 @@
               "value": "taskbar"
             }
           ]
-        },
-        {
-          "key": "metric",
-          "label": "显示内容",
-          "labelKey": "statusRing.metric",
-          "type": "select",
-          "default": "wifi",
-          "options": [
-            {
-              "label": "Wi-Fi 信号",
-              "labelKey": "statusRing.wifi",
-              "value": "wifi"
-            },
-            {
-              "label": "电池",
-              "labelKey": "statusRing.battery",
-              "value": "battery"
-            }
-          ]
         }
       ],
       "expandedSize": {
         "width": 420,
         "height": 170
       },
-      "sdkVersion": 1,
       "guide": {
         "summary": "在黑色圆环中心显示状态图标，彩色刻度随 Wi-Fi 信号或电池电量更新。",
         "prerequisites": [
@@ -77,8 +58,8 @@
             "desc": "在插件市场安装环形状态栏。"
           },
           {
-            "title": "选择显示内容",
-            "desc": "在插件配置中选择 Wi-Fi 信号或电池。"
+            "title": "查看组合状态",
+            "desc": "环形同时显示电量、Wi-Fi 连接和蜂窝信号；点击任务栏上的圆环可打开详细状态页。"
           },
           {
             "title": "选择位置",
@@ -91,8 +72,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.status-ring.island-plugin.json",
-      "sha256": "c7f528d021f441a8673e890114bad62ade7302a3cd87542770ee9c64d3295661",
-      "packageSize": 37417
+      "sha256": "b2d257e689f95c6a171f4fc20b01c61bf78c34f142862199358e2b8c75c675c2",
+      "packageSize": 39321
     },
     {
       "id": "com.island.smooth-tabs",
@@ -913,8 +894,8 @@
         "使用宿主提供的界面与系统接口"
       ],
       "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.island.navopath.island-plugin.json",
-      "sha256": "789ea810dfe4eed82b54dde5ff95c8a78c3bae88e9f8dbcd26b12bc5424febf6",
-      "packageSize": 52338
+      "sha256": "d723f17b9eb45c0da1c5d39abc88fd3ddcfc54522e4965964a5e6a469fcd8efc",
+      "packageSize": 52337
     },
     {
       "id": "com.island.everything",

@@ -15,10 +15,12 @@
     placement: "Display location",
     island: "Island",
     taskbar: "Beside the taskbar",
-    metric: "Show status for",
     name: "Status Ring",
     wifi: "Wi-Fi signal",
     battery: "Battery",
+    cellular: "Cellular signal",
+    connected: "Connected",
+    disconnected: "Disconnected",
     unknown: "Reading unavailable",
     unavailable: "Not connected or unavailable",
     charging: "On AC power",
@@ -56,7 +58,7 @@
     },
     taskCount: {
       label: "Visible activity count",
-      desc: "Keep the highest-priority activity in the main island and show each additional task in its own side island. Set to 1 to hide side islands.",
+      desc: "Show up to this many active tasks. The first two share the main island; later tasks appear in side islands.",
     },
     expandOnHover: {
       label: "Expand on hover",

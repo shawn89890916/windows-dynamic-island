@@ -2,6 +2,7 @@ import { motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 import type { Appearance } from "../../core/appearance";
 import { cn } from "../../core/cn";
+import type { Translate } from "../../core/i18n";
 import type { TabNavigationOptions } from "../../core/island";
 import type { IslandController } from "../../core/useIslandController";
 import { IdleClock } from "../IdleClock";
@@ -30,9 +31,11 @@ export function islandContent(
 	ctl: IslandController,
 	look: Appearance,
 	v: Variant,
+	t: Translate,
 	macCompact = false,
 	navigation: TabNavigationOptions | null = null,
 	status: ReactNode = null,
+	secondaryTask?: IslandController["activeTasks"][number],
 ): { key: string; node: ReactNode } {
 	const { mode, primary, focused } = ctl;
 	const windows = look.style === "windows";
@@ -41,13 +44,37 @@ export function islandContent(
 		return {
 			key: `compact:${primary.module.id}`,
 			node: (
-				<div className={cn("flex h-full items-center justify-between", macCompact ? "gap-1 px-0" : "pr-3 pl-2")}>
-					<div className={cn("flex min-w-0 items-center", macCompact ? "gap-1" : "gap-2")}>
-						{primary.view.compact.left}
+				<div className={cn("flex h-full items-center justify-between", macCompact ? "gap-1 px-0" : "gap-1 pr-2 pl-2")}>
+					<div className="flex min-w-0 flex-1 items-center justify-between gap-2">
+						<div className={cn("flex min-w-0 items-center", macCompact ? "gap-1" : "gap-2")}>
+							{primary.view.compact.left}
+						</div>
+						<div className={cn("flex min-w-0 items-center justify-end", macCompact ? "gap-1" : "gap-2")}>
+							{primary.view.compact.right}
+						</div>
 					</div>
-					<div className={cn("flex min-w-0 items-center justify-end", macCompact ? "gap-1" : "gap-2")}>
-						{primary.view.compact.right}
-					</div>
+					{secondaryTask && (
+						<motion.button
+							key={secondaryTask.module.id}
+							type="button"
+							aria-label={t(secondaryTask.module.title)}
+							title={t(secondaryTask.module.title)}
+							data-no-drag
+							data-hit
+							data-hit-module={secondaryTask.module.id}
+							className="flex max-w-[90px] min-w-0 shrink-0 items-center gap-1.5 border-l border-white/15 pl-2 text-[11px] font-medium text-white/85"
+							initial={{ opacity: 0, x: 5 }}
+							animate={{ opacity: 1, x: 0 }}
+							transition={{ duration: 0.2 }}
+							onClick={(event) => {
+								event.stopPropagation();
+								ctl.expand(secondaryTask.module.id);
+							}}
+						>
+							<span className="grid size-4 shrink-0 place-items-center [&_svg]:size-4">{secondaryTask.view.icon}</span>
+							<span className="truncate">{t(secondaryTask.module.title)}</span>
+						</motion.button>
+					)}
 				</div>
 			),
 		};

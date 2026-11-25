@@ -141,7 +141,7 @@ for (const source of MARKETPLACE_CATALOG.filter((plugin) => !selectedId || plugi
 	const css = await buildPluginCss(widget);
 	const manifest = {
 		...source,
-		sdkVersion: 1,
+		sdkVersion: source.sdkVersion ?? 1,
 		guide: PLUGIN_GUIDES[source.id],
 		permissions: ["在灵动岛窗口执行代码", "使用宿主提供的界面与系统接口"],
 	};
