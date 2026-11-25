@@ -5,6 +5,8 @@ use tauri::AppHandle;
 mod gaussian;
 #[cfg(windows)]
 mod native;
+#[cfg(windows)]
+mod shape;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -15,6 +17,8 @@ pub struct BlurRect {
     height: f64,
     rounded_top: bool,
     radius: f64,
+    ear_width: f64,
+    ear_height: f64,
 }
 
 pub fn setup(_: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {

@@ -104,21 +104,24 @@ export function fitGeometry(
 		heightPercent,
 		maxWidth,
 		maxHeight,
+		attachedNotch,
 	}: {
 		widthPercent: number;
 		heightPercent: number;
 		maxWidth: number;
 		maxHeight: number;
+		attachedNotch: boolean;
 	},
 ): Geo {
 	const heightScale = heightPercent / 100;
 	const width = Math.max(1, Math.min(maxWidth, Math.round((geo.width * widthPercent) / 100)));
 	const height = Math.max(1, Math.min(maxHeight, Math.round(geo.height * heightScale)));
+	const ear = Math.min(geo.ear * heightScale, height);
 	return {
 		width,
 		height,
-		radius: Math.min(geo.radius * heightScale, width / 2, height),
-		ear: Math.min(geo.ear * heightScale, height),
+		radius: Math.min(geo.radius * heightScale, width / 2, attachedNotch ? height - ear : height),
+		ear,
 	};
 }
 

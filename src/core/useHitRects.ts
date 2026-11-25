@@ -1,3 +1,4 @@
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useEffect } from "react";
 import { command, isTauri } from "./bridge";
 
@@ -10,11 +11,23 @@ const PAD = 16;
  * interactive. Every element marked with `data-hit` counts; the rects follow
  * animations because they are re-measured on each animation frame.
  */
-export function useHitRects(blurEffect: string, roundedTop: boolean, radius: number) {
+export function useHitRects(blurEffect: string, roundedTop: boolean) {
 	useEffect(() => {
 		if (!isTauri) return;
 		let raf = 0;
 		let last = "";
+		let disposed = false;
+		let stopWatchingMove: (() => void) | undefined;
+		// Moving the native window can leave all CSS bounds unchanged.
+		void getCurrentWindow()
+			.onMoved(() => {
+				last = "";
+			})
+			.then((unlisten) => {
+				if (disposed) unlisten();
+				else stopWatchingMove = unlisten;
+			})
+			.catch(console.error);
 
 		const tick = () => {
 			raf = requestAnimationFrame(tick);
@@ -31,12 +44,22 @@ export function useHitRects(blurEffect: string, roundedTop: boolean, radius: num
 				};
 			});
 			const shell = document.querySelector<HTMLElement>('[data-blur="true"][data-hit]');
-			const bounds = shell?.getBoundingClientRect();
 			const surface = shell?.querySelector<HTMLElement>("[data-island-surface]");
-			const liveRadius = surface ? Number.parseFloat(getComputedStyle(surface).borderBottomLeftRadius) : radius;
-			const blurRect = bounds
-				? { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height, roundedTop, radius: liveRadius }
-				: null;
+			const bounds = surface?.getBoundingClientRect();
+			const ear = shell?.querySelector<HTMLElement>("[data-notch-ear]")?.getBoundingClientRect();
+			const blurRect =
+				surface && bounds
+					? {
+							x: bounds.left,
+							y: bounds.top,
+							width: bounds.width,
+							height: bounds.height,
+							roundedTop,
+							radius: Number.parseFloat(getComputedStyle(surface).borderBottomLeftRadius),
+							earWidth: ear?.width ?? 0,
+							earHeight: ear?.height ?? 0,
+						}
+					: null;
 			const key = JSON.stringify([rects, blurRect, blurEffect]);
 			if (key !== last) {
 				last = key;
@@ -45,6 +68,10 @@ export function useHitRects(blurEffect: string, roundedTop: boolean, radius: num
 			}
 		};
 		raf = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(raf);
-	}, [blurEffect, roundedTop, radius]);
+		return () => {
+			disposed = true;
+			stopWatchingMove?.();
+			cancelAnimationFrame(raf);
+		};
+	}, [blurEffect, roundedTop]);
 }

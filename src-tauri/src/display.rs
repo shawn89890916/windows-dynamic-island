@@ -117,10 +117,15 @@ fn target(app: &AppHandle, win: &WebviewWindow) -> Option<Monitor> {
     Some(screens.swap_remove(preferred).monitor)
 }
 
-/// Window rect (physical px) that stretches the strip across `monitor`'s top.
+/// Keep the island below a taskbar or app bar that reserves the top of the monitor.
 fn strip_rect(monitor: &Monitor) -> (PhysicalPosition<i32>, PhysicalSize<u32>) {
+    let mut position = *monitor.position();
+    let size = monitor.size();
+    let top_inset = (monitor.work_area().position.y - position.y).max(0) as u32;
+    let top_inset = top_inset.min(size.height.saturating_sub(1));
+    position.y += top_inset as i32;
     let height = (STRIP_HEIGHT * monitor.scale_factor()).round() as u32;
-    (*monitor.position(), PhysicalSize::new(monitor.size().width, height))
+    (position, PhysicalSize::new(size.width, height.min(size.height - top_inset)))
 }
 
 fn apply(win: &WebviewWindow, monitor: &Monitor) -> tauri::Result<()> {

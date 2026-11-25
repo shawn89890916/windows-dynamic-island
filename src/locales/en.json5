@@ -103,8 +103,8 @@
       desc: "Offset from the screen center. Use a negative value for left or a positive value for right.",
     },
     topMargin: {
-      label: "Top vertical offset (avoid top taskbar)",
-      desc: "Additional vertical distance from the top screen edge. Set to 48 px if your Windows taskbar is placed at the top.",
+      label: "Top vertical offset",
+      desc: "Adds space above the island. The island automatically clears a top taskbar.",
     },
     about: {
       title: "About",

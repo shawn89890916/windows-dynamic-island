@@ -5,6 +5,17 @@ import { cn } from "../../core/cn";
 import { cornerRadius, type Geo } from "./geometry";
 import { glowStyle } from "./Rim";
 
+const tints = {
+	none: "#000",
+	subtle: "rgb(0 0 0 / 85%)",
+	moderate: "rgb(0 0 0 / 72%)",
+	ambient: "rgb(0 0 0 / 60%)",
+} satisfies Record<Appearance["blurEffect"], string>;
+
+export function surfaceTint(effect: Appearance["blurEffect"]) {
+	return tints[effect];
+}
+
 /** The island's black body; its content blurs out and in whenever `contentKey` changes. */
 export function Surface({
 	g,
@@ -37,16 +48,7 @@ export function Surface({
 		<motion.div
 			data-island-surface
 			className={cn(
-				cn(
-					"absolute inset-0 overflow-hidden transition-shadow duration-400 ease-[ease]",
-					look.blurEffect === "none"
-						? "bg-black"
-						: look.blurEffect === "subtle"
-							? "bg-black/85"
-							: look.blurEffect === "moderate"
-								? "bg-black/72"
-								: "bg-black/60",
-				),
+				"absolute inset-0 overflow-hidden transition-shadow duration-400 ease-[ease]",
 				attachedNotch
 					? expandedShadow
 						? "shadow-[0_28px_80px_-12px_rgba(0,0,0,0.95),0_10px_32px_-4px_rgba(0,0,0,0.6)]"
@@ -55,7 +57,7 @@ export function Surface({
 						? "shadow-[0_28px_80px_-12px_rgba(0,0,0,0.95),0_10px_32px_-4px_rgba(0,0,0,0.6),inset_0_1px_1px_0_rgba(255,255,255,0.14),0_0_0_1px_rgba(255,255,255,0.1)]"
 						: "shadow-[0_16px_40px_-10px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.08)]",
 			)}
-			style={windows ? glowStyle(look) : undefined}
+			style={{ ...(windows ? glowStyle(look) : undefined), backgroundColor: surfaceTint(look.blurEffect) }}
 			initial={false}
 			animate={cornerRadius(g, windows)}
 			transition={transition}

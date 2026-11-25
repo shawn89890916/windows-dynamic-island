@@ -24,7 +24,7 @@ import { launcherSize } from "./island/Launcher";
 import { MacCamera } from "./island/MacCamera";
 import { Rim } from "./island/Rim";
 import { StatusRing } from "./island/StatusRing";
-import { Surface } from "./island/Surface";
+import { Surface, surfaceTint } from "./island/Surface";
 import { useIslandFileDrop } from "./island/useIslandFileDrop";
 
 export function Island() {
@@ -49,6 +49,7 @@ export function Island() {
 		(plugin) => plugin.manifest.id === "com.island.desktop-glass" && plugin.enabled && Boolean(plugin.packageSha256),
 	);
 	const islandLook = glassPluginEnabled && !macCompact ? look : { ...look, blurEffect: "none" as const };
+	const tint = surfaceTint(islandLook.blurEffect);
 	const s = useSettings();
 	const topMargin = readNumberSetting(s, positionSettings.topMargin);
 	const windows = look.style === "windows";
@@ -118,8 +119,9 @@ export function Island() {
 		heightPercent: readNumberSetting(s, sizeSettings.height),
 		maxWidth: viewport.width - 24 - (attachedNotch ? 3 * baseGeometry.ear : 0),
 		maxHeight: viewport.height - effectiveTop,
+		attachedNotch,
 	});
-	useHitRects(islandLook.blurEffect, windows, g.radius);
+	useHitRects(islandLook.blurEffect, windows);
 	const hidden = !macCompact && mode === "hidden";
 	const swallowed = !macCompact && mode === "swallowed";
 	const hideMacCompact = macCompact && macCompactHidden;
@@ -203,20 +205,26 @@ export function Island() {
 							else ctl.domHover.onMouseEnter?.();
 						}}
 					>
-						{/* Overlap the sides by a pixel to cover rounding gaps at fractional display scales. */}
 						{attachedNotch && (
 							<>
 								<motion.span
-									className="pointer-events-none absolute top-0 right-[calc(100%-1px)] bg-[radial-gradient(circle_at_0_100%,transparent_70%,var(--island)_71%)]"
+									data-notch-ear
+									className="pointer-events-none absolute top-0 right-full"
+									style={{
+										background: `radial-gradient(ellipse farthest-side at 0 100%, transparent 99%, ${tint} 100%)`,
+									}}
 									initial={false}
 									animate={{ width: g.ear, height: g.ear }}
-									transition={v.shellSpring}
+									transition={transition}
 								/>
 								<motion.span
-									className="pointer-events-none absolute top-0 left-[calc(100%-1px)] bg-[radial-gradient(circle_at_100%_100%,transparent_70%,var(--island)_71%)]"
+									className="pointer-events-none absolute top-0 left-full"
+									style={{
+										background: `radial-gradient(ellipse farthest-side at 100% 100%, transparent 99%, ${tint} 100%)`,
+									}}
 									initial={false}
 									animate={{ width: g.ear, height: g.ear }}
-									transition={v.shellSpring}
+									transition={transition}
 								/>
 							</>
 						)}

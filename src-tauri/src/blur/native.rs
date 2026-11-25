@@ -1,4 +1,8 @@
-use super::{BlurRect, gaussian::Gaussian};
+use super::{
+    BlurRect,
+    gaussian::Gaussian,
+    shape::{BackdropShape, create_factory},
+};
 use std::{cell::RefCell, ffi::c_void};
 use tauri::{AppHandle, Manager};
 use windows::{
@@ -6,11 +10,12 @@ use windows::{
     System::{DispatcherQueue, DispatcherQueueController},
     UI::Composition::{
         CompositionBorderMode, CompositionEffectSourceParameter,
-        CompositionRoundedRectangleGeometry, Compositor, ContainerVisual,
+        CompositionPathGeometry, Compositor, ContainerVisual,
         Desktop::DesktopWindowTarget, SpriteVisual,
     },
     Win32::{
         Foundation::{HWND, LPARAM, LRESULT, WPARAM},
+        Graphics::Direct2D::ID2D1Factory,
         System::{
             LibraryLoader::{GetModuleHandleW, GetProcAddress},
             WinRT::{
@@ -35,8 +40,9 @@ struct Backdrop {
     _target: DesktopWindowTarget,
     _root: ContainerVisual,
     visual: SpriteVisual,
-    top: SpriteVisual,
-    geometry: CompositionRoundedRectangleGeometry,
+    geometry: CompositionPathGeometry,
+    factory: ID2D1Factory,
+    shape: Option<BackdropShape>,
     amount: f32,
     drag_hidden: bool,
     wanted_visible: bool,
@@ -172,12 +178,10 @@ impl Backdrop {
             let target = interop.CreateDesktopWindowTarget(hwnd, false)?;
             let root = compositor.CreateContainerVisual()?;
             let visual = compositor.CreateSpriteVisual()?;
-            let top = compositor.CreateSpriteVisual()?;
-            let geometry = compositor.CreateRoundedRectangleGeometry()?;
+            let geometry = compositor.CreatePathGeometry()?;
             visual.SetClip(&compositor.CreateGeometricClipWithGeometry(&geometry)?)?;
             visual.SetBorderMode(CompositionBorderMode::Soft)?;
             root.Children()?.InsertAtTop(&visual)?;
-            root.Children()?.InsertAtTop(&top)?;
             target.SetRoot(&root)?;
             Ok(Self {
                 hwnd,
@@ -186,8 +190,9 @@ impl Backdrop {
                 _target: target,
                 _root: root,
                 visual,
-                top,
                 geometry,
+                factory: create_factory()?,
+                shape: None,
                 amount: -1.0,
                 drag_hidden: false,
                 wanted_visible: false,
@@ -209,9 +214,15 @@ impl Backdrop {
         };
         let scale = island.scale_factor().unwrap_or(1.0);
         let origin = island.outer_position().unwrap_or_default();
-        let width = (rect.width * scale).round().max(1.0) as f32;
-        let height = (rect.height * scale).round().max(1.0) as f32;
-        let radius = (rect.radius * scale).clamp(0.0, f64::from(height.min(width)) / 2.0) as f32;
+        let shape = BackdropShape::from_rect(&rect, scale);
+        if self.shape != Some(shape) {
+            self.geometry.SetPath(&shape.composition_path(&self.factory)?)?;
+            self.visual.SetSize(Vector2 {
+                X: shape.total_width(),
+                Y: shape.height,
+            })?;
+            self.shape = Some(shape);
+        }
         let amount = sigma * scale as f32;
         if self.amount != amount {
             let source = CompositionEffectSourceParameter::Create(&"Backdrop".into())?;
@@ -227,30 +238,8 @@ impl Backdrop {
             brush
                 .SetSourceParameter(&"Backdrop".into(), &self.compositor.CreateBackdropBrush()?)?;
             self.visual.SetBrush(&brush)?;
-            self.top.SetBrush(&brush)?;
             self.amount = amount;
         }
-        self.visual.SetSize(Vector2 {
-            X: width,
-            Y: height,
-        })?;
-        self.geometry.SetSize(Vector2 {
-            X: width,
-            Y: height,
-        })?;
-        self.geometry.SetCornerRadius(Vector2 {
-            X: radius,
-            Y: radius,
-        })?;
-        // Fill the top corners only in the screen-attached notch style.
-        self.top.SetSize(Vector2 {
-            X: width,
-            Y: if rect.rounded_top {
-                0.0
-            } else {
-                (height - radius).max(0.0)
-            },
-        })?;
         let hwnd = island.hwnd().map_err(|e| {
             windows::core::Error::new(windows::core::HRESULT(0x80004005u32 as i32), e.to_string())
         })?;
@@ -259,10 +248,10 @@ impl Backdrop {
             SetWindowPos(
                 self.hwnd,
                 Some(HWND(hwnd.0)),
-                origin.x + (rect.x * scale).round() as i32,
+                origin.x + (rect.x * scale).round() as i32 - shape.ear_width as i32,
                 origin.y + (rect.y * scale).round() as i32,
-                width as i32,
-                height as i32,
+                shape.total_width().ceil() as i32,
+                shape.height.ceil() as i32,
                 SWP_NOACTIVATE | SWP_NOOWNERZORDER | visibility,
             )?;
         }
