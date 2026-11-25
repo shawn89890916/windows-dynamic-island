@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "id": "com.study.start",
+    "name": "学习启动",
+    "version": "1.0.0",
+    "description": "按 NavoPath 学习计划提醒，点击打开材料。延后或跳过时可做一道题或停下来想一想。",
+    "author": {
+      "name": "usul-ususul",
+      "url": "https://github.com/usul-ususul"
+    },
+    "category": "productivity",
+    "icon": "BookOpen",
+    "sdkVersion": 1,
+    "permissions": [
+      "在灵动岛窗口执行代码",
+      "使用宿主提供的界面与系统接口"
+    ],
+    "packageUrl": "https://github.com/shawn89890916/windows-dynamic-island/releases/download/plugins/com.study.start-1.0.0.island-plugin.json",
+    "sha256": "7f18e25db584c98b83df78ac9cbee60d32ccebfc37a12b3dc4927b2d61b1f2fe",
+    "packageSize": 21501,
+    "accentColor": "#ace6c4",
+    "expandedSize": {
+      "width": 520,
+      "height": 290
+    },
+    "repository": "https://github.com/usul-ususul/island-study-start"
+  }
+]
