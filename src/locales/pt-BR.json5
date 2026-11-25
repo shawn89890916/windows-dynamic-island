@@ -1108,6 +1108,13 @@
 
   clock: {
     title: "Relógio e calendário",
+    timer: "Temporizador",
+    remaining: "Tempo restante: {time}",
+    openTimer: "Abrir o Relógio do Windows. Tempo restante: {time}",
+    windowsTimer: {
+      label: "Mostrar temporizadores do Relógio do Windows",
+      desc: "Mostra a contagem regressiva em andamento que termina primeiro. Mantenha a página do temporizador aberta e a janela do Relógio sem minimizar.",
+    },
     today: "Hoje",
     prev: "Mês anterior",
     next: "Próximo mês",

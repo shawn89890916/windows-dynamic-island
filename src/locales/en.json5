@@ -1180,6 +1180,13 @@
   // Clock module
   clock: {
     title: "Clock & calendar",
+    timer: "Timer",
+    remaining: "Time remaining: {time}",
+    openTimer: "Open Windows Clock. Time remaining: {time}",
+    windowsTimer: {
+      label: "Show Windows Clock timers",
+      desc: "Shows the nearest running countdown from the Windows Clock window. Keep its Timer page open and the window unminimized.",
+    },
     today: "Today",
     prev: "Previous month",
     next: "Next month",

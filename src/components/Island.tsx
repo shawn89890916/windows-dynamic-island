@@ -75,9 +75,9 @@ export function Island() {
 	const status = statusPlugin?.customSettings.placement !== "taskbar" && statusPlugin && statusReading && (
 		<StatusRing reading={statusReading} />
 	);
-	const expandedStatus =
-		!windows && mode === "expanded" && statusPlugin && statusReading ? (
-			<StatusRing reading={statusReading} onClick={() => ctl.expand(STATUS_RING_PLUGIN)} />
+	const toolbarStatus =
+		big && statusPlugin && statusPlugin.customSettings.placement !== "taskbar" && statusReading ? (
+			<StatusRing reading={statusReading} size={24} onClick={() => ctl.expand(STATUS_RING_PLUGIN)} />
 		) : null;
 	const taskCount = readNumberSetting(s, taskCountSetting);
 	const secondaryTask = mode === "compact" && taskCount > 1 ? ctl.activeTasks[1] : undefined;
@@ -96,7 +96,7 @@ export function Island() {
 					}, v.expanded.width),
 				}
 			: panelSize;
-	const content = islandContent(ctl, look, v, t, macCompact, navigation, expandedStatus, secondaryTask);
+	const content = islandContent(ctl, look, v, t, macCompact, navigation, toolbarStatus, secondaryTask);
 	useEffect(() => {
 		if (!macCompact || mode !== "compact") return;
 		let element: HTMLElement | null = null;
@@ -120,8 +120,7 @@ export function Island() {
 			mutations.disconnect();
 		};
 	}, [macCompact, mode]);
-	const ringSize = expandedStatus ? { ...bigSize, height: bigSize.height + 36 } : bigSize;
-	const baseGeometry = geometry(v, look, mode, ringSize, primary, macCompact, macCompactWidth);
+	const baseGeometry = geometry(v, look, mode, bigSize, primary, macCompact, macCompactWidth);
 	const g = fitGeometry(baseGeometry, {
 		widthPercent: big ? 100 : readNumberSetting(s, sizeSettings.width),
 		heightPercent: big ? 100 : readNumberSetting(s, sizeSettings.height),

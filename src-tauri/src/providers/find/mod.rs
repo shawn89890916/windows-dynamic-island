@@ -5,7 +5,7 @@
 //! The screen is read once when a search starts, with the island left out of
 //! the picture; typing then only filters what was read.
 
-mod ocr;
+pub(super) mod ocr;
 mod overlay;
 mod text;
 

@@ -1176,6 +1176,13 @@
   // 时钟模块
   clock: {
     title: "时钟与日历",
+    timer: "计时器",
+    remaining: "剩余时间：{time}",
+    openTimer: "打开 Windows 时钟，剩余时间：{time}",
+    windowsTimer: {
+      label: "显示 Windows 时钟的倒计时",
+      desc: "显示 Windows 时钟中最先结束的运行中倒计时。请保持计时器页面打开，且不要最小化时钟窗口。",
+    },
     today: "今天",
     prev: "上个月",
     next: "下个月",

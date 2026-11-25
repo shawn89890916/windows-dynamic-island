@@ -11,7 +11,8 @@ import { LAUNCHER } from "../../core/useIslandController";
 
 const tabs = tv({
 	slots: {
-		base: "mb-2.5 flex shrink-0 items-center gap-1 overflow-x-auto overflow-y-hidden no-scrollbar max-w-full",
+		base: "mb-2.5 flex max-w-full shrink-0 items-center gap-1",
+		scroll: "flex min-w-0 flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden no-scrollbar",
 		tab: "relative flex h-7.5 w-8 shrink-0 items-center justify-center rounded-[15px] text-text-dim transition-colors duration-200 hover:text-text",
 		pill: "absolute inset-0 rounded-[inherit] bg-white/10",
 		part: "relative flex shrink-0 items-center justify-center whitespace-nowrap",
@@ -32,7 +33,7 @@ const tabs = tv({
 			},
 		},
 		bottom: {
-			true: { base: "m-0 mt-2 justify-center", extra: "ml-1.5", gear: "ml-1.5" },
+			true: { base: "m-0 mt-2", scroll: "justify-center-safe", extra: "ml-1.5", gear: "ml-1.5" },
 		},
 	},
 	compoundVariants: [
@@ -51,6 +52,7 @@ export function Tabs({
 	transition,
 	navigation,
 	extra,
+	status,
 }: {
 	entries: ModuleEntry[];
 	current: string | null;
@@ -63,6 +65,7 @@ export function Tabs({
 	navigation: TabNavigationOptions | null;
 	/** The open module's `tabBarExtra`, shown next to the gear. */
 	extra?: ReactNode;
+	status?: ReactNode;
 }) {
 	const t = useT();
 	const s = tabs({ iconsOnly, bottom });
@@ -161,80 +164,83 @@ export function Tabs({
 					suppressClick.current = false;
 				}}
 			>
-				{iconsOnly ? (
-					<Reorder.Group
-						as="div"
-						axis="x"
-						className="flex shrink-0 items-center gap-1"
-						values={entries.map((entry) => entry.module.id)}
-						onReorder={(ids) => onReorder?.(ids)}
+				<div className={s.scroll()}>
+					{iconsOnly ? (
+						<Reorder.Group
+							as="div"
+							axis="x"
+							className="flex shrink-0 items-center gap-1"
+							values={entries.map((entry) => entry.module.id)}
+							onReorder={(ids) => onReorder?.(ids)}
+						>
+							{entries.map(({ module, view }) => (
+								<Reorder.Item
+									as="button"
+									type="button"
+									key={module.id}
+									value={module.id}
+									className={`${s.tab({ active: current === module.id })} cursor-grab touch-none active:cursor-grabbing`}
+									title={`${t(module.title)} · ${t("layout.drag")}`}
+									style={{ "--tab-accent": view.accent ?? "#fff" } as CSSProperties}
+									whileDrag={{ scale: 1.12, zIndex: 1, boxShadow: "0 8px 18px -8px rgba(0,0,0,0.65)" }}
+									onPointerMove={(event) => hover(module.id, event)}
+									onPointerLeave={cancelHover}
+									onDragStart={() => {
+										cancelHover();
+										dragging.current = true;
+										suppressClick.current = true;
+									}}
+									onDragEnd={() => {
+										dragging.current = false;
+									}}
+									onClick={() => select(module.id)}
+								>
+									{current === module.id && pill}
+									<span className={s.part()}>{view.icon}</span>
+									{view.active && current !== module.id && <span className={s.dot()} />}
+								</Reorder.Item>
+							))}
+						</Reorder.Group>
+					) : (
+						entries.map((entry) => renderTab(entry))
+					)}
+					<button
+						type="button"
+						className={s.tab({ active: current === LAUNCHER, launcher: true })}
+						title={t("layout.launcher")}
+						onPointerMove={(event) => hover(LAUNCHER, event)}
+						onPointerLeave={cancelHover}
+						onClick={(e) => {
+							e.stopPropagation();
+							select(LAUNCHER);
+						}}
 					>
-						{entries.map(({ module, view }) => (
-							<Reorder.Item
-								as="button"
-								type="button"
-								key={module.id}
-								value={module.id}
-								className={`${s.tab({ active: current === module.id })} cursor-grab touch-none active:cursor-grabbing`}
-								title={`${t(module.title)} · ${t("layout.drag")}`}
-								style={{ "--tab-accent": view.accent ?? "#fff" } as CSSProperties}
-								whileDrag={{ scale: 1.12, zIndex: 1, boxShadow: "0 8px 18px -8px rgba(0,0,0,0.65)" }}
-								onPointerMove={(event) => hover(module.id, event)}
-								onPointerLeave={cancelHover}
-								onDragStart={() => {
-									cancelHover();
-									dragging.current = true;
-									suppressClick.current = true;
-								}}
-								onDragEnd={() => {
-									dragging.current = false;
-								}}
-								onClick={() => select(module.id)}
-							>
-								{current === module.id && pill}
-								<span className={s.part()}>{view.icon}</span>
-								{view.active && current !== module.id && <span className={s.dot()} />}
-							</Reorder.Item>
-						))}
-					</Reorder.Group>
-				) : (
-					entries.map((entry) => renderTab(entry))
-				)}
-				<button
-					type="button"
-					className={s.tab({ active: current === LAUNCHER, launcher: true })}
-					title={t("layout.launcher")}
-					onPointerMove={(event) => hover(LAUNCHER, event)}
-					onPointerLeave={cancelHover}
-					onClick={(e) => {
-						e.stopPropagation();
-						select(LAUNCHER);
-					}}
-				>
-					{current === LAUNCHER && pill}
-					<span className={s.part()}>
-						<LayoutGridIcon size={14} />
-					</span>
-				</button>
-				{/* Sliders inside: pressing them must not drag the island. */}
-				{extra && (
-					<div className={s.extra()} data-no-drag>
-						{extra}
-					</div>
-				)}
-				<motion.button
-					className={s.gear()}
-					title={t("island.settings")}
-					whileHover={{ rotate: 45 }}
-					whileTap={{ scale: 0.85 }}
-					transition={{ type: "spring", stiffness: 300, damping: 15 }}
-					onClick={(e) => {
-						e.stopPropagation();
-						command("open_settings");
-					}}
-				>
-					<SettingsIcon size={16} />
-				</motion.button>
+						{current === LAUNCHER && pill}
+						<span className={s.part()}>
+							<LayoutGridIcon size={14} />
+						</span>
+					</button>
+					{/* Sliders inside: pressing them must not drag the island. */}
+					{extra && (
+						<div className={s.extra()} data-no-drag>
+							{extra}
+						</div>
+					)}
+					<motion.button
+						className={s.gear()}
+						title={t("island.settings")}
+						whileHover={{ rotate: 45 }}
+						whileTap={{ scale: 0.85 }}
+						transition={{ type: "spring", stiffness: 300, damping: 15 }}
+						onClick={(e) => {
+							e.stopPropagation();
+							command("open_settings");
+						}}
+					>
+						<SettingsIcon size={16} />
+					</motion.button>
+				</div>
+				{status && <div className="grid size-7.5 shrink-0 place-items-center">{status}</div>}
 			</div>
 		</LayoutGroup>
 	);
