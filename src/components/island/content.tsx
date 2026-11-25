@@ -58,11 +58,10 @@ export function islandContent(
 							key={secondaryTask.module.id}
 							type="button"
 							aria-label={t(secondaryTask.module.title)}
-							title={t(secondaryTask.module.title)}
 							data-no-drag
 							data-hit
 							data-hit-module={secondaryTask.module.id}
-							className="flex max-w-[90px] min-w-0 shrink-0 items-center gap-1.5 border-l border-white/15 pl-2 text-[11px] font-medium text-white/85"
+							className="grid size-8 shrink-0 place-items-center border-l border-white/15 pl-2 text-white/85"
 							initial={{ opacity: 0, x: 5 }}
 							animate={{ opacity: 1, x: 0 }}
 							transition={{ duration: 0.2 }}
@@ -71,8 +70,7 @@ export function islandContent(
 								ctl.expand(secondaryTask.module.id);
 							}}
 						>
-							<span className="grid size-4 shrink-0 place-items-center [&_svg]:size-4">{secondaryTask.view.icon}</span>
-							<span className="truncate">{t(secondaryTask.module.title)}</span>
+							<span className="grid size-6 shrink-0 place-items-center [&_svg]:size-5">{secondaryTask.view.icon}</span>
 						</motion.button>
 					)}
 				</div>
