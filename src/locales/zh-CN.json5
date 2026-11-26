@@ -257,6 +257,10 @@
       configHint: "请在设置中心“插件市场 → 已安装”中配置此插件。",
     },
     plugins: {
+      timer: {
+        name: "灵动计时器",
+        desc: "直接在灵动岛设置倒计时或结束时刻；到时播放提示音并发送系统通知。",
+      },
       pomodoro: {
         name: "番茄钟",
         desc: "科学高效的番茄工作法计时器，胶囊栏常驻倒计时进度，并在休息时智能提醒。",
@@ -367,6 +371,20 @@
       desktopGlass: {
         title: "桌面背景效果",
         desc: "选择灵动岛背后的桌面效果强度。",
+      },
+      timer: {
+        countdown: "倒计时",
+        until: "结束时间",
+        hours: "时",
+        minutes: "分",
+        endAt: "提醒时间",
+        set: "设置",
+        start: "开始",
+        pause: "暂停",
+        restart: "重新开始",
+        reset: "重置",
+        finished: "时间到，已发送系统提醒并播放提示音。",
+        alertHint: "运行时会作为时钟状态显示在多任务中。",
       },
       pomodoro: {
         focus: "深度专注",

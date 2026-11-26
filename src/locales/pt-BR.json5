@@ -242,6 +242,10 @@
       configHint: "Configure este plugin em Configurações → Marketplace → Instalados.",
     },
     plugins: {
+      timer: {
+        name: "Temporizador da Ilha",
+        desc: "Defina uma contagem regressiva ou horário final na ilha; receba um alerta e um toque ao terminar.",
+      },
       pomodoro: {
         name: "Temporizador Pomodoro",
         desc: "Mantenha-se produtivo com intervalos de foco e pausas inteligentes.",
@@ -352,6 +356,20 @@
       desktopGlass: {
         title: "Plano de fundo da área de trabalho",
         desc: "Escolha o efeito de plano de fundo usado atrás da ilha.",
+      },
+      timer: {
+        countdown: "Contagem regressiva",
+        until: "Horário final",
+        hours: "h",
+        minutes: "min",
+        endAt: "Alertar às",
+        set: "Definir",
+        start: "Iniciar",
+        pause: "Pausar",
+        restart: "Reiniciar",
+        reset: "Zerar",
+        finished: "O tempo acabou. Uma notificação e um toque foram enviados.",
+        alertHint: "Enquanto ativo, o temporizador aparece como relógio nas tarefas múltiplas.",
       },
       pomodoro: {
         focus: "Foco Total",

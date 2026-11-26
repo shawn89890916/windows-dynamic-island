@@ -102,6 +102,7 @@ const entries: Record<string, string> = {
 	"com.island.status-ring": "StatusRingWidget",
 	"com.island.smooth-tabs": "SmoothTabsWidget",
 	"com.island.pomodoro": "PomodoroWidget",
+	"com.island.timer": "TimerWidget",
 	"com.island.crypto-ticker": "CryptoTickerWidget",
 	"com.island.work-countdown": "WorkCountdownWidget",
 	"com.island.weather": "WeatherWidget",
@@ -151,13 +152,15 @@ for (const source of MARKETPLACE_CATALOG.filter((plugin) => !selectedId || plugi
 		background = `import {useVpnMonitor} from '../../src/core/plugins/useVpn';import {useT} from '../../src/core/i18n';function Background({settings}){const value=useVpnMonitor(settings);const t=useT();const left=value.snapshot?.proxies[value.group]?.now||'VPN';const right=t(value.busy?'marketplace.widgets.vpn.testing':value.error?'marketplace.widgets.vpn.statusError':'marketplace.widgets.vpn.statusMonitoring');React.useEffect(()=>{sdk.setPluginActivity('${source.id}',{left,right});},[left,right]);return null;}`;
 	if (source.id === "com.island.pomodoro")
 		background = `import {usePomodoroLive,startPomodoroBackground} from '../../src/core/plugins/pluginActivityStore';function Background({settings}){const value=usePomodoroLive();React.useEffect(()=>startPomodoroBackground(),[]);React.useEffect(()=>value.setDurations(Number(settings.workDuration??25),Number(settings.breakDuration??5)),[settings.workDuration,settings.breakDuration,value.setDurations]);React.useEffect(()=>{sdk.setPluginActivity('${source.id}',{active:value.isRunning,priority:85,left:value.mode==='work'?'专注':'休息',right:value.formattedTime,progress:value.progressPercent});},[value.isRunning,value.mode,value.formattedTime,value.progressPercent]);return null;}`;
+	if (source.id === "com.island.timer")
+		background = "function Background(){return React.createElement(TimerBackground);}";
 	if (source.id === "com.island.mac-compact")
 		background = "function Background(){return React.createElement(MacCompactBackground);}";
 	if (source.id === "com.island.status-ring")
 		background = "import {StatusRingBackground as Background} from '../../src/core/plugins/widgets/StatusRingWidget';";
 	if (source.id === "com.island.smooth-tabs")
 		background = "import {SmoothTabsBackground as Background} from '../../src/core/plugins/widgets/SmoothTabsWidget';";
-	const entry = `import * as React from 'react';import {${widget}${source.id === "com.island.desktop-glass" ? ",DesktopGlassBackground" : source.id === "com.island.mac-compact" ? ",MacCompactBackground" : ""}} from '../../src/core/plugins/widgets/${widget}';${diagnose ? `import {${diagnose}} from '../diagnostics';` : ""}const sdk=globalThis.__ISLAND_PLUGIN_SDK__;${background}sdk.registerPlugin(${JSON.stringify(source.id)},${JSON.stringify(manifest.version)},{Panel:${widget}${source.id === "com.island.desktop-glass" ? ",Background:DesktopGlassBackground" : background ? ",Background" : ""}${diagnose ? `,diagnose:${diagnose}` : ""}});`;
+	const entry = `import * as React from 'react';import {${widget}${source.id === "com.island.desktop-glass" ? ",DesktopGlassBackground" : source.id === "com.island.mac-compact" ? ",MacCompactBackground" : source.id === "com.island.timer" ? ",TimerBackground" : ""}} from '../../src/core/plugins/widgets/${widget}';${diagnose ? `import {${diagnose}} from '../diagnostics';` : ""}const sdk=globalThis.__ISLAND_PLUGIN_SDK__;${background}sdk.registerPlugin(${JSON.stringify(source.id)},${JSON.stringify(manifest.version)},{Panel:${widget}${source.id === "com.island.desktop-glass" ? ",Background:DesktopGlassBackground" : background ? ",Background" : ""}${diagnose ? `,diagnose:${diagnose}` : ""}});`;
 	const entryPath = join(generated, `${source.id}.tsx`);
 	await writeFile(entryPath, entry);
 	const result = await Bun.build({

@@ -261,6 +261,10 @@
       configHint: "Configure this plugin from Settings → Marketplace → Installed.",
     },
     plugins: {
+      timer: {
+        name: "Island Timer",
+        desc: "Set a countdown or end time on the island; get an alert and chime when it finishes.",
+      },
       pomodoro: {
         name: "Pomodoro Timer",
         desc: "Stay productive with custom work/break intervals and ambient countdowns.",
@@ -371,6 +375,20 @@
       desktopGlass: {
         title: "Desktop backdrop",
         desc: "Choose the background effect used behind the island.",
+      },
+      timer: {
+        countdown: "Countdown",
+        until: "End time",
+        hours: "h",
+        minutes: "min",
+        endAt: "Alert at",
+        set: "Set",
+        start: "Start",
+        pause: "Pause",
+        restart: "Restart",
+        reset: "Reset",
+        finished: "Time is up. A notification and chime were sent.",
+        alertHint: "While running, the timer appears as a clock in multitasking.",
       },
       pomodoro: {
         focus: "Deep Focus",

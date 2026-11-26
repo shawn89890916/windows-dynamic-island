@@ -7,9 +7,10 @@ import { glowStyle } from "./Rim";
 
 const tints = {
 	none: "#000",
-	subtle: "rgb(0 0 0 / 85%)",
-	moderate: "rgb(0 0 0 / 72%)",
-	ambient: "rgb(0 0 0 / 60%)",
+	// Keep the native backdrop blur visible instead of covering it with a dark veil.
+	subtle: "rgb(0 0 0 / 10%)",
+	moderate: "rgb(0 0 0 / 16%)",
+	ambient: "rgb(0 0 0 / 24%)",
 } satisfies Record<Appearance["blurEffect"], string>;
 
 export function surfaceTint(effect: Appearance["blurEffect"]) {
