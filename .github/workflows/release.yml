@@ -122,3 +122,11 @@ jobs:
           $zip = "Dynamic.Island_${version}_x64-portable.zip"
           Compress-Archive -Path $dir -DestinationPath $zip
           gh release upload "v$version" $zip --clobber
+
+      - name: Build timer marketplace package
+        run: bun run plugins:build --only=com.island.timer
+
+      - name: Publish timer to plugin marketplace
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload plugins plugins/dist/com.island.timer.island-plugin.json plugins/catalog.json --clobber
