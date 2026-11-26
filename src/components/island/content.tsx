@@ -70,7 +70,13 @@ export function islandContent(
 								ctl.expand(secondaryTask.module.id);
 							}}
 						>
-							<span className="grid size-6 shrink-0 place-items-center [&_svg]:size-5">
+							<span
+								className={cn(
+									"grid size-6 shrink-0 place-items-center [&_svg]:size-5",
+									look.blurEffect !== "none" &&
+										"rounded-full bg-black/60 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]",
+								)}
+							>
 								{secondaryTask.view.compact?.icon ?? secondaryTask.view.icon}
 							</span>
 						</motion.button>
@@ -96,6 +102,7 @@ export function islandContent(
 				navigation={navigation}
 				extra={ctl.launcher ? undefined : focused?.view.tabBarExtra}
 				status={status}
+				backdropBlurred={look.blurEffect !== "none"}
 			/>
 		);
 		return {

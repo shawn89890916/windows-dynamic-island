@@ -35,9 +35,13 @@ const tabs = tv({
 		bottom: {
 			true: { base: "m-0 mt-2", scroll: "justify-center-safe", extra: "ml-1.5", gear: "ml-1.5" },
 		},
+		glass: {
+			true: { tab: "bg-black/55 opacity-80 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] hover:opacity-100" },
+		},
 	},
 	compoundVariants: [
 		{ iconsOnly: true, active: true, class: { tab: "opacity-100" } },
+		{ iconsOnly: true, glass: true, active: true, class: { tab: "opacity-100" } },
 		{ iconsOnly: true, launcher: true, class: { tab: "ml-1.5 w-8 [--tab-accent:#fff]" } },
 	],
 });
@@ -53,6 +57,7 @@ export function Tabs({
 	navigation,
 	extra,
 	status,
+	backdropBlurred,
 }: {
 	entries: ModuleEntry[];
 	current: string | null;
@@ -66,9 +71,10 @@ export function Tabs({
 	/** The open module's `tabBarExtra`, shown next to the gear. */
 	extra?: ReactNode;
 	status?: ReactNode;
+	backdropBlurred: boolean;
 }) {
 	const t = useT();
-	const s = tabs({ iconsOnly, bottom });
+	const s = tabs({ iconsOnly, bottom, glass: backdropBlurred && iconsOnly });
 	const groupId = useId();
 	const reducedMotion = useReducedMotion();
 	const hoverDelayMs = useSetting(generalSettings.switchPanelsOnHover) ? navigation?.hoverDelayMs : undefined;
@@ -128,7 +134,7 @@ export function Tabs({
 	);
 	const renderTab = ({ module, view }: ModuleEntry, draggable = false) => {
 		const selected = current === module.id;
-		const className = `${s.tab({ active: selected })}${draggable ? " cursor-grab touch-none active:cursor-grabbing" : ""}`;
+		const className = `${s.tab({ active: selected, glass: backdropBlurred && iconsOnly })}${draggable ? " cursor-grab touch-none active:cursor-grabbing" : ""}`;
 		return (
 			<button
 				type="button"
@@ -141,7 +147,13 @@ export function Tabs({
 				onClick={() => select(module.id)}
 			>
 				{selected && pill}
-				<span className={s.part()}>{view.icon}</span>
+				<span
+					className={s.part({
+						class: backdropBlurred && iconsOnly ? "drop-shadow-[0_1px_1px_rgba(0,0,0,0.9)]" : undefined,
+					})}
+				>
+					{view.icon}
+				</span>
 				{view.active && !selected && <span className={s.dot()} />}
 			</button>
 		);
@@ -179,7 +191,7 @@ export function Tabs({
 									type="button"
 									key={module.id}
 									value={module.id}
-									className={`${s.tab({ active: current === module.id })} cursor-grab touch-none active:cursor-grabbing`}
+									className={`${s.tab({ active: current === module.id, glass: backdropBlurred && iconsOnly })} cursor-grab touch-none active:cursor-grabbing`}
 									title={`${t(module.title)} · ${t("layout.drag")}`}
 									style={{ "--tab-accent": view.accent ?? "#fff" } as CSSProperties}
 									whileDrag={{ scale: 1.12, zIndex: 1, boxShadow: "0 8px 18px -8px rgba(0,0,0,0.65)" }}
@@ -196,7 +208,13 @@ export function Tabs({
 									onClick={() => select(module.id)}
 								>
 									{current === module.id && pill}
-									<span className={s.part()}>{view.icon}</span>
+									<span
+										className={s.part({
+											class: backdropBlurred && iconsOnly ? "drop-shadow-[0_1px_1px_rgba(0,0,0,0.9)]" : undefined,
+										})}
+									>
+										{view.icon}
+									</span>
 									{view.active && current !== module.id && <span className={s.dot()} />}
 								</Reorder.Item>
 							))}
@@ -206,7 +224,7 @@ export function Tabs({
 					)}
 					<button
 						type="button"
-						className={s.tab({ active: current === LAUNCHER, launcher: true })}
+						className={s.tab({ active: current === LAUNCHER, launcher: true, glass: backdropBlurred && iconsOnly })}
 						title={t("layout.launcher")}
 						onPointerMove={(event) => hover(LAUNCHER, event)}
 						onPointerLeave={cancelHover}
