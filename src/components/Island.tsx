@@ -172,9 +172,16 @@ export function Island() {
 		[mode, ctl.tab, ctl.expand, ctl.collapse, ctl.keepOpen],
 	);
 
+	const notchGradientSize = attachedNotch ? `${g.width + 2 * g.ear}px ${g.height}px` : undefined;
 	const rim =
 		!macCompact && big ? (
-			<Rim look={look} openTop={!windows} notchDepth={attachedNotch ? g.earHeight : undefined} />
+			<Rim
+				look={look}
+				openTop={!windows}
+				notchDepth={attachedNotch ? g.earHeight : undefined}
+				backgroundSize={notchGradientSize}
+				backgroundPosition={attachedNotch ? `-${g.ear}px 0px` : undefined}
+			/>
 		) : null;
 	const bubble = { transition: v.shellSpring, rim, onOpen: ctl.expand };
 
@@ -236,7 +243,14 @@ export function Island() {
 									animate={{ width: g.ear, height: g.earHeight }}
 									transition={transition}
 								>
-									{rim && <NotchRimArc look={look} side="left" />}
+									{rim && (
+										<NotchRimArc
+											look={look}
+											side="left"
+											backgroundSize={notchGradientSize}
+											backgroundPosition="0px 0px"
+										/>
+									)}
 								</motion.span>
 								<motion.span
 									className="pointer-events-none absolute top-0 left-full"
@@ -247,7 +261,14 @@ export function Island() {
 									animate={{ width: g.ear, height: g.earHeight }}
 									transition={transition}
 								>
-									{rim && <NotchRimArc look={look} side="right" />}
+									{rim && (
+										<NotchRimArc
+											look={look}
+											side="right"
+											backgroundSize={notchGradientSize}
+											backgroundPosition={`-${g.width + g.ear}px 0px`}
+										/>
+									)}
 								</motion.span>
 							</>
 						)}

@@ -19,12 +19,16 @@ export function RimRing({
 	animate,
 	openTop,
 	notchDepth,
+	backgroundSize,
+	backgroundPosition,
 }: {
 	background: string | undefined;
 	width: number;
 	animate?: boolean;
 	openTop?: boolean;
 	notchDepth?: number;
+	backgroundSize?: string;
+	backgroundPosition?: string;
 }) {
 	return (
 		<span
@@ -33,6 +37,8 @@ export function RimRing({
 				{
 					"--rim-bg": background,
 					"--rim-w": `${width}px`,
+					backgroundSize,
+					backgroundPosition,
 					clipPath: openTop
 						? notchDepth
 							? `polygon(0 ${notchDepth}px, 0 100%, 100% 100%, 100% ${notchDepth}px)`
@@ -49,10 +55,14 @@ export function Rim({
 	look,
 	openTop = false,
 	notchDepth,
+	backgroundSize,
+	backgroundPosition,
 }: {
 	look: Appearance;
 	openTop?: boolean;
 	notchDepth?: number;
+	backgroundSize?: string;
+	backgroundPosition?: string;
 }) {
 	const background = rimBackground(look.rim);
 	return (
@@ -62,12 +72,24 @@ export function Rim({
 			animate={look.animate}
 			openTop={openTop}
 			notchDepth={notchDepth}
+			backgroundSize={backgroundSize}
+			backgroundPosition={backgroundPosition}
 		/>
 	);
 }
 
 /** A short arc that connects the island's rim to each concave notch corner. */
-export function NotchRimArc({ look, side }: { look: Appearance; side: "left" | "right" }) {
+export function NotchRimArc({
+	look,
+	side,
+	backgroundSize,
+	backgroundPosition,
+}: {
+	look: Appearance;
+	side: "left" | "right";
+	backgroundSize?: string;
+	backgroundPosition?: string;
+}) {
 	const background = rimBackground(look.rim);
 	const width = background ? look.thickness : 1;
 	const anchor = side === "left" ? "0% 100%" : "100% 100%";
@@ -80,7 +102,15 @@ export function NotchRimArc({ look, side }: { look: Appearance; side: "left" | "
 				background ? "bg-(image:--rim-bg)" : "bg-white/9",
 				background && look.animate && "animate-rim-spin",
 			)}
-			style={{ "--rim-bg": background, maskImage: mask, WebkitMaskImage: mask } as CSSProperties}
+			style={
+				{
+					"--rim-bg": background,
+					backgroundSize,
+					backgroundPosition,
+					maskImage: mask,
+					WebkitMaskImage: mask,
+				} as CSSProperties
+			}
 		/>
 	);
 }
