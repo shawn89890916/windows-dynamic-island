@@ -5,7 +5,6 @@ import { useTauriEvent } from "../core/bridge";
 import { cn } from "../core/cn";
 import { useSyncLocale, useT } from "../core/i18n";
 import { type IslandApi, IslandContext, tabNavigation } from "../core/island";
-import { macAppearanceEnabled } from "../core/plugins/appearancePlugin";
 import { useInstalledPlugins } from "../core/plugins/registry";
 import { PluginBackgrounds } from "../core/plugins/runtime";
 import { islandStatusRing, STATUS_RING_PLUGIN } from "../core/plugins/statusRing";
@@ -37,7 +36,7 @@ import {
 } from "./island/geometry";
 import { launcherSize } from "./island/Launcher";
 import { MacCamera } from "./island/MacCamera";
-import { NotchRimArc, Rim } from "./island/Rim";
+import { AttachedNotchRim, Rim } from "./island/Rim";
 import { StatusRing } from "./island/StatusRing";
 import { Surface, surfaceTint } from "./island/Surface";
 import { useIslandFileDrop } from "./island/useIslandFileDrop";
@@ -50,7 +49,11 @@ export function Island() {
 	const ctl = useIslandController(builtinModules);
 	const { mode, primary, focused } = ctl;
 	const baseLook = useAppearance();
-	const macCompact = macAppearanceEnabled(plugins);
+	const macCompactPlugin = plugins.find(
+		(plugin) => plugin.enabled && Boolean(plugin.packageSha256) && plugin.manifest.appearance === "mac-compact",
+	);
+	const macCompact = Boolean(macCompactPlugin);
+	const macCameraVisible = macCompactPlugin?.customSettings.showCamera !== false;
 	const [macCompactWidth, setMacCompactWidth] = useState(128);
 	const [macCompactHidden, setMacCompactHidden] = useState(false);
 	const [viewport, setViewport] = useState(() => ({ width: window.innerWidth, height: window.innerHeight }));
@@ -90,7 +93,7 @@ export function Island() {
 	const mainTaskCount = Math.min(taskCount, readNumberSetting(s, mainTaskCountSetting));
 	const secondaryTask = mode === "compact" && mainTaskCount > 1 ? ctl.activeTasks[1] : undefined;
 	const sideTasks = mode === "compact" ? ctl.activeTasks.slice(mainTaskCount, taskCount) : [];
-	const sideStatus = resting && !(macCompact && macCompactHidden) && status ? status : null;
+	const sideStatus = windows && resting && !(macCompact && macCompactHidden) && status ? status : null;
 	const sideCount = sideTasks.length + Number(Boolean(sideStatus));
 	const panelSize = (ctl.launcher ? launcherSize(ctl.entries.length) : focused?.view.expandedSize) ?? v.expanded;
 	// A shared width keeps the top bar in place as the body changes height and content.
@@ -172,17 +175,7 @@ export function Island() {
 		[mode, ctl.tab, ctl.expand, ctl.collapse, ctl.keepOpen],
 	);
 
-	const notchGradientSize = attachedNotch ? `${g.width + 2 * g.ear}px ${g.height}px` : undefined;
-	const rim =
-		!macCompact && big ? (
-			<Rim
-				look={look}
-				openTop={!windows}
-				notchDepth={attachedNotch ? g.earHeight : undefined}
-				backgroundSize={notchGradientSize}
-				backgroundPosition={attachedNotch ? `-${g.ear}px 0px` : undefined}
-			/>
-		) : null;
+	const rim = !macCompact && big && !attachedNotch ? <Rim look={look} openTop={!windows} /> : null;
 	const bubble = { transition: v.shellSpring, rim, onOpen: ctl.expand };
 
 	return (
@@ -242,16 +235,7 @@ export function Island() {
 									initial={false}
 									animate={{ width: g.ear, height: g.earHeight }}
 									transition={transition}
-								>
-									{rim && (
-										<NotchRimArc
-											look={look}
-											side="left"
-											backgroundSize={notchGradientSize}
-											backgroundPosition="0px 0px"
-										/>
-									)}
-								</motion.span>
+								/>
 								<motion.span
 									className="pointer-events-none absolute top-0 left-full"
 									style={{
@@ -260,16 +244,7 @@ export function Island() {
 									initial={false}
 									animate={{ width: g.ear, height: g.earHeight }}
 									transition={transition}
-								>
-									{rim && (
-										<NotchRimArc
-											look={look}
-											side="right"
-											backgroundSize={notchGradientSize}
-											backgroundPosition={`-${g.width + g.ear}px 0px`}
-										/>
-									)}
-								</motion.span>
+								/>
 							</>
 						)}
 
@@ -287,7 +262,18 @@ export function Island() {
 						>
 							{content.node}
 						</Surface>
-						{macCompact && <MacCamera />}
+						{attachedNotch && !macCompact && big && (
+							<AttachedNotchRim
+								look={look}
+								width={g.width}
+								height={g.height}
+								ear={g.ear}
+								earHeight={g.earHeight}
+								radius={g.radius}
+								radiusY={g.radiusY}
+							/>
+						)}
+						{macCompact && macCameraVisible && <MacCamera />}
 
 						<AmbientBubbles entries={ctl.entries} visible={resting} shrunk={mode === "idle" && !windows} {...bubble} />
 						<SideBubbles

@@ -292,7 +292,9 @@
       },
       macCompact: {
         name: "Ilha Dinâmica do Mac",
-        desc: "Requer o Island for Windows v0.5.18 ou posterior. Mantém um recorte de câmera simulado, exibe a capa e a forma de onda quando o player está recolhido e indica em verde ou laranja o uso da câmera ou do microfone detectado pelo Windows.",
+        desc: "Requer o Island for Windows v0.5.18 ou posterior. Exibe a capa e a forma de onda quando o player está recolhido e indica em verde ou laranja o uso da câmera ou do microfone detectado pelo Windows. O recorte de câmera simulado pode ser ocultado nas configurações do plugin.",
+        showCamera: "Mostrar decoração da câmera",
+        showCameraDesc: "Mostrar ou ocultar o recorte de câmera simulado na ilha.",
         camera: "Câmera em uso",
         microphone: "Microfone em uso",
       },

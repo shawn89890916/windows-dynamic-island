@@ -311,7 +311,9 @@
       },
       macCompact: {
         name: "Mac Dynamic Island",
-        desc: "Requires Island for Windows v0.5.18 or later. Keeps a simulated camera cutout visible, reduces collapsed music to cover art and a waveform, and shows green or orange when Windows reports camera or microphone use.",
+        desc: "Requires Island for Windows v0.5.18 or later. Reduces collapsed music to cover art and a waveform, and shows green or orange when Windows reports camera or microphone use. The simulated camera cutout can be hidden in plugin settings.",
+        showCamera: "Show camera decoration",
+        showCameraDesc: "Show or hide the simulated camera cutout in the island.",
         camera: "Camera in use",
         microphone: "Microphone in use",
       },

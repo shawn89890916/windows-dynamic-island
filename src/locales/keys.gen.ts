@@ -206,6 +206,8 @@ export type MessageKey =
 	| "marketplace.plugins.vpn.desc"
 	| "marketplace.plugins.macCompact.name"
 	| "marketplace.plugins.macCompact.desc"
+	| "marketplace.plugins.macCompact.showCamera"
+	| "marketplace.plugins.macCompact.showCameraDesc"
 	| "marketplace.plugins.macCompact.camera"
 	| "marketplace.plugins.macCompact.microphone"
 	| "marketplace.plugins.desktopGlass.name"

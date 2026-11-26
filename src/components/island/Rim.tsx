@@ -78,37 +78,64 @@ export function Rim({
 	);
 }
 
-/** A short arc that connects the island's rim to each concave notch corner. */
-export function NotchRimArc({
+/** One continuous rim path across the island body and both notch corners. */
+export function AttachedNotchRim({
 	look,
-	side,
-	backgroundSize,
-	backgroundPosition,
+	width,
+	height,
+	ear,
+	earHeight,
+	radius,
+	radiusY,
 }: {
 	look: Appearance;
-	side: "left" | "right";
-	backgroundSize?: string;
-	backgroundPosition?: string;
+	width: number;
+	height: number;
+	ear: number;
+	earHeight: number;
+	radius: number;
+	radiusY: number;
 }) {
 	const background = rimBackground(look.rim);
-	const width = background ? look.thickness : 1;
-	const anchor = side === "left" ? "0% 100%" : "100% 100%";
-	const mask = `radial-gradient(ellipse farthest-side at ${anchor}, transparent calc(99% - ${width}px), #000 99%, transparent calc(99% + ${width}px))`;
+	const stroke = background ? look.thickness : 1;
+	const frameWidth = width + 2 * ear;
+	const left = ear;
+	const right = ear + width;
+	const rx = Math.min(radius, width / 2);
+	const ry = Math.min(radiusY, height / 2);
+	const curve = 0.55228475;
+	const path = [
+		`M 0 0`,
+		`C ${ear * curve} 0 ${left} ${earHeight * (1 - curve)} ${left} ${earHeight}`,
+		`L ${left} ${height - ry}`,
+		`A ${rx} ${ry} 0 0 0 ${left + rx} ${height}`,
+		`L ${right - rx} ${height}`,
+		`A ${rx} ${ry} 0 0 0 ${right} ${height - ry}`,
+		`L ${right} ${earHeight}`,
+		`C ${right} ${earHeight * (1 - curve)} ${right + ear * (1 - curve)} 0 ${frameWidth} 0`,
+	].join(" ");
+	const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${frameWidth}" height="${height}" viewBox="0 0 ${frameWidth} ${height}"><path d="${path}" fill="none" stroke="white" stroke-width="${stroke}" stroke-linecap="butt" stroke-linejoin="round"/></svg>`;
+	const mask = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 
 	return (
 		<span
 			className={cn(
-				"pointer-events-none absolute inset-0",
+				"pointer-events-none absolute top-0 z-2",
 				background ? "bg-(image:--rim-bg)" : "bg-white/9",
 				background && look.animate && "animate-rim-spin",
 			)}
 			style={
 				{
 					"--rim-bg": background,
-					backgroundSize,
-					backgroundPosition,
+					left: -ear,
+					width: frameWidth,
+					height,
 					maskImage: mask,
 					WebkitMaskImage: mask,
+					maskRepeat: "no-repeat",
+					WebkitMaskRepeat: "no-repeat",
+					maskSize: "100% 100%",
+					WebkitMaskSize: "100% 100%",
 				} as CSSProperties
 			}
 		/>
