@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { tv } from "tailwind-variants";
 import { type Appearance, rimBackground } from "../../core/appearance";
+import { cn } from "../../core/cn";
 
 /** A gradient ring masked to the border, inside the parent's rounded shape. */
 const rim = tv({
@@ -17,11 +18,13 @@ export function RimRing({
 	width,
 	animate,
 	openTop,
+	notchDepth,
 }: {
 	background: string | undefined;
 	width: number;
 	animate?: boolean;
 	openTop?: boolean;
+	notchDepth?: number;
 }) {
 	return (
 		<span
@@ -31,7 +34,9 @@ export function RimRing({
 					"--rim-bg": background,
 					"--rim-w": `${width}px`,
 					clipPath: openTop
-						? "polygon(0 0, var(--rim-w) 0, var(--rim-w) var(--rim-w), calc(100% - var(--rim-w)) var(--rim-w), calc(100% - var(--rim-w)) 0, 100% 0, 100% 100%, 0 100%)"
+						? notchDepth
+							? `polygon(0 ${notchDepth}px, 0 100%, 100% 100%, 100% ${notchDepth}px)`
+							: "polygon(0 0, var(--rim-w) 0, var(--rim-w) var(--rim-w), calc(100% - var(--rim-w)) var(--rim-w), calc(100% - var(--rim-w)) 0, 100% 0, 100% 100%, 0 100%)"
 						: undefined,
 				} as CSSProperties
 			}
@@ -40,10 +45,43 @@ export function RimRing({
 }
 
 /** A colored rim, with the top edge open for the Dynamic Island notch. */
-export function Rim({ look, openTop = false }: { look: Appearance; openTop?: boolean }) {
+export function Rim({
+	look,
+	openTop = false,
+	notchDepth,
+}: {
+	look: Appearance;
+	openTop?: boolean;
+	notchDepth?: number;
+}) {
 	const background = rimBackground(look.rim);
 	return (
-		<RimRing background={background} width={background ? look.thickness : 1} animate={look.animate} openTop={openTop} />
+		<RimRing
+			background={background}
+			width={background ? look.thickness : 1}
+			animate={look.animate}
+			openTop={openTop}
+			notchDepth={notchDepth}
+		/>
+	);
+}
+
+/** A short arc that connects the island's rim to each concave notch corner. */
+export function NotchRimArc({ look, side }: { look: Appearance; side: "left" | "right" }) {
+	const background = rimBackground(look.rim);
+	const width = background ? look.thickness : 1;
+	const anchor = side === "left" ? "0% 100%" : "100% 100%";
+	const mask = `radial-gradient(ellipse farthest-side at ${anchor}, transparent calc(99% - ${width}px), #000 99%, transparent calc(99% + ${width}px))`;
+
+	return (
+		<span
+			className={cn(
+				"pointer-events-none absolute inset-0",
+				background ? "bg-(image:--rim-bg)" : "bg-white/9",
+				background && look.animate && "animate-rim-spin",
+			)}
+			style={{ "--rim-bg": background, maskImage: mask, WebkitMaskImage: mask } as CSSProperties}
+		/>
 	);
 }
 

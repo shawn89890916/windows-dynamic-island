@@ -37,7 +37,7 @@ import {
 } from "./island/geometry";
 import { launcherSize } from "./island/Launcher";
 import { MacCamera } from "./island/MacCamera";
-import { Rim } from "./island/Rim";
+import { NotchRimArc, Rim } from "./island/Rim";
 import { StatusRing } from "./island/StatusRing";
 import { Surface, surfaceTint } from "./island/Surface";
 import { useIslandFileDrop } from "./island/useIslandFileDrop";
@@ -172,7 +172,10 @@ export function Island() {
 		[mode, ctl.tab, ctl.expand, ctl.collapse, ctl.keepOpen],
 	);
 
-	const rim = !macCompact && big ? <Rim look={look} openTop={!windows} /> : null;
+	const rim =
+		!macCompact && big ? (
+			<Rim look={look} openTop={!windows} notchDepth={attachedNotch ? g.earHeight : undefined} />
+		) : null;
 	const bubble = { transition: v.shellSpring, rim, onOpen: ctl.expand };
 
 	return (
@@ -232,7 +235,9 @@ export function Island() {
 									initial={false}
 									animate={{ width: g.ear, height: g.earHeight }}
 									transition={transition}
-								/>
+								>
+									{rim && <NotchRimArc look={look} side="left" />}
+								</motion.span>
 								<motion.span
 									className="pointer-events-none absolute top-0 left-full"
 									style={{
@@ -241,7 +246,9 @@ export function Island() {
 									initial={false}
 									animate={{ width: g.ear, height: g.earHeight }}
 									transition={transition}
-								/>
+								>
+									{rim && <NotchRimArc look={look} side="right" />}
+								</motion.span>
 							</>
 						)}
 
