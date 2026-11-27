@@ -45,6 +45,33 @@ export function capsulePath(rect: IslandOverlayRect) {
 	return `M ${x + r} ${y} H ${x + w - r} Q ${x + w} ${y} ${x + w} ${y + r} V ${y + h - r} Q ${x + w} ${y + h} ${x + w - r} ${y + h} H ${x + r} Q ${x} ${y + h} ${x} ${y + h - r} V ${y + r} Q ${x} ${y} ${x + r} ${y} Z`;
 }
 
+function capsuleOutlinePath(rect: IslandOverlayRect, layout: IslandOverlayLayout) {
+	if (layout.attachedNotch && rect.role === "main" && layout.notch) {
+		const { ear, earHeight, radius, radiusY } = layout.notch;
+		const left = rect.x;
+		const right = left + rect.width;
+		const curve = 0.55228475;
+		const rx = Math.min(radius, rect.width / 2);
+		const ry = Math.min(radiusY, rect.height / 2);
+		return [
+			`M ${left - ear} ${rect.y}`,
+			`C ${left - ear * (1 - curve)} ${rect.y} ${left} ${rect.y + earHeight * (1 - curve)} ${left} ${rect.y + earHeight}`,
+			`L ${left} ${rect.y + rect.height - ry}`,
+			`A ${rx} ${ry} 0 0 0 ${left + rx} ${rect.y + rect.height}`,
+			`L ${right - rx} ${rect.y + rect.height}`,
+			`A ${rx} ${ry} 0 0 0 ${right} ${rect.y + rect.height - ry}`,
+			`L ${right} ${rect.y + earHeight}`,
+			`C ${right} ${rect.y + earHeight * (1 - curve)} ${right + ear * (1 - curve)} ${rect.y} ${right + ear} ${rect.y}`,
+		].join(" ");
+	}
+	if (rect.shape === "notch") {
+		const { x, y, width: w, height: h } = rect;
+		const r = Math.min(16, h / 2, w / 3);
+		return `M ${x} ${y} V ${y + h - r} Q ${x} ${y + h} ${x + r} ${y + h} H ${x + w - r} Q ${x + w} ${y + h} ${x + w} ${y + h - r} V ${y}`;
+	}
+	return capsulePath(rect);
+}
+
 export function CapsuleEdges({
 	layout,
 	stroke,
@@ -59,15 +86,19 @@ export function CapsuleEdges({
 	return (
 		<g>
 			{[layout.main, ...layout.side].map((rect) => (
-				<path
-					key={`${rect.role}-${rect.x}-${rect.y}`}
-					d={capsulePath(rect)}
-					fill={fill}
-					stroke={stroke}
-					strokeWidth={glow ? 1.4 : 1}
-					vectorEffect="non-scaling-stroke"
-					className={glow ? "festive-glow" : undefined}
-				/>
+				<g key={`${rect.role}-${rect.x}-${rect.y}`}>
+					{fill !== "transparent" && <path d={capsulePath(rect)} fill={fill} />}
+					<path
+						d={capsuleOutlinePath(rect, layout)}
+						fill="none"
+						stroke={stroke}
+						strokeWidth={glow ? 1.4 : 1}
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						vectorEffect="non-scaling-stroke"
+						className={glow ? "festive-glow" : undefined}
+					/>
+				</g>
 			))}
 		</g>
 	);
@@ -79,13 +110,25 @@ export function EdgeParticles({ layout, count, color }: { layout: IslandOverlayL
 		const perRect = Math.ceil(count / rects.length);
 		return Array.from({ length: perRect }, (_, index) => {
 			const along = (index + 1) / (perRect + 1);
-			const edge = index % (rect.shape === "notch" ? 3 : 4);
+			const notch = rect.shape === "notch";
+			const edge = index % (notch ? 3 : 4);
 			const inset = Math.max(4, Math.min(10, rect.height * 0.2));
-			const x =
-				edge < 2
+			const x = notch
+				? edge === 0
+					? rect.x + inset + along * Math.max(0, rect.width - inset * 2)
+					: rect.x + (edge === 1 ? 2 : rect.width - 2)
+				: edge < 2
 					? rect.x + inset + along * Math.max(0, rect.width - inset * 2)
 					: rect.x + (edge === 2 ? 2 : rect.width - 2);
-			const y = edge === 0 ? rect.y + 2 : edge === 1 || edge === 2 ? rect.y + rect.height - 2 : rect.y + 2;
+			const y = notch
+				? edge === 0
+					? rect.y + rect.height - 2
+					: rect.y + inset + along * Math.max(0, rect.height - inset * 2)
+				: edge === 0
+					? rect.y + 2
+					: edge === 1 || edge === 2
+						? rect.y + rect.height - 2
+						: rect.y + 2;
 			return {
 				key: `${rectIndex}-${index}`,
 				x,

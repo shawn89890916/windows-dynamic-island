@@ -93,6 +93,7 @@ export interface IslandOverlayLayout {
 	separated: boolean;
 	groupWidth: number;
 	groupHeight: number;
+	notch?: { ear: number; earHeight: number; radius: number; radiusY: number };
 	main: IslandOverlayRect;
 	side: IslandOverlayRect[];
 }

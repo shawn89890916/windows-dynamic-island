@@ -107,26 +107,23 @@ export function Island() {
 	const taskCount = readNumberSetting(s, taskCountSetting);
 	const taskArrangement = readNumberSetting(s, mainTaskCountSetting);
 	const separatedLayout = taskArrangement === 3;
+	const separatedCapsulesActive = separatedLayout && mode === "compact";
 	const mainTaskCount = separatedLayout ? 1 : Math.min(taskCount, taskArrangement);
 	const secondaryTask = mode === "compact" && mainTaskCount > 1 ? ctl.activeTasks[1] : undefined;
-	const sideTasks = separatedLayout
-		? mode === "compact" || big
+	const expandedTaskEntries =
+		separatedLayout && big && !ctl.launcher
 			? ctl.activeTasks
-					.filter((entry) => entry.view.sideEligible !== false)
-					.filter((entry) => entry.module.id !== (mode === "compact" ? primary?.module.id : focused?.module.id))
-					.slice(
-						0,
-						Math.max(
-							0,
-							taskCount -
-								Number(
-									ctl.activeTasks.some(
-										(entry) => entry.module.id === (mode === "compact" ? primary?.module.id : focused?.module.id),
-									),
-								),
-						),
-					)
-			: []
+					.filter((entry) => entry.module.id === focused?.module.id || entry.view.sideEligible !== false)
+					.slice(0, taskCount)
+			: [];
+	const sideTasks = separatedCapsulesActive
+		? ctl.activeTasks
+				.filter((entry) => entry.view.sideEligible !== false)
+				.filter((entry) => entry.module.id !== primary?.module.id)
+				.slice(
+					0,
+					Math.max(0, taskCount - Number(ctl.activeTasks.some((entry) => entry.module.id === primary?.module.id))),
+				)
 		: mode === "compact"
 			? ctl.activeTasks.slice(mainTaskCount, taskCount)
 			: [];
@@ -144,7 +141,9 @@ export function Island() {
 	const stableSideTasks = separatedLayout
 		? sideTasks.filter((entry) => settledSideIds.includes(entry.module.id))
 		: sideTasks;
-	const panelSize = (ctl.launcher ? launcherSize(ctl.entries.length) : focused?.view.expandedSize) ?? v.expanded;
+	const basePanelSize = (ctl.launcher ? launcherSize(ctl.entries.length) : focused?.view.expandedSize) ?? v.expanded;
+	const panelSize =
+		expandedTaskEntries.length > 1 ? { ...basePanelSize, height: basePanelSize.height + 44 } : basePanelSize;
 	// A shared width keeps the top bar in place as the body changes height and content.
 	const bigSize =
 		big && !v.tabsAtBottom
@@ -156,7 +155,17 @@ export function Island() {
 					}, v.expanded.width),
 				}
 			: panelSize;
-	const content = islandContent(ctl, look, v, t, macCompact, navigation, toolbarStatus, secondaryTask);
+	const content = islandContent(
+		ctl,
+		look,
+		v,
+		t,
+		macCompact,
+		navigation,
+		toolbarStatus,
+		secondaryTask,
+		expandedTaskEntries,
+	);
 	useEffect(() => {
 		if (!macCompact || mode !== "compact") return;
 		let element: HTMLElement | null = null;
@@ -182,7 +191,8 @@ export function Island() {
 	}, [macCompact, mode]);
 	const baseGeometry = geometry(v, look, mode, bigSize, primary, macCompact, macCompactWidth);
 	const ambientLeftExtra = resting ? ambientWidth(ctl.entries.filter((entry) => entry.view.ambient).length) : 0;
-	const minimumSideSpace = separatedLayout && stableSideTasks.length > 0 ? SEPARATED_OVERFLOW_WIDTH + BUBBLE_GAP : 0;
+	const minimumSideSpace =
+		separatedCapsulesActive && stableSideTasks.length > 0 ? SEPARATED_OVERFLOW_WIDTH + BUBBLE_GAP : 0;
 	const g = fitGeometry(baseGeometry, {
 		widthPercent: big ? 100 : readNumberSetting(s, sizeSettings.width),
 		heightPercent: big ? 100 : readNumberSetting(s, sizeSettings.height),
@@ -201,9 +211,9 @@ export function Island() {
 		separatedCapsuleWidth,
 		sideStatus ? SEPARATED_STATUS_WIDTH : 0,
 	);
-	const shownSideTasks = separatedLayout ? stableSideTasks.slice(0, separatedFit.visible) : sideTasks;
-	const foldedSideTasks = separatedLayout ? stableSideTasks.slice(separatedFit.visible) : [];
-	const separatedSideWidth = separatedLayout
+	const shownSideTasks = separatedCapsulesActive ? stableSideTasks.slice(0, separatedFit.visible) : sideTasks;
+	const foldedSideTasks = separatedCapsulesActive ? stableSideTasks.slice(separatedFit.visible) : [];
+	const separatedSideWidth = separatedCapsulesActive
 		? shownSideTasks.length * separatedCapsuleWidth +
 			Math.max(0, shownSideTasks.length - 1) * SEPARATED_CAPSULE_GAP +
 			(foldedSideTasks.length ? SEPARATED_OVERFLOW_WIDTH + (shownSideTasks.length ? SEPARATED_CAPSULE_GAP : 0) : 0) +
@@ -216,7 +226,7 @@ export function Island() {
 	const bubbleY = attachedNotch ? 0 : Math.max(0, (g.height - 38) / 2);
 	const capsuleY = attachedNotch ? 0 : Math.max(0, (g.height - 38) / 2);
 	let capsuleX = leftExtra + g.width + sideOffset;
-	if (separatedLayout) {
+	if (separatedCapsulesActive) {
 		for (const _entry of shownSideTasks) {
 			separatedRects.push({
 				x: capsuleX,
@@ -266,7 +276,7 @@ export function Island() {
 	const groupWidth =
 		leftExtra +
 		g.width +
-		(separatedLayout && separatedSideWidth > 0
+		(separatedCapsulesActive && separatedSideWidth > 0
 			? sideOffset + separatedSideWidth
 			: (attachedNotch ? g.ear : 0) + ambientWidth(sideCount));
 	const overlayLayout: IslandOverlayLayout = {
@@ -274,9 +284,10 @@ export function Island() {
 		style: windows ? "windows" : "dynamic",
 		attachedNotch,
 		macCompact,
-		separated: separatedLayout && shownSideTasks.length > 0,
+		separated: separatedCapsulesActive && shownSideTasks.length > 0,
 		groupWidth,
 		groupHeight: Math.max(g.height, ...separatedRects.map((rect) => rect.y + rect.height)),
+		notch: attachedNotch ? { ear: g.ear, earHeight: g.earHeight, radius: g.radius, radiusY: g.radiusY } : undefined,
 		main: {
 			x: leftExtra,
 			y: 0,
@@ -299,12 +310,12 @@ export function Island() {
 	const drag = useIslandDrag({
 		width: g.width,
 		leftExtra,
-		rightExtra: separatedLayout
+		rightExtra: separatedCapsulesActive
 			? separatedSideWidth > 0
 				? sideOffset + separatedSideWidth
 				: 0
 			: (attachedNotch ? g.ear : 0) + ambientWidth(sideCount),
-		centerSideBubbles: separatedLayout && separatedSideWidth > 0,
+		centerSideBubbles: separatedCapsulesActive && separatedSideWidth > 0,
 		canReturn: !big,
 		onDragChange: ctl.lockHover,
 	});
@@ -429,7 +440,7 @@ export function Island() {
 						<AmbientBubbles entries={ctl.entries} visible={resting} shrunk={mode === "idle" && !windows} {...bubble} />
 						<SideBubbles
 							entries={shownSideTasks}
-							separated={separatedLayout}
+							separated={separatedCapsulesActive}
 							notchStyle={attachedNotch}
 							overflowCount={foldedSideTasks.length}
 							overflowId={foldedSideTasks[0]?.module.id}

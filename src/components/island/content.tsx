@@ -4,6 +4,7 @@ import type { Appearance } from "../../core/appearance";
 import { cn } from "../../core/cn";
 import type { Translate } from "../../core/i18n";
 import type { TabNavigationOptions } from "../../core/island";
+import type { ModuleEntry } from "../../core/types";
 import type { IslandController } from "../../core/useIslandController";
 import { IdleClock } from "../IdleClock";
 import type { Variant } from "./geometry";
@@ -36,6 +37,7 @@ export function islandContent(
 	navigation: TabNavigationOptions | null = null,
 	status: ReactNode = null,
 	secondaryTask?: IslandController["activeTasks"][number],
+	expandedTasks: ModuleEntry[] = [],
 ): { key: string; node: ReactNode } {
 	const { mode, primary, focused } = ctl;
 	const windows = look.style === "windows";
@@ -87,6 +89,38 @@ export function islandContent(
 	}
 
 	if ((mode === "expanded" || mode === "peek") && (focused || ctl.launcher)) {
+		const taskRow = expandedTasks.length > 1 && !ctl.launcher && (
+			<section
+				aria-label={t("settings.mainTaskCount.label")}
+				className="mt-2 flex h-9 shrink-0 items-center justify-center gap-1.5 border-t border-white/8 pt-1"
+			>
+				{expandedTasks.map(({ module, view }) => {
+					const selected = focused?.module.id === module.id;
+					return (
+						<button
+							key={module.id}
+							type="button"
+							aria-label={t(module.title)}
+							aria-pressed={selected}
+							title={t(module.title)}
+							data-no-drag
+							data-hit
+							data-hit-module={module.id}
+							className={cn(
+								"grid size-7 shrink-0 place-items-center rounded-full transition-colors [&_svg]:size-4",
+								selected ? "bg-white/14 text-white" : "text-white/60 hover:bg-white/10 hover:text-white/90",
+							)}
+							onClick={(event) => {
+								event.stopPropagation();
+								ctl.expand(module.id);
+							}}
+						>
+							{view.compact?.icon ?? view.icon}
+						</button>
+					);
+				})}
+			</section>
+		);
 		const tabs = (
 			<Tabs
 				entries={ctl.tabs}
@@ -114,6 +148,7 @@ export function islandContent(
 					<Panel key={ctl.launcher ? "launcher" : focused?.module.id} duration={navigation?.fadeDurationMs ?? 0}>
 						{ctl.launcher ? <Launcher entries={ctl.entries} onSelect={ctl.setTab} /> : focused?.view.expanded}
 					</Panel>
+					{taskRow}
 					{v.tabsAtBottom && tabs}
 				</div>
 			),
