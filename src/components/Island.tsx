@@ -294,6 +294,7 @@ export function Island() {
 			width: g.width,
 			height: g.height,
 			radius: g.radius,
+			radiusY: g.radiusY,
 			shape: attachedNotch ? "notch" : "pill",
 			role: "main",
 		},

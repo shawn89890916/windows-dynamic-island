@@ -41,8 +41,19 @@ export function capsulePath(rect: IslandOverlayRect) {
 		const r = Math.min(16, h / 2, w / 3);
 		return `M ${x} ${y} H ${x + w} V ${y + h - r} Q ${x + w} ${y + h} ${x + w - r} ${y + h} H ${x + r} Q ${x} ${y + h} ${x} ${y + h - r} Z`;
 	}
-	const r = Math.max(0, Math.min(rect.radius ?? h / 2, h / 2, w / 2));
-	return `M ${x + r} ${y} H ${x + w - r} Q ${x + w} ${y} ${x + w} ${y + r} V ${y + h - r} Q ${x + w} ${y + h} ${x + w - r} ${y + h} H ${x + r} Q ${x} ${y + h} ${x} ${y + h - r} V ${y + r} Q ${x} ${y} ${x + r} ${y} Z`;
+	// Expanded panels can be very tall. Falling back to h / 2 turns a missing
+	// radius into an oversized ellipse; use the island's regular corner radius.
+	const maxRadius = Math.min(h / 2, w / 2);
+	const requestedRx = Math.max(0, rect.radius ?? 32);
+	const requestedRy = Math.max(0, rect.radiusY ?? requestedRx);
+	const scale = Math.min(
+		1,
+		requestedRx > 0 ? maxRadius / requestedRx : 1,
+		requestedRy > 0 ? maxRadius / requestedRy : 1,
+	);
+	const rx = requestedRx * scale;
+	const ry = requestedRy * scale;
+	return `M ${x + rx} ${y} H ${x + w - rx} A ${rx} ${ry} 0 0 1 ${x + w} ${y + ry} V ${y + h - ry} A ${rx} ${ry} 0 0 1 ${x + w - rx} ${y + h} H ${x + rx} A ${rx} ${ry} 0 0 1 ${x} ${y + h - ry} V ${y + ry} A ${rx} ${ry} 0 0 1 ${x + rx} ${y} Z`;
 }
 
 function capsuleOutlinePath(rect: IslandOverlayRect, layout: IslandOverlayLayout) {

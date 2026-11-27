@@ -82,6 +82,7 @@ export interface IslandOverlayRect {
 	width: number;
 	height: number;
 	radius?: number;
+	radiusY?: number;
 	shape: "pill" | "notch" | "circle";
 	role: "main" | "task" | "overflow" | "status";
 }
