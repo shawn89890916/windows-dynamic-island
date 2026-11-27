@@ -107,6 +107,34 @@ jobs:
           releaseDraft: false
           prerelease: false
 
+      # Rewrite Tauri's API asset URLs to direct release links. This lets
+      # existing installations update without depending on GitHub's REST API
+      # download quota for anonymous clients.
+      - name: Use direct updater asset URLs
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          $tag = "v$version"
+          $manifestDir = Join-Path $env:RUNNER_TEMP "updater-manifest"
+          New-Item -ItemType Directory -Force $manifestDir | Out-Null
+          gh release download $tag --pattern latest.json --dir $manifestDir
+          $manifestPath = Join-Path $manifestDir "latest.json"
+          $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json -AsHashtable
+
+          foreach ($platform in $manifest.platforms.Keys) {
+            $url = [string]$manifest.platforms[$platform].url
+            if ($url -match "/releases/assets/(\d+)$") {
+              $asset = gh api "repos/$env:GITHUB_REPOSITORY/releases/assets/$($Matches[1])" --jq .browser_download_url
+              if (-not $asset) { throw "Could not resolve updater asset URL for $platform" }
+              $manifest.platforms[$platform].url = $asset.Trim()
+            }
+          }
+
+          $manifest | ConvertTo-Json -Depth 20 | Set-Content -Path $manifestPath -Encoding utf8
+          gh release upload $tag $manifestPath --clobber
+
       # Portable build: the same exe plus an empty `.portable` marker, which
       # turns off self-update and autostart-on-first-run (src/portable.rs).
       - name: Portable zip

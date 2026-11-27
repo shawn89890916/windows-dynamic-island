@@ -62,8 +62,8 @@ export const MAC_CAMERA_BAND = 22;
 export const BUBBLE = 38;
 export const BUBBLE_GAP = 10;
 export const SEPARATED_CAPSULE_GAP = 8;
-export const SEPARATED_PILL_WIDTH = 48;
-export const SEPARATED_NOTCH_WIDTH = 48;
+export const SEPARATED_PILL_WIDTH = 136;
+export const SEPARATED_NOTCH_WIDTH = 124;
 export const SEPARATED_OVERFLOW_WIDTH = 38;
 export const SEPARATED_STATUS_WIDTH = 32;
 /** 32 px for the second task icon and its divider, plus the 4 px row gap. */
