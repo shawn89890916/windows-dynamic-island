@@ -86,7 +86,7 @@ export function FestiveIslandAppearance({
 	}, []);
 	const theme = resolveFestiveTheme(settings, today);
 	if (!theme || !isFestiveTheme(theme)) return null;
-	if (layout.attachedNotch && layout.mode !== "expanded" && layout.mode !== "peek") return null;
+	if (layout.style === "dynamic" && layout.mode !== "expanded" && layout.mode !== "peek") return null;
 	return <FestivalSkin theme={theme} settings={settings} layout={themedLayout(layout)} />;
 }
 
