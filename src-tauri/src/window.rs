@@ -21,6 +21,8 @@ pub const FULLSCREEN_EVENT: &str = "island://fullscreen";
 pub const RECENTER_EVENT: &str = "island://recenter";
 /// Sample quickly enough that pointer movement across the thin top toolbar is not skipped.
 const HIT_TEST_INTERVAL: Duration = Duration::from_millis(10);
+/// Re-assert z-order periodically because other topmost overlays can be raised without focus changes.
+const TOPMOST_REASSERT_TICKS: u32 = 120;
 
 /// Strip height in logical pixels (fits the tallest expanded panel + shadow + top margin).
 pub const STRIP_HEIGHT: f64 = 760.0;
@@ -320,7 +322,11 @@ pub fn spawn_hit_test(app: AppHandle) {
                 if taskbar_above || !crate::settings::is_open() {
                     ensure_topmost(
                         &win,
-                        fg_changed || fullscreen_left || visibility_changed || taskbar_above,
+                        fg_changed
+                            || fullscreen_left
+                            || visibility_changed
+                            || taskbar_above
+                            || tick.is_multiple_of(TOPMOST_REASSERT_TICKS),
                     );
                 }
             }

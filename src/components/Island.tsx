@@ -5,9 +5,11 @@ import { useTauriEvent } from "../core/bridge";
 import { cn } from "../core/cn";
 import { useSyncLocale, useT } from "../core/i18n";
 import { type IslandApi, IslandContext, tabNavigation } from "../core/island";
+import { isIslandOverlayPlugin } from "../core/plugins/appearancePlugin";
 import { useInstalledPlugins } from "../core/plugins/registry";
-import { PluginBackgrounds } from "../core/plugins/runtime";
+import { ExternalPluginAppearance, PluginBackgrounds } from "../core/plugins/runtime";
 import { islandStatusRing, STATUS_RING_PLUGIN } from "../core/plugins/statusRing";
+import type { IslandOverlayLayout, IslandOverlayRect } from "../core/plugins/types";
 import {
 	mainTaskCountSetting,
 	readNumberSetting,
@@ -29,9 +31,15 @@ import {
 	ambientWidth,
 	BUBBLE_GAP,
 	fitGeometry,
+	fitSeparatedCapsules,
 	geometry,
 	MAC_CAMERA_BAND,
 	SECONDARY_TASK_WIDTH,
+	SEPARATED_CAPSULE_GAP,
+	SEPARATED_NOTCH_WIDTH,
+	SEPARATED_OVERFLOW_WIDTH,
+	SEPARATED_PILL_WIDTH,
+	SEPARATED_STATUS_WIDTH,
 	variantOf,
 } from "./island/geometry";
 import { launcherSize } from "./island/Launcher";
@@ -81,6 +89,13 @@ export function Island() {
 	const resting = mode === "compact" || mode === "idle";
 	const statusPlugin = plugins.find(
 		(plugin) => plugin.manifest.id === STATUS_RING_PLUGIN && plugin.enabled && Boolean(plugin.packageSha256),
+	);
+	const festivePlugin = plugins.find(
+		(plugin) =>
+			plugin.manifest.id === "com.island.festive-island" &&
+			plugin.enabled &&
+			Boolean(plugin.packageSha256) &&
+			isIslandOverlayPlugin(plugin.manifest),
 	);
 	const status = statusPlugin?.customSettings.placement !== "taskbar" && statusPlugin && statusReading && (
 		<StatusRing reading={statusReading} size={26} />
@@ -166,22 +181,112 @@ export function Island() {
 		};
 	}, [macCompact, mode]);
 	const baseGeometry = geometry(v, look, mode, bigSize, primary, macCompact, macCompactWidth);
+	const ambientLeftExtra = resting ? ambientWidth(ctl.entries.filter((entry) => entry.view.ambient).length) : 0;
+	const minimumSideSpace = separatedLayout && stableSideTasks.length > 0 ? SEPARATED_OVERFLOW_WIDTH + BUBBLE_GAP : 0;
 	const g = fitGeometry(baseGeometry, {
 		widthPercent: big ? 100 : readNumberSetting(s, sizeSettings.width),
 		heightPercent: big ? 100 : readNumberSetting(s, sizeSettings.height),
-		maxWidth: viewport.width - 24 - (attachedNotch ? 3 * baseGeometry.ear : 0),
+		maxWidth: viewport.width - 24 - (attachedNotch ? 3 * baseGeometry.ear : 0) - ambientLeftExtra - minimumSideSpace,
 		maxHeight: viewport.height - effectiveTop,
 		attachedNotch,
 		extraWidth: secondaryTask && !macCompact ? SECONDARY_TASK_WIDTH : 0,
 	});
-	const availableSideWidth = Math.max(
-		0,
-		(viewport.width - g.width) / 2 - BUBBLE_GAP - (attachedNotch ? g.ear : 0) - 12,
+	const leftExtra = (attachedNotch ? g.ear : 0) + ambientLeftExtra;
+	const sideOffset = BUBBLE_GAP + (attachedNotch ? g.ear : 0);
+	const separatedCapsuleWidth = attachedNotch ? SEPARATED_NOTCH_WIDTH : SEPARATED_PILL_WIDTH;
+	const availableSideWidth = Math.max(0, viewport.width - 24 - g.width - leftExtra - sideOffset);
+	const separatedFit = fitSeparatedCapsules(
+		stableSideTasks.length,
+		availableSideWidth,
+		separatedCapsuleWidth,
+		sideStatus ? SEPARATED_STATUS_WIDTH : 0,
 	);
-	const separatedCapacity = Math.max(0, Math.floor((availableSideWidth - (sideStatus ? 54 : 0) + 8) / 162));
-	const shownSideTasks = separatedLayout ? stableSideTasks.slice(0, separatedCapacity) : sideTasks;
-	const foldedSideTasks = separatedLayout ? stableSideTasks.slice(separatedCapacity) : [];
+	const shownSideTasks = separatedLayout ? stableSideTasks.slice(0, separatedFit.visible) : sideTasks;
+	const foldedSideTasks = separatedLayout ? stableSideTasks.slice(separatedFit.visible) : [];
+	const separatedSideWidth = separatedLayout
+		? shownSideTasks.length * separatedCapsuleWidth +
+			Math.max(0, shownSideTasks.length - 1) * SEPARATED_CAPSULE_GAP +
+			(foldedSideTasks.length ? SEPARATED_OVERFLOW_WIDTH + (shownSideTasks.length ? SEPARATED_CAPSULE_GAP : 0) : 0) +
+			(sideStatus
+				? SEPARATED_STATUS_WIDTH + (shownSideTasks.length || foldedSideTasks.length ? SEPARATED_CAPSULE_GAP : 0)
+				: 0)
+		: 0;
 	const sideCount = shownSideTasks.length + Number(foldedSideTasks.length > 0) + Number(Boolean(sideStatus));
+	const separatedRects: IslandOverlayRect[] = [];
+	const bubbleY = attachedNotch ? 0 : Math.max(0, (g.height - 38) / 2);
+	const capsuleY = attachedNotch ? 0 : Math.max(0, (g.height - 38) / 2);
+	let capsuleX = leftExtra + g.width + sideOffset;
+	if (separatedLayout) {
+		for (const _entry of shownSideTasks) {
+			separatedRects.push({
+				x: capsuleX,
+				y: capsuleY,
+				width: separatedCapsuleWidth,
+				height: attachedNotch ? 32 : 38,
+				shape: attachedNotch ? "notch" : "pill",
+				role: "task",
+			});
+			capsuleX += separatedCapsuleWidth + SEPARATED_CAPSULE_GAP;
+		}
+		if (foldedSideTasks.length) {
+			if (shownSideTasks.length) capsuleX += SEPARATED_CAPSULE_GAP;
+			separatedRects.push({
+				x: capsuleX,
+				y: capsuleY,
+				width: SEPARATED_OVERFLOW_WIDTH,
+				height: attachedNotch ? 32 : 38,
+				shape: attachedNotch ? "notch" : "pill",
+				role: "overflow",
+			});
+			capsuleX += SEPARATED_OVERFLOW_WIDTH + SEPARATED_CAPSULE_GAP;
+		}
+		if (sideStatus)
+			separatedRects.push({ x: capsuleX, y: bubbleY, width: 32, height: 32, shape: "circle", role: "status" });
+	} else {
+		for (let index = 0; index < sideTasks.length; index++) {
+			separatedRects.push({ x: capsuleX, y: bubbleY, width: 38, height: 38, shape: "circle", role: "task" });
+			capsuleX += 46;
+		}
+		if (sideStatus)
+			separatedRects.push({ x: capsuleX, y: bubbleY + 3, width: 32, height: 32, shape: "circle", role: "status" });
+	}
+	if (resting) {
+		const ambientEntries = ctl.entries.filter((entry) => entry.view.ambient);
+		for (let index = 0; index < ambientEntries.length; index++) {
+			separatedRects.push({
+				x: ambientLeftExtra - 48 - index * 46,
+				y: bubbleY,
+				width: 38,
+				height: 38,
+				shape: "circle",
+				role: "task",
+			});
+		}
+	}
+	const groupWidth =
+		leftExtra +
+		g.width +
+		(separatedLayout && separatedSideWidth > 0
+			? sideOffset + separatedSideWidth
+			: (attachedNotch ? g.ear : 0) + ambientWidth(sideCount));
+	const overlayLayout: IslandOverlayLayout = {
+		mode,
+		style: windows ? "windows" : "dynamic",
+		attachedNotch,
+		macCompact,
+		separated: separatedLayout && shownSideTasks.length > 0,
+		groupWidth,
+		groupHeight: Math.max(g.height, ...separatedRects.map((rect) => rect.y + rect.height)),
+		main: {
+			x: leftExtra,
+			y: 0,
+			width: g.width,
+			height: g.height,
+			shape: attachedNotch ? "notch" : "pill",
+			role: "main",
+		},
+		side: separatedRects,
+	};
 	useHitRects(islandLook.blurEffect, windows);
 	const hidden = !macCompact && mode === "hidden";
 	const swallowed = !macCompact && mode === "swallowed";
@@ -193,16 +298,13 @@ export function Island() {
 
 	const drag = useIslandDrag({
 		width: g.width,
-		leftExtra:
-			(attachedNotch ? g.ear : 0) + (resting ? ambientWidth(ctl.entries.filter((e) => e.view.ambient).length) : 0),
-		rightExtra:
-			(attachedNotch ? g.ear : 0) +
-			(separatedLayout
-				? shownSideTasks.length * 154 +
-					Math.max(0, shownSideTasks.length - 1) * 8 +
-					(foldedSideTasks.length ? 42 : 0) +
-					(sideStatus ? 54 : 0)
-				: ambientWidth(sideCount)),
+		leftExtra,
+		rightExtra: separatedLayout
+			? separatedSideWidth > 0
+				? sideOffset + separatedSideWidth
+				: 0
+			: (attachedNotch ? g.ear : 0) + ambientWidth(sideCount),
+		centerSideBubbles: separatedLayout && separatedSideWidth > 0,
 		canReturn: !big,
 		onDragChange: ctl.lockHover,
 	});
@@ -328,6 +430,7 @@ export function Island() {
 						<SideBubbles
 							entries={shownSideTasks}
 							separated={separatedLayout}
+							notchStyle={attachedNotch}
 							overflowCount={foldedSideTasks.length}
 							overflowId={foldedSideTasks[0]?.module.id}
 							status={sideStatus}
@@ -336,6 +439,15 @@ export function Island() {
 							offset={BUBBLE_GAP + (attachedNotch ? g.ear : 0)}
 							{...bubble}
 						/>
+						{festivePlugin && mode !== "hidden" && mode !== "swallowed" && (
+							<div
+								aria-hidden="true"
+								className="pointer-events-none absolute top-0 z-30 overflow-visible"
+								style={{ left: -leftExtra, width: overlayLayout.groupWidth, height: overlayLayout.groupHeight }}
+							>
+								<ExternalPluginAppearance plugin={festivePlugin} layout={overlayLayout} />
+							</div>
+						)}
 					</motion.div>
 				</motion.div>
 			</div>

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { tv } from "tailwind-variants";
 import { useT } from "../../core/i18n";
 import type { ModuleEntry } from "../../core/types";
+import { SEPARATED_NOTCH_WIDTH, SEPARATED_OVERFLOW_WIDTH, SEPARATED_PILL_WIDTH } from "./geometry";
 
 interface BubbleProps {
 	transition: Transition;
@@ -51,6 +52,7 @@ export function AmbientBubbles({
 export function SideBubbles({
 	entries,
 	separated = false,
+	notchStyle = false,
 	overflowCount = 0,
 	overflowId,
 	status,
@@ -61,6 +63,7 @@ export function SideBubbles({
 }: BubbleProps & {
 	entries: ModuleEntry[];
 	separated?: boolean;
+	notchStyle?: boolean;
 	overflowCount?: number;
 	overflowId?: string;
 	status: ReactNode;
@@ -72,7 +75,8 @@ export function SideBubbles({
 	return (
 		<div
 			className="pointer-events-none absolute top-[max(0px,calc((100%-38px)/2))] flex gap-2"
-			style={{ left: `calc(100% + ${offset}px)` }}
+			data-island-side-bubbles
+			style={{ left: `calc(100% + ${offset}px)`, ...(notchStyle ? { top: 0 } : undefined) }}
 		>
 			<AnimatePresence>
 				{entries.map((entry) => (
@@ -82,16 +86,19 @@ export function SideBubbles({
 						label={t(entry.module.title)}
 						side
 						separated={separated}
+						notchStyle={notchStyle}
 						from={-40}
 						layout
 						{...props}
 					>
 						{separated ? (
 							<>
-								<span className="min-w-0 flex-1 truncate">{entry.view.compact?.left ?? entry.view.icon}</span>
-								{entry.view.compact?.right && (
-									<span className="shrink-0 text-[10px] text-text-dim">{entry.view.compact.right}</span>
-								)}
+								<span className="grid size-5 shrink-0 place-items-center overflow-hidden">
+									{entry.view.compact?.icon ?? entry.view.icon}
+								</span>
+								<span className="min-w-0 flex-1 truncate text-left text-[11px] leading-none">
+									{t(entry.module.title)}
+								</span>
 							</>
 						) : (
 							(entry.view.compact?.icon ?? entry.view.icon)
@@ -105,6 +112,8 @@ export function SideBubbles({
 						label={t("settings.mainTaskCount.overflow", { count: overflowCount })}
 						side
 						separated
+						notchStyle={notchStyle}
+						overflowBubble
 						from={-40}
 						layout
 						{...props}
@@ -130,7 +139,11 @@ const bubble = tv({
 		statusBubble: {
 			true: "size-8 bg-black/75 shadow-[0_8px_18px_-10px_rgba(0,0,0,0.8)] ring-1 ring-white/5",
 		},
-		separated: { true: "h-9.5 w-[154px] justify-between rounded-full bg-black/90 px-3 ring-1 ring-white/10" },
+		separated: {
+			true: "z-10 flex h-9.5 w-[136px] min-w-0 items-center gap-2 overflow-hidden bg-black/90 px-2.5 text-white ring-1 ring-white/10",
+		},
+		notchStyle: { true: "h-8 w-[124px] rounded-t-none rounded-b-2xl pt-0.5" },
+		overflowBubble: { true: "w-[38px] flex-none justify-center rounded-full px-0" },
 		clickOnly: { true: "pointer-events-none cursor-default" },
 	},
 });
@@ -143,6 +156,8 @@ function Bubble({
 	side,
 	statusBubble,
 	separated,
+	notchStyle,
+	overflowBubble,
 	from,
 	scale = 1,
 	layout,
@@ -159,6 +174,8 @@ function Bubble({
 	side?: boolean;
 	statusBubble?: boolean;
 	separated?: boolean;
+	notchStyle?: boolean;
+	overflowBubble?: boolean;
 	/** Horizontal offset it slides in from and out to. */
 	from: number;
 	scale?: number;
@@ -171,10 +188,22 @@ function Bubble({
 			aria-label={label}
 			title={label}
 			data-no-drag
-			className={bubble({ ambient, side, statusBubble, separated, clickOnly })}
+			className={bubble({ ambient, side, statusBubble, separated, notchStyle, overflowBubble, clickOnly })}
 			data-island-secondary-bubble={(!ambient && !clickOnly) || undefined}
 			data-hit-module={!ambient && !clickOnly ? id : undefined}
 			data-hit={!clickOnly || undefined}
+			style={
+				separated
+					? {
+							width: overflowBubble
+								? SEPARATED_OVERFLOW_WIDTH
+								: notchStyle
+									? SEPARATED_NOTCH_WIDTH
+									: SEPARATED_PILL_WIDTH,
+							height: notchStyle ? 32 : 38,
+						}
+					: undefined
+			}
 			layout={layout}
 			initial={{ opacity: 0, scale: 0.3, x: from }}
 			animate={{ opacity: 1, scale, x: 0 }}

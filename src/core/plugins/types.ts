@@ -1,4 +1,5 @@
 import type { MessageKey } from "../i18n";
+import type { IslandMode } from "../types";
 
 export type PluginCategory = "productivity" | "media" | "tools" | "developer" | "system" | "social";
 
@@ -30,7 +31,8 @@ export interface PluginManifest {
 		url?: string;
 	};
 	category: PluginCategory;
-	appearance?: "mac-compact";
+	appearance?: "mac-compact" | "island-overlay";
+	configure?: "custom";
 	behavior?: "tab-navigation";
 	icon: string; // Lucide icon name or emoji or SVG
 	accentColor?: string;
@@ -72,6 +74,27 @@ export interface PluginGuide {
 	features?: string[];
 	featuresKeys?: MessageKey[];
 	faq?: { q: string; a: string; qKey?: MessageKey; aKey?: MessageKey }[];
+}
+
+export interface IslandOverlayRect {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	shape: "pill" | "notch" | "circle";
+	role: "main" | "task" | "overflow" | "status";
+}
+
+export interface IslandOverlayLayout {
+	mode: IslandMode;
+	style: "dynamic" | "windows";
+	attachedNotch: boolean;
+	macCompact: boolean;
+	separated: boolean;
+	groupWidth: number;
+	groupHeight: number;
+	main: IslandOverlayRect;
+	side: IslandOverlayRect[];
 }
 
 export interface PluginPackage {

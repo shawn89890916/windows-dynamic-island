@@ -36,6 +36,8 @@ interface Options {
 	/** Space taken beyond the shell on each side (ears, bubbles). */
 	leftExtra: number;
 	rightExtra: number;
+	/** Center the island shell together with side bubbles as a single cluster. */
+	centerSideBubbles?: boolean;
 	/** False while the island is open: it only drifts back to the center once collapsed. */
 	canReturn: boolean;
 	onDragChange?: (dragging: boolean) => void;
@@ -50,7 +52,14 @@ interface Options {
  * offset clamped to the screen for the island's current (animated) width, so
  * expanding next to an edge grows inward instead of off-screen.
  */
-export function useIslandDrag({ width, leftExtra, rightExtra, canReturn, onDragChange }: Options) {
+export function useIslandDrag({
+	width,
+	leftExtra,
+	rightExtra,
+	centerSideBubbles = false,
+	canReturn,
+	onDragChange,
+}: Options) {
 	const settings = useSettings();
 	const returnToCenter = readSetting(settings, positionSettings.returnToCenter);
 	const returnDelay = readNumberSetting(settings, { ...positionSettings.returnDelay, min: 1, max: 3600 });
@@ -64,6 +73,7 @@ export function useIslandDrag({ width, leftExtra, rightExtra, canReturn, onDragC
 	const right = useMotionValue(rightExtra);
 	left.set(leftExtra);
 	right.set(rightExtra);
+	const centerShift = useTransform(() => (centerSideBubbles ? (left.get() - right.get()) / 2 : 0));
 	// 1 while dragging / gliding (deforms and allows rubber-banding), 0 at rest.
 	const moving = useMotionValue(0);
 
@@ -76,15 +86,20 @@ export function useIslandDrag({ width, leftExtra, rightExtra, canReturn, onDragC
 	const limits = useCallback(
 		(w: number) => {
 			const half = stageWidth.get() / 2 - w / 2 - EDGE_MARGIN;
-			return { min: Math.min(0, -(half - left.get())), max: Math.max(0, half - right.get()) };
+			const shift = centerShift.get();
+			return {
+				min: Math.min(0, -(half - left.get() + shift)),
+				max: Math.max(0, half - right.get() - shift),
+			};
 		},
-		[stageWidth, left, right],
+		[stageWidth, left, right, centerShift],
 	);
 
-	const offset = useTransform(() => {
+	const groupOffset = useTransform(() => {
 		const { min, max } = limits(liveWidth.get());
 		return moving.get() ? rubber(x.get(), min, max) : clamp(x.get(), min, max);
 	});
+	const offset = useTransform(() => groupOffset.get() + centerShift.get());
 
 	// --- squash & stretch ------------------------------------------------------
 	const velocity = useVelocity(offset);
@@ -114,12 +129,12 @@ export function useIslandDrag({ width, leftExtra, rightExtra, canReturn, onDragC
 	const glideTo = useCallback(
 		(to: number) => {
 			// Start from what's on screen, which may be clamped narrower than `x`.
-			if (!moving.get()) x.jump(offset.get());
+			if (!moving.get()) x.jump(groupOffset.get());
 			moving.set(1);
 			target.set(to);
 			setParked(to !== home);
 		},
-		[home, moving, x, offset, target],
+		[home, moving, x, groupOffset, target],
 	);
 
 	const returnHome = useCallback(() => {
@@ -170,9 +185,9 @@ export function useIslandDrag({ width, leftExtra, rightExtra, canReturn, onDragC
 					if (Math.abs(dx) < DRAG_THRESHOLD) return;
 					active = true;
 					dragging.current = true;
-					if (!moving.get()) x.jump(offset.get());
+					if (!moving.get()) x.jump(groupOffset.get());
 					moving.set(1);
-					origin = offset.get() - dx;
+					origin = groupOffset.get() - dx;
 					try {
 						el.setPointerCapture(pointerId);
 					} catch {
@@ -229,7 +244,7 @@ export function useIslandDrag({ width, leftExtra, rightExtra, canReturn, onDragC
 			window.addEventListener("pointerup", end);
 			window.addEventListener("pointercancel", end);
 		},
-		[home, limits, liveWidth, moving, offset, returnToCenter, target, x],
+		[home, limits, liveWidth, moving, groupOffset, returnToCenter, target, x],
 	);
 
 	const onClickCapture = useCallback((e: MouseEvent) => {

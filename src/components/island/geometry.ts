@@ -61,6 +61,11 @@ export const MAC_CAMERA_BAND = 22;
 
 export const BUBBLE = 38;
 export const BUBBLE_GAP = 10;
+export const SEPARATED_CAPSULE_GAP = 8;
+export const SEPARATED_PILL_WIDTH = 136;
+export const SEPARATED_NOTCH_WIDTH = 124;
+export const SEPARATED_OVERFLOW_WIDTH = 38;
+export const SEPARATED_STATUS_WIDTH = 32;
 /** 32 px for the second task icon and its divider, plus the 4 px row gap. */
 export const SECONDARY_TASK_WIDTH = 36;
 /** Gap between ambient bubbles (px). */
@@ -141,6 +146,20 @@ export function fitGeometry(
 /** Width taken by the ambient bubbles left of the island. */
 export function ambientWidth(count: number) {
 	return count ? BUBBLE_GAP + count * BUBBLE + (count - 1) * AMBIENT_GAP : 0;
+}
+
+/** Fit side capsules and reserve a compact overflow affordance when needed. */
+export function fitSeparatedCapsules(count: number, availableWidth: number, capsuleWidth: number, statusWidth = 0) {
+	const maxVisible = Math.max(0, count);
+	const statusGap = statusWidth > 0 && maxVisible > 0 ? SEPARATED_CAPSULE_GAP : 0;
+	const availableForTasks = Math.max(0, availableWidth - statusWidth - statusGap);
+	for (let visible = maxVisible; visible >= 0; visible--) {
+		const overflow = maxVisible - visible;
+		const capsules = visible * capsuleWidth + Math.max(0, visible - 1) * SEPARATED_CAPSULE_GAP;
+		const overflowWidth = overflow > 0 ? (visible > 0 ? SEPARATED_CAPSULE_GAP : 0) + SEPARATED_OVERFLOW_WIDTH : 0;
+		if (capsules + overflowWidth <= availableForTasks) return { visible, overflow };
+	}
+	return { visible: 0, overflow: maxVisible };
 }
 
 /** CSS corner radii: the notch-like look hangs from the top, so only its bottom is round. */

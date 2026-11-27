@@ -13,6 +13,15 @@ export const PLUGIN_GUIDES: Record<string, PluginGuide> = {
 			},
 		],
 	},
+	"com.island.festive-island": {
+		summary: "为主岛与分岛叠加轻量节日装饰，支持农历节日与生肖自动识别。",
+		steps: [
+			{ title: "安装并启用", desc: "从插件市场安装节日灵动岛并启用；卸载或停用后会移除节日覆盖层。" },
+			{ title: "选择节日与日期", desc: "可使用自动切换，也可以固定主题或设置自定义生效日期范围。春节和中秋节使用农历日期，春节生肖按农历年份更新。" },
+			{ title: "微调效果", desc: "分别控制装饰、动态效果、粒子数量、动画速度和节日背景配色，并在配置页即时预览。" },
+		],
+		features: ["圣诞、春节、元旦、中秋和万圣节五套独立 SVG 皮肤", "覆盖主岛与分岛，跟随刘海、胶囊和 Mac 紧凑形态", "支持系统减少动态效果偏好"],
+	},
 	"com.island.smooth-tabs": {
 		summary: "为整排功能图标和九宫格提供悬停切换与连续滑动选中框。",
 		prerequisites: ["灵动岛 v0.5.42 或更新版本"],

@@ -1,6 +1,6 @@
 //! Native data and the optional, non-activating taskbar status ring.
 use std::sync::{Condvar, Mutex};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use serde::{Deserialize, Serialize};
 use tauri::{
@@ -206,6 +206,7 @@ pub fn spawn(app: AppHandle) {
         let mut last = None;
         let mut foreground = 0;
         let mut visible = false;
+        let mut last_topmost_reassert = Instant::now();
         loop {
             let reading = *state.reading.lock().unwrap();
             if reading.is_none() {
@@ -256,7 +257,12 @@ pub fn spawn(app: AppHandle) {
                 }
             }
             if visible {
-                crate::window::ensure_topmost(&win, fg != foreground);
+                let reassert =
+                    fg != foreground || last_topmost_reassert.elapsed() >= Duration::from_secs(2);
+                crate::window::ensure_topmost(&win, reassert);
+                if reassert {
+                    last_topmost_reassert = Instant::now();
+                }
             }
             foreground = fg;
             let current = state.reading.lock().unwrap();

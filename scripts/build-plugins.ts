@@ -23,6 +23,9 @@ async function buildPluginCss(widget: string) {
 	const scan = new Scanner({
 		sources: [
 			{ base: root, pattern: `src/core/plugins/widgets/${widget}.tsx`, negated: false },
+			...(widget === "FestiveIslandWidget"
+				? [{ base: root, pattern: "src/core/plugins/widgets/festive/**/*.tsx", negated: false }]
+				: []),
 			{ base: root, pattern: "src/core/plugins/widgets/NeedsConfigCard.tsx", negated: false },
 			{ base: root, pattern: "src/components/ui/**/*.{ts,tsx}", negated: false },
 			{ base: root, pattern: "src/settings/components/Toggle.tsx", negated: false },
@@ -32,6 +35,8 @@ async function buildPluginCss(widget: string) {
 	let css = optimize(styles.build(scan.scan()), { minify: true }).code;
 	if (widget === "NavoPathWidget")
 		css += await readFile(join(root, "src/core/plugins/widgets/NavoPathWidget.css"), "utf8");
+	if (widget === "FestiveIslandWidget")
+		css += await readFile(join(root, "src/core/plugins/widgets/FestiveIslandWidget.css"), "utf8");
 	return css;
 }
 const moduleExports = (scope: string, names: string[]) =>
@@ -117,6 +122,7 @@ const entries: Record<string, string> = {
 	"com.island.im-notifications": "ImNotificationWidget",
 	"com.island.desktop-glass": "DesktopGlassWidget",
 	"com.island.mac-compact": "MacCompactWidget",
+	"com.island.festive-island": "FestiveIslandWidget",
 };
 const diagnosticNames: Record<string, string> = {
 	"com.island.navopath": "diagnoseNavoPath",
@@ -160,7 +166,21 @@ for (const source of MARKETPLACE_CATALOG.filter((plugin) => !selectedId || plugi
 		background = "import {StatusRingBackground as Background} from '../../src/core/plugins/widgets/StatusRingWidget';";
 	if (source.id === "com.island.smooth-tabs")
 		background = "import {SmoothTabsBackground as Background} from '../../src/core/plugins/widgets/SmoothTabsWidget';";
-	const entry = `import * as React from 'react';import {${widget}${source.id === "com.island.desktop-glass" ? ",DesktopGlassBackground" : source.id === "com.island.mac-compact" ? ",MacCompactBackground" : source.id === "com.island.timer" ? ",TimerBackground" : ""}} from '../../src/core/plugins/widgets/${widget}';${diagnose ? `import {${diagnose}} from '../diagnostics';` : ""}const sdk=globalThis.__ISLAND_PLUGIN_SDK__;${background}sdk.registerPlugin(${JSON.stringify(source.id)},${JSON.stringify(manifest.version)},{Panel:${widget}${source.id === "com.island.desktop-glass" ? ",Background:DesktopGlassBackground" : background ? ",Background" : ""}${diagnose ? `,diagnose:${diagnose}` : ""}});`;
+	const widgetExports =
+		source.id === "com.island.desktop-glass"
+			? ",DesktopGlassBackground"
+			: source.id === "com.island.mac-compact"
+				? ",MacCompactBackground"
+				: source.id === "com.island.timer"
+					? ",TimerBackground"
+					: source.id === "com.island.festive-island"
+						? ",FestiveIslandAppearance,FestiveIslandConfigure"
+						: "";
+	const islandAppearance =
+		source.id === "com.island.festive-island"
+			? ",Appearance:FestiveIslandAppearance,Configure:FestiveIslandConfigure"
+			: "";
+	const entry = `import * as React from 'react';import {${widget}${widgetExports}} from '../../src/core/plugins/widgets/${widget}';${diagnose ? `import {${diagnose}} from '../diagnostics';` : ""}const sdk=globalThis.__ISLAND_PLUGIN_SDK__;${background}sdk.registerPlugin(${JSON.stringify(source.id)},${JSON.stringify(manifest.version)},{Panel:${widget}${source.id === "com.island.desktop-glass" ? ",Background:DesktopGlassBackground" : background ? ",Background" : ""}${islandAppearance}${diagnose ? `,diagnose:${diagnose}` : ""}});`;
 	const entryPath = join(generated, `${source.id}.tsx`);
 	await writeFile(entryPath, entry);
 	const result = await Bun.build({

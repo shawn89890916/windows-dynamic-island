@@ -123,10 +123,12 @@ jobs:
           Compress-Archive -Path $dir -DestinationPath $zip
           gh release upload "v$version" $zip --clobber
 
-      - name: Build timer marketplace package
-        run: bun run plugins:build --only=com.island.timer
+      - name: Build marketplace packages
+        run: |
+          bun run plugins:build --only=com.island.timer
+          bun run plugins:build --only=com.island.festive-island
 
-      - name: Publish timer to plugin marketplace
+      - name: Publish marketplace packages
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload plugins plugins/dist/com.island.timer.island-plugin.json plugins/catalog.json --clobber
+        run: gh release upload plugins plugins/dist/com.island.timer.island-plugin.json plugins/dist/com.island.festive-island.island-plugin.json plugins/catalog.json --clobber

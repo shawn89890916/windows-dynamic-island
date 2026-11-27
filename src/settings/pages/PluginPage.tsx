@@ -32,7 +32,7 @@ import {
 	updatePluginSettings,
 	useInstalledPlugins,
 } from "../../core/plugins/registry";
-import { diagnosePlugin } from "../../core/plugins/runtime";
+import { diagnosePlugin, ExternalPluginConfigure } from "../../core/plugins/runtime";
 import type { PluginSettingField } from "../../core/plugins/types";
 import { BackLink } from "../components/Heading";
 import { PlacementSelect } from "../components/PlacementSelect";
@@ -310,36 +310,48 @@ export function PluginPage({
 					</Card>
 
 					{/* Card 2: Parameters & Settings Form */}
-					{settingsManifest.settings && settingsManifest.settings.length > 0 && (
+					{settingsManifest.configure === "custom" && plugin && (
 						<div className="flex flex-col gap-1.5">
-							<div className="flex items-center justify-between px-1">
-								<h2 className="text-xs font-bold tracking-wider text-text-faint uppercase">
-									{t("marketplace.ui.parameters")}
-								</h2>
-								<button
-									type="button"
-									onClick={handleResetDefaults}
-									className="flex items-center gap-1 text-[11px] text-text-faint hover:text-text transition-colors"
-								>
-									<RotateCcwIcon size={11} />
-									<span>{t("marketplace.ui.resetDefaults")}</span>
-								</button>
-							</div>
-
-							<Card>
-								{settingsManifest.settings.map((field) => (
-									<SettingRow
-										key={field.key}
-										field={field}
-										value={formValues[field.key] ?? field.default}
-										showPassword={Boolean(showPasswords[field.key])}
-										onTogglePassword={() => setShowPasswords((prev) => ({ ...prev, [field.key]: !prev[field.key] }))}
-										onChange={(val) => handleSettingChange(field.key, val)}
-									/>
-								))}
+							<h2 className="px-1 text-xs font-bold tracking-wider text-text-faint uppercase">
+								{t("marketplace.ui.parameters")}
+							</h2>
+							<Card className="p-4">
+								<ExternalPluginConfigure plugin={plugin} settings={formValues} onChange={handleSettingChange} />
 							</Card>
 						</div>
 					)}
+					{settingsManifest.configure !== "custom" &&
+						settingsManifest.settings &&
+						settingsManifest.settings.length > 0 && (
+							<div className="flex flex-col gap-1.5">
+								<div className="flex items-center justify-between px-1">
+									<h2 className="text-xs font-bold tracking-wider text-text-faint uppercase">
+										{t("marketplace.ui.parameters")}
+									</h2>
+									<button
+										type="button"
+										onClick={handleResetDefaults}
+										className="flex items-center gap-1 text-[11px] text-text-faint hover:text-text transition-colors"
+									>
+										<RotateCcwIcon size={11} />
+										<span>{t("marketplace.ui.resetDefaults")}</span>
+									</button>
+								</div>
+
+								<Card>
+									{settingsManifest.settings.map((field) => (
+										<SettingRow
+											key={field.key}
+											field={field}
+											value={formValues[field.key] ?? field.default}
+											showPassword={Boolean(showPasswords[field.key])}
+											onTogglePassword={() => setShowPasswords((prev) => ({ ...prev, [field.key]: !prev[field.key] }))}
+											onChange={(val) => handleSettingChange(field.key, val)}
+										/>
+									))}
+								</Card>
+							</div>
+						)}
 
 					{/* Card 3: Dedicated Tutorial & Setup Guide */}
 					{guide && (

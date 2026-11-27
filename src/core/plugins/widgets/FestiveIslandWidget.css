@@ -1,0 +1,52 @@
+.festive-effects .festive-particle {
+	animation: festive-drift calc(3.8s / var(--festive-speed, 1)) ease-in-out infinite;
+	transform-box: fill-box;
+	transform-origin: center;
+}
+
+.festive-effects .festive-glow {
+	filter: drop-shadow(0 0 3px currentColor);
+	animation: festive-glow calc(4s / var(--festive-speed, 1)) ease-in-out infinite alternate;
+}
+
+.festive-effects .festive-twinkle {
+	animation: festive-twinkle calc(2.6s / var(--festive-speed, 1)) ease-in-out infinite alternate;
+}
+
+@keyframes festive-drift {
+	0%,
+	100% {
+		opacity: 0.4;
+		transform: translateY(-1px);
+	}
+	50% {
+		opacity: 1;
+		transform: translateY(1px);
+	}
+}
+
+@keyframes festive-glow {
+	from {
+		opacity: 0.72;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes festive-twinkle {
+	from {
+		opacity: 0.45;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.festive-effects .festive-particle,
+	.festive-effects .festive-glow,
+	.festive-effects .festive-twinkle {
+		animation: none;
+	}
+}

@@ -3,7 +3,7 @@ import { Button } from "../../components/ui/button";
 import { command, isTauri } from "../bridge";
 import { createStore } from "../island";
 import { ensurePluginSDK } from "./sdk";
-import type { InstalledPlugin, LoadedPluginPackage } from "./types";
+import type { InstalledPlugin, IslandOverlayLayout, LoadedPluginPackage } from "./types";
 
 export interface Diagnostic {
 	status: "success" | "error" | "info";
@@ -13,6 +13,11 @@ export interface Diagnostic {
 export interface PluginModule {
 	Panel: ComponentType<{ settings: Record<string, unknown> }>;
 	Background?: ComponentType<{ settings: Record<string, unknown> }>;
+	Appearance?: ComponentType<{ settings: Record<string, unknown>; layout: IslandOverlayLayout }>;
+	Configure?: ComponentType<{
+		settings: Record<string, unknown>;
+		onChange: (key: string, value: unknown) => void;
+	}>;
 	diagnose?: (settings: Record<string, unknown>) => Promise<Diagnostic>;
 	dispose?: () => void;
 }
@@ -173,6 +178,32 @@ export function ExternalPluginPanel({ plugin }: { plugin: InstalledPlugin }) {
 		</div>
 	);
 }
+
+export function ExternalPluginAppearance({ plugin, layout }: { plugin: InstalledPlugin; layout: IslandOverlayLayout }) {
+	const state = useRuntime(plugin);
+	const Appearance = state?.module?.Appearance;
+	return Appearance ? <Appearance key={state.key} settings={plugin.customSettings} layout={layout} /> : null;
+}
+
+export function ExternalPluginConfigure({
+	plugin,
+	settings,
+	onChange,
+}: {
+	plugin: InstalledPlugin;
+	settings: Record<string, unknown>;
+	onChange: (key: string, value: unknown) => void;
+}) {
+	const state = useRuntime(plugin);
+	const Configure = state?.module?.Configure;
+	if (Configure) return <Configure key={state.key} settings={settings} onChange={onChange} />;
+	return (
+		<div className="rounded-xl border border-white/6 bg-white/3 px-4 py-5 text-center text-xs text-text-dim">
+			{state?.error || "正在加载插件配置…"}
+		</div>
+	);
+}
+
 function Background({ plugin }: { plugin: InstalledPlugin }) {
 	const state = useRuntime(plugin);
 	const Owner = state?.module?.Background;
