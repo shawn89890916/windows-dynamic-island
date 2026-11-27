@@ -65,6 +65,7 @@ export const activitiesModule: IslandModule = {
 		return {
 			active: !!top,
 			priority: top?.priority ?? 0,
+			sideEligible: !alert,
 			hidden: !top,
 			accent: top?.color ?? undefined,
 			icon: top ? (

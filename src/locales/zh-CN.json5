@@ -58,9 +58,11 @@
     },
     mainTaskCount: {
       label: "主岛内并排的任务数",
-      desc: "选择有多少个任务合并显示在主岛内；每次调整都会短暂演示布局。",
+      desc: "选择传统合并布局或分离式任务胶囊；每次调整都会短暂演示布局。",
       optionSingle: "1 个在主岛，其余分岛",
       optionPair: "2 个在主岛，第三个起分岛",
+      optionSeparated: "任务分离显示",
+      overflow: "另有 {count} 个任务",
     },
     expandOnHover: {
       label: "悬停时展开",

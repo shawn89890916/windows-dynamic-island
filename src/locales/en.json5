@@ -62,9 +62,11 @@
     },
     mainTaskCount: {
       label: "Tasks inside the main island",
-      desc: "Choose how many tasks share the main island. Changing this briefly previews the layout.",
+      desc: "Choose a traditional combined layout or separate task capsules. Changing this briefly previews the layout.",
       optionSingle: "One together, then side islands",
       optionPair: "Two together, then side islands",
+      optionSeparated: "Separate capsules",
+      overflow: "{count} more tasks",
     },
     expandOnHover: {
       label: "Expand on hover",

@@ -56,6 +56,7 @@ export const clipboardModule: IslandModule = {
 
 		return {
 			active: flashing,
+			sideEligible: false,
 			// A 3 s flash: above music and a working/finished agent, under an agent
 			// waiting for permission and the system alerts (volume…).
 			priority: 75,

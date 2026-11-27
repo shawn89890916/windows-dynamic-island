@@ -37,6 +37,8 @@ export type MessageKey =
 	| "settings.mainTaskCount.desc"
 	| "settings.mainTaskCount.optionSingle"
 	| "settings.mainTaskCount.optionPair"
+	| "settings.mainTaskCount.optionSeparated"
+	| "settings.mainTaskCount.overflow"
 	| "settings.expandOnHover.label"
 	| "settings.expandOnHover.desc"
 	| "settings.switchPanelsOnHover.label"

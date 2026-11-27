@@ -110,6 +110,7 @@ export const clockModule: IslandModule = {
 
 		return {
 			active: !!due || timer !== null,
+			sideEligible: !due,
 			// A meeting about to start beats music, under Ask Claude and the system alerts.
 			priority: timer !== null ? 65 : 55,
 			accent: CLOCK_RED,

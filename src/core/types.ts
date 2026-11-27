@@ -9,6 +9,8 @@ export interface ModuleView {
 	active: boolean;
 	/** Higher wins the main compact slot; the runner-up becomes the side bubble. */
 	priority: number;
+	/** Whether this active task may occupy a persistent secondary island. Defaults to true. */
+	sideEligible?: boolean;
 	/** Small glyph used in the tab bar and as the default activity icon. */
 	icon: ReactNode;
 	/** Compact pill content. Required when `active`. */

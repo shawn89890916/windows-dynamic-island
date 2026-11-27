@@ -126,6 +126,7 @@ export const aiAgentsModule: IslandModule = {
 
 		return {
 			active: !!hot || !!usageAlert,
+			sideEligible: !!hot,
 			priority: usageAlert ? 85 : hot ? PRIORITY[hot.session.status] : 0,
 			// A permission to answer: opening the island goes straight to it.
 			attention: asking,

@@ -90,11 +90,45 @@ export function Island() {
 			<StatusRing reading={statusReading} size={24} onClick={() => ctl.expand(STATUS_RING_PLUGIN)} />
 		) : null;
 	const taskCount = readNumberSetting(s, taskCountSetting);
-	const mainTaskCount = Math.min(taskCount, readNumberSetting(s, mainTaskCountSetting));
+	const taskArrangement = readNumberSetting(s, mainTaskCountSetting);
+	const separatedLayout = taskArrangement === 3;
+	const mainTaskCount = separatedLayout ? 1 : Math.min(taskCount, taskArrangement);
 	const secondaryTask = mode === "compact" && mainTaskCount > 1 ? ctl.activeTasks[1] : undefined;
-	const sideTasks = mode === "compact" ? ctl.activeTasks.slice(mainTaskCount, taskCount) : [];
+	const sideTasks = separatedLayout
+		? mode === "compact" || big
+			? ctl.activeTasks
+					.filter((entry) => entry.view.sideEligible !== false)
+					.filter((entry) => entry.module.id !== (mode === "compact" ? primary?.module.id : focused?.module.id))
+					.slice(
+						0,
+						Math.max(
+							0,
+							taskCount -
+								Number(
+									ctl.activeTasks.some(
+										(entry) => entry.module.id === (mode === "compact" ? primary?.module.id : focused?.module.id),
+									),
+								),
+						),
+					)
+			: []
+		: mode === "compact"
+			? ctl.activeTasks.slice(mainTaskCount, taskCount)
+			: [];
 	const sideStatus = windows && resting && !(macCompact && macCompactHidden) && status ? status : null;
-	const sideCount = sideTasks.length + Number(Boolean(sideStatus));
+	const sideTaskSignature = sideTasks.map((entry) => entry.module.id).join("|");
+	const [settledSideIds, setSettledSideIds] = useState<string[]>([]);
+	useEffect(() => {
+		if (!separatedLayout) return;
+		const timer = window.setTimeout(
+			() => setSettledSideIds(sideTaskSignature ? sideTaskSignature.split("|") : []),
+			140,
+		);
+		return () => window.clearTimeout(timer);
+	}, [separatedLayout, sideTaskSignature]);
+	const stableSideTasks = separatedLayout
+		? sideTasks.filter((entry) => settledSideIds.includes(entry.module.id))
+		: sideTasks;
 	const panelSize = (ctl.launcher ? launcherSize(ctl.entries.length) : focused?.view.expandedSize) ?? v.expanded;
 	// A shared width keeps the top bar in place as the body changes height and content.
 	const bigSize =
@@ -140,6 +174,14 @@ export function Island() {
 		attachedNotch,
 		extraWidth: secondaryTask && !macCompact ? SECONDARY_TASK_WIDTH : 0,
 	});
+	const availableSideWidth = Math.max(
+		0,
+		(viewport.width - g.width) / 2 - BUBBLE_GAP - (attachedNotch ? g.ear : 0) - 12,
+	);
+	const separatedCapacity = Math.max(0, Math.floor((availableSideWidth - (sideStatus ? 54 : 0) + 8) / 162));
+	const shownSideTasks = separatedLayout ? stableSideTasks.slice(0, separatedCapacity) : sideTasks;
+	const foldedSideTasks = separatedLayout ? stableSideTasks.slice(separatedCapacity) : [];
+	const sideCount = shownSideTasks.length + Number(foldedSideTasks.length > 0) + Number(Boolean(sideStatus));
 	useHitRects(islandLook.blurEffect, windows);
 	const hidden = !macCompact && mode === "hidden";
 	const swallowed = !macCompact && mode === "swallowed";
@@ -153,7 +195,14 @@ export function Island() {
 		width: g.width,
 		leftExtra:
 			(attachedNotch ? g.ear : 0) + (resting ? ambientWidth(ctl.entries.filter((e) => e.view.ambient).length) : 0),
-		rightExtra: (attachedNotch ? g.ear : 0) + ambientWidth(sideCount),
+		rightExtra:
+			(attachedNotch ? g.ear : 0) +
+			(separatedLayout
+				? shownSideTasks.length * 154 +
+					Math.max(0, shownSideTasks.length - 1) * 8 +
+					(foldedSideTasks.length ? 42 : 0) +
+					(sideStatus ? 54 : 0)
+				: ambientWidth(sideCount)),
 		canReturn: !big,
 		onDragChange: ctl.lockHover,
 	});
@@ -277,7 +326,10 @@ export function Island() {
 
 						<AmbientBubbles entries={ctl.entries} visible={resting} shrunk={mode === "idle" && !windows} {...bubble} />
 						<SideBubbles
-							entries={sideTasks}
+							entries={shownSideTasks}
+							separated={separatedLayout}
+							overflowCount={foldedSideTasks.length}
+							overflowId={foldedSideTasks[0]?.module.id}
 							status={sideStatus}
 							statusId={STATUS_RING_PLUGIN}
 							statusLabel={t("statusRing.name")}

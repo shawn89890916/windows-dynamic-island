@@ -104,6 +104,7 @@ export const hydrationModule: IslandModule = {
 
 		return {
 			active: timer.due,
+			sideEligible: false,
 			priority: 65,
 			accent: "#45c4e6",
 			icon: <DropletIcon size={15} color="#45c4e6" />,

@@ -79,7 +79,7 @@ export function GeneralPage({ values }: { values: Record<string, unknown> }) {
 
 function TaskArrangementSetting({ value }: { value: number }) {
 	const t = useT();
-	const [preview, setPreview] = useState<{ revision: number; mainCount: number } | null>(null);
+	const [preview, setPreview] = useState<{ revision: number; mainCount: number; separated: boolean } | null>(null);
 	const revision = useRef(0);
 	const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	useEffect(
@@ -93,7 +93,7 @@ function TaskArrangementSetting({ value }: { value: number }) {
 		if (next === value) return;
 		setSetting(mainTaskCountSetting, next);
 		revision.current += 1;
-		setPreview({ revision: revision.current, mainCount: next });
+		setPreview({ revision: revision.current, mainCount: next === 3 ? 1 : next, separated: next === 3 });
 		if (timer.current) clearTimeout(timer.current);
 		timer.current = setTimeout(() => setPreview(null), 1600);
 	};
@@ -109,6 +109,7 @@ function TaskArrangementSetting({ value }: { value: number }) {
 				<Select value={value} onChange={(event) => change(Number(event.target.value))}>
 					<option value={1}>{t("settings.mainTaskCount.optionSingle")}</option>
 					<option value={2}>{t("settings.mainTaskCount.optionPair")}</option>
+					<option value={3}>{t("settings.mainTaskCount.optionSeparated")}</option>
 				</Select>
 			</Row>
 			<AnimatePresence mode="wait">
@@ -143,9 +144,14 @@ function TaskArrangementSetting({ value }: { value: number }) {
 										animate={{ opacity: 1, scale: 1, x: 0 }}
 										exit={{ opacity: 0, scale: 0.45, x: -8 }}
 										transition={{ type: "spring", stiffness: 420, damping: 26, delay: index * 0.06 }}
-										className="grid size-8 place-items-center rounded-full bg-black shadow-[0_5px_14px_-8px_rgba(0,0,0,0.8)] ring-1 ring-white/10"
+										className={
+											preview.separated
+												? "flex h-8 min-w-20 items-center gap-1.5 rounded-full bg-black px-2.5 shadow-[0_5px_14px_-8px_rgba(0,0,0,0.8)] ring-1 ring-white/10"
+												: "grid size-8 place-items-center rounded-full bg-black shadow-[0_5px_14px_-8px_rgba(0,0,0,0.8)] ring-1 ring-white/10"
+										}
 									>
-										<Icon size={14} strokeWidth={2.1} className="text-white" />
+										<Icon size={14} strokeWidth={2.1} className="shrink-0 text-white" />
+										{preview.separated && <span className="text-[10px] text-white/75">{key}</span>}
 									</motion.div>
 								))}
 							</div>

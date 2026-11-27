@@ -50,6 +50,9 @@ export function AmbientBubbles({
 /** Additional active modules and the optional status ring, beside the island. */
 export function SideBubbles({
 	entries,
+	separated = false,
+	overflowCount = 0,
+	overflowId,
 	status,
 	statusId,
 	statusLabel,
@@ -57,6 +60,9 @@ export function SideBubbles({
 	...props
 }: BubbleProps & {
 	entries: ModuleEntry[];
+	separated?: boolean;
+	overflowCount?: number;
+	overflowId?: string;
 	status: ReactNode;
 	statusId: string;
 	statusLabel: string;
@@ -75,13 +81,37 @@ export function SideBubbles({
 						id={entry.module.id}
 						label={t(entry.module.title)}
 						side
+						separated={separated}
 						from={-40}
 						layout
 						{...props}
 					>
-						{entry.view.compact?.icon ?? entry.view.icon}
+						{separated ? (
+							<>
+								<span className="min-w-0 flex-1 truncate">{entry.view.compact?.left ?? entry.view.icon}</span>
+								{entry.view.compact?.right && (
+									<span className="shrink-0 text-[10px] text-text-dim">{entry.view.compact.right}</span>
+								)}
+							</>
+						) : (
+							(entry.view.compact?.icon ?? entry.view.icon)
+						)}
 					</Bubble>
 				))}
+				{separated && overflowCount > 0 && overflowId && (
+					<Bubble
+						key="overflow"
+						id={overflowId}
+						label={t("settings.mainTaskCount.overflow", { count: overflowCount })}
+						side
+						separated
+						from={-40}
+						layout
+						{...props}
+					>
+						<span className="text-xs font-semibold">+{overflowCount}</span>
+					</Bubble>
+				)}
 				{status && (
 					<Bubble key={statusId} id={statusId} label={statusLabel} side statusBubble from={-40} layout {...props}>
 						{status}
@@ -100,6 +130,7 @@ const bubble = tv({
 		statusBubble: {
 			true: "size-8 bg-black/75 shadow-[0_8px_18px_-10px_rgba(0,0,0,0.8)] ring-1 ring-white/5",
 		},
+		separated: { true: "h-9.5 w-[154px] justify-between rounded-full bg-black/90 px-3 ring-1 ring-white/10" },
 		clickOnly: { true: "pointer-events-none cursor-default" },
 	},
 });
@@ -111,6 +142,7 @@ function Bubble({
 	ambient,
 	side,
 	statusBubble,
+	separated,
 	from,
 	scale = 1,
 	layout,
@@ -126,6 +158,7 @@ function Bubble({
 	ambient?: boolean;
 	side?: boolean;
 	statusBubble?: boolean;
+	separated?: boolean;
 	/** Horizontal offset it slides in from and out to. */
 	from: number;
 	scale?: number;
@@ -138,7 +171,7 @@ function Bubble({
 			aria-label={label}
 			title={label}
 			data-no-drag
-			className={bubble({ ambient, side, statusBubble, clickOnly })}
+			className={bubble({ ambient, side, statusBubble, separated, clickOnly })}
 			data-island-secondary-bubble={(!ambient && !clickOnly) || undefined}
 			data-hit-module={!ambient && !clickOnly ? id : undefined}
 			data-hit={!clickOnly || undefined}

@@ -146,7 +146,7 @@ export const mainTaskCountSetting = {
 	description: "settings.mainTaskCount.desc",
 	default: 2,
 	min: 1,
-	max: 2,
+	max: 3,
 } satisfies NumberSettingDef;
 
 /** Whether installed builds automatically check for and install updates. */

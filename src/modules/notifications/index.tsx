@@ -33,6 +33,7 @@ export const notificationsModule: IslandModule = {
 		return {
 			active: recent,
 			priority: 30,
+			sideEligible: false,
 			hidden: items.length === 0,
 			accent: NOTIFICATION_BLUE,
 			icon: <BellIcon size={14} color={NOTIFICATION_BLUE} />,
