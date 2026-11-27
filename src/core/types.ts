@@ -19,6 +19,8 @@ export interface ModuleView {
 		right: ReactNode;
 		/** Optional icon when the activity is shown without its compact text. */
 		icon?: ReactNode;
+		/** Optional label used by the task's separated capsule. */
+		sideLabel?: string;
 		/** Pill width in px (default 300). */
 		width?: number;
 	};

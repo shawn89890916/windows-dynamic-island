@@ -41,6 +41,7 @@ export const musicModule: IslandModule = {
 			icon: <Artwork src={music?.thumbnail} size={22} radius={11} />,
 			compact: music && {
 				icon: <MusicCompactArtwork music={music} size={22} />,
+				sideLabel: music.title.trim() || undefined,
 				left: macCompact ? <MusicCover music={music} /> : <MusicCompactLeft music={music} />,
 				right: macCompact ? (
 					<MusicWaveform music={music} accent={accent} showVisualizer={showVisualizer} />

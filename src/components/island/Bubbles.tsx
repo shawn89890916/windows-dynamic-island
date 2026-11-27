@@ -79,32 +79,33 @@ export function SideBubbles({
 			style={{ left: `calc(100% + ${offset}px)`, ...(notchStyle ? { top: 0 } : undefined) }}
 		>
 			<AnimatePresence>
-				{entries.map((entry) => (
-					<Bubble
-						key={entry.module.id}
-						id={entry.module.id}
-						label={t(entry.module.title)}
-						side
-						separated={separated}
-						notchStyle={notchStyle}
-						from={-40}
-						layout
-						{...props}
-					>
-						{separated ? (
-							<>
-								<span className="grid size-5 shrink-0 place-items-center overflow-hidden [&_svg]:size-5">
-									{entry.view.compact?.icon ?? entry.view.icon}
-								</span>
-								<span className="min-w-0 flex-1 truncate text-left text-[11px] leading-none">
-									{t(entry.module.title)}
-								</span>
-							</>
-						) : (
-							(entry.view.compact?.icon ?? entry.view.icon)
-						)}
-					</Bubble>
-				))}
+				{entries.map((entry) => {
+					const label = entry.view.compact?.sideLabel?.trim() || t(entry.module.title);
+					return (
+						<Bubble
+							key={entry.module.id}
+							id={entry.module.id}
+							label={label}
+							side
+							separated={separated}
+							notchStyle={notchStyle}
+							from={-40}
+							layout
+							{...props}
+						>
+							{separated ? (
+								<>
+									<span className="grid size-5 shrink-0 place-items-center overflow-hidden [&_svg]:size-5">
+										{entry.view.compact?.icon ?? entry.view.icon}
+									</span>
+									<span className="min-w-0 flex-1 truncate text-left text-[11px] leading-none">{label}</span>
+								</>
+							) : (
+								(entry.view.compact?.icon ?? entry.view.icon)
+							)}
+						</Bubble>
+					);
+				})}
 				{separated && overflowCount > 0 && overflowId && (
 					<Bubble
 						key="overflow"
