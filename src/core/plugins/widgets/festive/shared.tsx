@@ -41,7 +41,7 @@ export function capsulePath(rect: IslandOverlayRect) {
 		const r = Math.min(16, h / 2, w / 3);
 		return `M ${x} ${y} H ${x + w} V ${y + h - r} Q ${x + w} ${y + h} ${x + w - r} ${y + h} H ${x + r} Q ${x} ${y + h} ${x} ${y + h - r} Z`;
 	}
-	const r = Math.min(h / 2, w / 2);
+	const r = Math.max(0, Math.min(rect.radius ?? h / 2, h / 2, w / 2));
 	return `M ${x + r} ${y} H ${x + w - r} Q ${x + w} ${y} ${x + w} ${y + r} V ${y + h - r} Q ${x + w} ${y + h} ${x + w - r} ${y + h} H ${x + r} Q ${x} ${y + h} ${x} ${y + h - r} V ${y + r} Q ${x} ${y} ${x + r} ${y} Z`;
 }
 

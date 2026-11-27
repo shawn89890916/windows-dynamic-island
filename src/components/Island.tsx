@@ -293,6 +293,7 @@ export function Island() {
 			y: 0,
 			width: g.width,
 			height: g.height,
+			radius: g.radius,
 			shape: attachedNotch ? "notch" : "pill",
 			role: "main",
 		},
@@ -339,6 +340,10 @@ export function Island() {
 
 	const rim = !macCompact && big && !attachedNotch ? <Rim look={look} openTop={!windows} /> : null;
 	const bubble = { transition: v.shellSpring, rim, onOpen: ctl.expand };
+	const sideBubble = {
+		...bubble,
+		rim: !macCompact && !big ? <Rim look={look} openTop={attachedNotch} /> : null,
+	};
 
 	return (
 		<IslandContext.Provider value={api}>
@@ -448,7 +453,7 @@ export function Island() {
 							statusId={STATUS_RING_PLUGIN}
 							statusLabel={t("statusRing.name")}
 							offset={BUBBLE_GAP + (attachedNotch ? g.ear : 0)}
-							{...bubble}
+							{...sideBubble}
 						/>
 						{festivePlugin && mode !== "hidden" && mode !== "swallowed" && (
 							<div

@@ -92,14 +92,9 @@ export function SideBubbles({
 						{...props}
 					>
 						{separated ? (
-							<>
-								<span className="grid size-5 shrink-0 place-items-center overflow-hidden">
-									{entry.view.compact?.icon ?? entry.view.icon}
-								</span>
-								<span className="min-w-0 flex-1 truncate text-left text-[11px] leading-none">
-									{t(entry.module.title)}
-								</span>
-							</>
+							<span className="grid size-5 shrink-0 place-items-center overflow-hidden [&_svg]:size-5">
+								{entry.view.compact?.icon ?? entry.view.icon}
+							</span>
 						) : (
 							(entry.view.compact?.icon ?? entry.view.icon)
 						)}
@@ -140,9 +135,11 @@ const bubble = tv({
 			true: "size-8 bg-black/75 shadow-[0_8px_18px_-10px_rgba(0,0,0,0.8)] ring-1 ring-white/5",
 		},
 		separated: {
-			true: "z-10 flex h-9.5 w-[136px] min-w-0 items-center gap-2 overflow-hidden bg-black/90 px-2.5 text-white ring-1 ring-white/10",
+			true: "z-10 flex h-9.5 w-12 min-w-0 items-center justify-center overflow-hidden bg-black/90 px-0 text-white ring-1 ring-white/10",
 		},
-		notchStyle: { true: "h-8 w-[124px] rounded-t-none rounded-b-2xl pt-0.5" },
+		notchStyle: {
+			true: "h-8 w-12 rounded-t-none rounded-b-2xl border-x border-b border-white/10 bg-black/95 pt-0.5 ring-0 shadow-[0_10px_24px_-10px_rgba(0,0,0,0.85)]",
+		},
 		overflowBubble: { true: "w-[38px] flex-none justify-center rounded-full px-0" },
 		clickOnly: { true: "pointer-events-none cursor-default" },
 	},
